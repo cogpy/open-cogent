@@ -435,8 +435,9 @@ export class CodeBlockComponent extends CaptionedBlockComponent<CodeBlockModel> 
           'disable-line-numbers': !showLineNumbers,
         })}
         style=${styleMap({
-          padding: shouldRenderPreview ? '0' : undefined,
+          padding: shouldRenderPreview ? '4px' : undefined,
           margin: shouldRenderPreview ? '-18px 0' : undefined,
+          backgroundColor: shouldRenderPreview ? 'transparent' : undefined,
         })}
       >
         <rich-text

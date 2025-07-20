@@ -16,7 +16,6 @@ const styles = {
     display: 'flex',
     width: '100%',
     minHeight: '60px',
-    padding: '8px',
     border: '1px dashed transparent',
     borderRadius: '8px',
     transition: 'border-color 0.2s ease',
@@ -284,7 +283,7 @@ export class MultiColumnContainerBlockComponent extends BlockComponent<MultiColu
 
     return html`
       <div
-        style="padding:4px; flex: 0 0 ${actualWidth}%; max-width: 100%; word-wrap: break-word; overflow-wrap: break-word;"
+        style="flex: 0 0 ${actualWidth}%; max-width: 100%; word-wrap: break-word; overflow-wrap: break-word;"
       >
         <div style="width: 100%;">${this.renderChildren(column)}</div>
         ${this._renderResizeHandle(index)}

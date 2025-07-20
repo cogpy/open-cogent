@@ -1153,11 +1153,6 @@ export const PackageList = [
     ],
   },
   {
-    location: 'docs/reference',
-    name: '@affine/docs',
-    workspaceDependencies: [],
-  },
-  {
     location: 'packages/backend/native',
     name: '@affine/server-native',
     workspaceDependencies: [],
@@ -1560,7 +1555,6 @@ export type PackageName =
   | '@blocksuite/sync'
   | '@blocksuite/integration-test'
   | '@blocksuite/playground'
-  | '@affine/docs'
   | '@affine/server-native'
   | '@affine/server'
   | '@affine/debug'

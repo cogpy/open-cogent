@@ -1,8 +1,8 @@
 {
-  "name": "@affine/monorepo",
-  "version": "0.22.4",
+  "name": "@afk/monorepo",
+  "version": "0.1.0",
   "private": true,
-  "author": "toeverything",
+  "author": "AFK Team",
   "license": "MIT",
   "workspaces": [
     ".",

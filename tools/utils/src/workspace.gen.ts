@@ -1131,11 +1131,6 @@ export const PackageList = [
     ],
   },
   {
-    location: 'blocksuite/docs',
-    name: '@blocksuite/bs-docs',
-    workspaceDependencies: ['blocksuite/affine/all'],
-  },
-  {
     location: 'blocksuite/framework/global',
     name: '@blocksuite/global',
     workspaceDependencies: [],
@@ -1226,7 +1221,7 @@ export const PackageList = [
   {
     location: 'packages/frontend/app',
     name: '@afk/app',
-    workspaceDependencies: [],
+    workspaceDependencies: ['packages/frontend/component'],
   },
   {
     location: 'packages/frontend/component',
@@ -1238,21 +1233,6 @@ export const PackageList = [
       'tools/utils',
       'blocksuite/affine/all',
     ],
-  },
-  {
-    location: 'packages/plugin-infra/dist',
-    name: '@toeverything/plugin-infra',
-    workspaceDependencies: [],
-  },
-  {
-    location: 'packages/sdk/dist',
-    name: '@affine/sdk',
-    workspaceDependencies: [],
-  },
-  {
-    location: 'packages/y-indexeddb/dist',
-    name: '@toeverything/y-indexeddb',
-    workspaceDependencies: [],
   },
   {
     location: 'tools/@types/build-config',
@@ -1360,7 +1340,6 @@ export type PackageName =
   | '@blocksuite/affine-widget-slash-menu'
   | '@blocksuite/affine-widget-toolbar'
   | '@blocksuite/affine-widget-viewport-overlay'
-  | '@blocksuite/bs-docs'
   | '@blocksuite/global'
   | '@blocksuite/std'
   | '@blocksuite/store'

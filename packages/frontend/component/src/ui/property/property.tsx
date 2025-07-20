@@ -346,35 +346,28 @@ export const PropertyValue = forwardRef<
     isEmpty?: boolean;
     hoverable?: boolean;
   } & HTMLProps<HTMLDivElement>
->(
-  (
-    { children, className, readonly, isEmpty, hoverable = true, ...props },
-    ref
-  ) => {
-    const context = useContext(PropertyRootContext);
+>(({ children, className, readonly, isEmpty, ...props }, ref) => {
+  const context = useContext(PropertyRootContext);
 
-    useLayoutEffect(() => {
-      if (context) {
-        return context.mountValue({ isEmpty: !!isEmpty });
-      }
-      return;
-    }, [context, isEmpty]);
+  useLayoutEffect(() => {
+    if (context) {
+      return context.mountValue({ isEmpty: !!isEmpty });
+    }
+    return;
+  }, [context, isEmpty]);
 
-    return (
-      <div
-        ref={ref}
-        className={clsx(styles.propertyValueContainer, className)}
-        data-readonly={readonly ? 'true' : 'false'}
-        data-empty={isEmpty ? 'true' : 'false'}
-        data-hoverable={
-          hoverable && !BUILD_CONFIG.isMobileEdition ? 'true' : 'false'
-        }
-        data-property-value
-        {...props}
-      >
-        {children}
-      </div>
-    );
-  }
-);
+  return (
+    <div
+      ref={ref}
+      className={clsx(styles.propertyValueContainer, className)}
+      data-readonly={readonly ? 'true' : 'false'}
+      data-empty={isEmpty ? 'true' : 'false'}
+      data-hoverable={'false'}
+      data-property-value
+      {...props}
+    >
+      {children}
+    </div>
+  );
+});
 PropertyValue.displayName = 'PropertyValue';

@@ -1,4 +1,3 @@
-import { useI18n } from '@afk/i18n';
 import { CloseIcon, InformationFillDuotoneIcon } from '@blocksuite/icons/rc';
 import clsx from 'clsx';
 import { useCallback } from 'react';
@@ -12,7 +11,6 @@ import * as styles from './styles.css';
 export const DesktopNotificationCard = ({
   notification,
 }: NotificationCardProps) => {
-  const t = useI18n();
   const {
     theme = 'info',
     style = 'normal',
@@ -27,11 +25,7 @@ export const DesktopNotificationCard = ({
     rootAttrs,
   } = notification;
 
-  const errorI18nKey = error ? (`error.${error.name}` as const) : undefined;
-  const errorTitle =
-    errorI18nKey && errorI18nKey in t
-      ? t[errorI18nKey](error?.data)
-      : undefined;
+  const errorTitle = error?.name ?? 'Unknown Error';
 
   return (
     <div

@@ -45,8 +45,7 @@ const HeaderLayout = memo(function HeaderLayout({
           const isRight = index === length - 1;
           return (
             <div
-              // eslint-disable-next-line react/no-array-index-key
-              key={index}
+              key={`${index}-${mode}`}
               data-length={length}
               data-is-left={isLeft}
               data-is-right={isRight}
@@ -80,12 +79,7 @@ export const CalendarLayout = forwardRef<HTMLDivElement, CalendarLayoutProps>(
     ref
   ) => {
     return (
-      <div
-        className={styles.calendarWrapper}
-        ref={ref}
-        data-mode={mode}
-        data-mobile={BUILD_CONFIG.isMobileEdition}
-      >
+      <div className={styles.calendarWrapper} ref={ref} data-mode={mode}>
         <HeaderLayout
           mode={mode}
           length={length}
@@ -130,7 +124,7 @@ interface NavButtonsProps extends PropsWithChildren {
   onNext?: () => void;
 }
 
-const iconButtonSize = BUILD_CONFIG.isMobileEdition ? 28 : 16;
+const iconButtonSize = 16;
 
 export const NavButtons = memo(function NavButtons({
   children,

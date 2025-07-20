@@ -17,10 +17,6 @@ if (typeof window !== 'undefined') {
     debug.enable('*');
     console.warn('Debug logs enabled');
   }
-  if (BUILD_CONFIG.debug) {
-    debug.enable('*,-micromark');
-    console.warn('Debug logs enabled');
-  }
 }
 
 export class DebugLogger {

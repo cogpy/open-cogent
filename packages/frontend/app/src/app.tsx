@@ -1,11 +1,12 @@
 import './index.css';
+import '@afk/component/theme';
 
 import { Route, Routes } from 'react-router';
 
 import { AuthGuard } from './components/auth-guard';
-import { ChatLayout } from './pages/chat-layout';
 import { ChatsDashboard } from './pages/chats-dashboard';
 import { HomePage } from './pages/home';
+import { ChatLayout } from './pages/layout/chat-layout';
 import { LibraryDashboard } from './pages/library-dashboard';
 import { MagicLinkPage } from './pages/magic-link';
 import { SignInPage } from './pages/sign-in';
@@ -24,8 +25,10 @@ const ChatsPage = () => {
 const LibraryPage = () => {
   return (
     <Routes>
-      <Route path="/" element={<LibraryDashboard />} />
-      <Route path="/:id" element={<div>Document</div>} />
+      <Route element={<ChatLayout />}>
+        <Route path="/" element={<LibraryDashboard />} />
+        <Route path="/:id" element={<div>Document</div>} />
+      </Route>
     </Routes>
   );
 };

@@ -5,11 +5,11 @@ import { createContext, useCallback, useContext, useState } from 'react';
 
 import type { ButtonProps } from '../button';
 import { Button } from '../button';
-import { desktopStyles, mobileStyles } from './confirm-modal.css';
+import { desktopStyles } from './confirm-modal.css';
 import type { ModalProps } from './modal';
 import { Modal } from './modal';
 
-const styles = BUILD_CONFIG.isMobileEdition ? mobileStyles : desktopStyles;
+const styles = desktopStyles;
 
 export interface ConfirmModalProps extends ModalProps {
   customConfirmButton?: () => React.ReactNode;

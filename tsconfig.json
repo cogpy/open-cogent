@@ -111,7 +111,6 @@
     { "path": "./blocksuite/affine/widgets/slash-menu" },
     { "path": "./blocksuite/affine/widgets/toolbar" },
     { "path": "./blocksuite/affine/widgets/viewport-overlay" },
-    { "path": "./blocksuite/docs" },
     { "path": "./blocksuite/framework/global" },
     { "path": "./blocksuite/framework/std" },
     { "path": "./blocksuite/framework/store" },
@@ -126,6 +125,7 @@
     { "path": "./packages/common/graphql" },
     { "path": "./packages/common/reader" },
     { "path": "./packages/frontend/app" },
+    { "path": "./packages/frontend/component" },
     { "path": "./tools/cli" },
     { "path": "./tools/utils" }
   ]

@@ -1,7 +1,7 @@
 /**
  * modified version of useRefEffect from https://github.com/jantimon/react-use-ref-effect/blob/master/src/index.tsx
  */
-import { useDebugValue, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 // internalRef is used as a reference and therefore save to be used inside an effect
 /* eslint-disable react-hooks/exhaustive-deps */
@@ -63,12 +63,6 @@ export const useRefEffect = <T>(
       dependencies_: typeof dependencies;
     };
   })[0];
-
-  // Show the current ref value in development
-  // in react dev tools
-  if (BUILD_CONFIG.debug) {
-    useDebugValue(internalRef.ref_.current);
-  }
 
   // Keep a ref to the latest callback
   internalRef.effect_ = effect;

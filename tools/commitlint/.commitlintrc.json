@@ -13,7 +13,6 @@
         "mobile",
         "ios",
         "android",
-        "mobile-native",
         "docs",
         "component",
         "env",
@@ -23,11 +22,9 @@
         "native",
         "templates",
         "debug",
-        "nbstore",
         "infra",
         "editor",
-        "tools",
-        "y-octo"
+        "tools"
       ]
     ]
   }

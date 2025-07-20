@@ -1198,11 +1198,6 @@ export const PackageList = [
     workspaceDependencies: ['blocksuite/affine/all'],
   },
   {
-    location: 'packages/common/y-octo/node',
-    name: '@y-octo/node',
-    workspaceDependencies: [],
-  },
-  {
     location: 'packages/frontend/app',
     name: '@afk/app',
     workspaceDependencies: [],
@@ -1336,7 +1331,6 @@ export type PackageName =
   | '@affine/error'
   | '@affine/graphql'
   | '@affine/reader'
-  | '@y-octo/node'
   | '@afk/app'
   | '@affine/component'
   | '@types/build-config'

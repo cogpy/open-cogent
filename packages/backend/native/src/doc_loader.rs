@@ -1,9 +1,9 @@
-use affine_common::doc_loader::Doc;
 use napi::{
   anyhow::anyhow,
   bindgen_prelude::{AsyncTask, Buffer},
   Env, Result, Task,
 };
+use open_agent_common::doc_loader::Doc;
 
 #[napi(object)]
 pub struct Chunk {

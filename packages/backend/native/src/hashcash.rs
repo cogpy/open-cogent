@@ -1,8 +1,8 @@
 use std::convert::TryFrom;
 
-use affine_common::hashcash::Stamp;
 use napi::{bindgen_prelude::AsyncTask, Env, Result as NapiResult, Task};
 use napi_derive::napi;
+use open_agent_common::hashcash::Stamp;
 
 pub struct AsyncVerifyChallengeResponse {
   response: String,

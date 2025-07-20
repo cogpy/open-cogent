@@ -1,5 +1,5 @@
 export {
-  CopilotWorkspaceEmbeddingConfigResolver,
-  CopilotWorkspaceEmbeddingResolver,
+  CopilotUserEmbeddingConfigResolver,
+  CopilotUserEmbeddingResolver,
 } from './resolver';
-export { CopilotWorkspaceService } from './service';
+export { CopilotUserService } from './service';

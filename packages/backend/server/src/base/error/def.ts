@@ -738,9 +738,9 @@ export const USER_FRIENDLY_ERRORS = {
   },
   copilot_failed_to_match_global_context: {
     type: 'internal_server_error',
-    args: { workspaceId: 'string', content: 'string', message: 'string' },
-    message: ({ workspaceId, content, message }) =>
-      `Failed to match context in workspace ${workspaceId} with "${escape(content)}": ${message}`,
+    args: { userId: 'string', content: 'string', message: 'string' },
+    message: ({ userId, content, message }) =>
+      `Failed to match context for user ${userId} with "${escape(content)}": ${message}`,
   },
   copilot_embedding_disabled: {
     type: 'action_forbidden',

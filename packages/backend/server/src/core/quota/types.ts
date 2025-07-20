@@ -1,7 +1,7 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 import { SafeIntResolver } from 'graphql-scalars';
 
-import { UserQuota, WorkspaceQuota } from '../../models';
+import { UserQuota } from '../../models';
 
 @ObjectType()
 export class UserQuotaHumanReadableType {
@@ -18,13 +18,7 @@ export class UserQuotaHumanReadableType {
   usedStorageQuota!: string;
 
   @Field()
-  historyPeriod!: string;
-
-  @Field()
-  memberLimit!: string;
-
-  @Field()
-  copilotActionLimit!: string;
+  copilotLimit!: string;
 }
 
 @ObjectType()
@@ -41,14 +35,8 @@ export class UserQuotaType implements UserQuota {
   @Field(() => SafeIntResolver)
   usedStorageQuota!: number;
 
-  @Field(() => SafeIntResolver)
-  historyPeriod!: number;
-
-  @Field()
-  memberLimit!: number;
-
-  @Field(() => Number, { nullable: true })
-  copilotActionLimit?: number;
+  @Field(() => SafeIntResolver, { nullable: true })
+  copilotLimit?: number;
 
   @Field(() => UserQuotaHumanReadableType)
   humanReadable!: UserQuotaHumanReadableType;
@@ -61,69 +49,4 @@ export class UserQuotaUsageType {
     deprecationReason: "use `UserQuotaType['usedStorageQuota']` instead",
   })
   storageQuota!: number;
-}
-
-@ObjectType()
-export class WorkspaceQuotaHumanReadableType {
-  @Field()
-  name!: string;
-
-  @Field()
-  blobLimit!: string;
-
-  @Field()
-  storageQuota!: string;
-
-  @Field()
-  storageQuotaUsed!: string;
-
-  @Field()
-  historyPeriod!: string;
-
-  @Field()
-  memberLimit!: string;
-
-  @Field()
-  memberCount!: string;
-
-  @Field()
-  overcapacityMemberCount!: string;
-}
-
-@ObjectType()
-export class WorkspaceQuotaType implements Partial<WorkspaceQuota> {
-  @Field()
-  name!: string;
-
-  @Field(() => SafeIntResolver)
-  blobLimit!: number;
-
-  @Field(() => SafeIntResolver)
-  storageQuota!: number;
-
-  @Field(() => SafeIntResolver)
-  usedStorageQuota!: number;
-
-  @Field(() => SafeIntResolver)
-  historyPeriod!: number;
-
-  @Field()
-  memberLimit!: number;
-
-  @Field()
-  memberCount!: number;
-
-  @Field()
-  overcapacityMemberCount!: number;
-
-  @Field()
-  humanReadable!: WorkspaceQuotaHumanReadableType;
-
-  /**
-   * @deprecated
-   */
-  @Field(() => SafeIntResolver, {
-    deprecationReason: 'use `usedStorageQuota` instead',
-  })
-  usedSize!: number;
 }

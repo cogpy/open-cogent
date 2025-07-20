@@ -1,4 +1,4 @@
-import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 
 import {
@@ -10,7 +10,6 @@ import {
 import {
   ContextConfig,
   ContextConfigSchema,
-  ContextDoc,
   ContextEmbedStatus,
   ContextFile,
   Models,
@@ -21,8 +20,7 @@ import { ContextSession } from './session';
 const CONTEXT_SESSION_KEY = 'context-session';
 
 @Injectable()
-export class CopilotContextService implements OnApplicationBootstrap {
-  private supportEmbedding = false;
+export class CopilotContextService {
   private client: EmbeddingClient | undefined;
 
   constructor(
@@ -43,18 +41,6 @@ export class CopilotContextService implements OnApplicationBootstrap {
 
   private async setup() {
     this.client = await getEmbeddingClient(this.moduleRef);
-  }
-
-  async onApplicationBootstrap() {
-    const supportEmbedding =
-      await this.models.copilotContext.checkEmbeddingAvailable();
-    if (supportEmbedding) {
-      this.supportEmbedding = true;
-    }
-  }
-
-  get canEmbedding() {
-    return this.supportEmbedding;
   }
 
   // public this client to allow overriding in tests
@@ -147,19 +133,17 @@ export class CopilotContextService implements OnApplicationBootstrap {
     return null;
   }
 
-  async matchWorkspaceFiles(
-    workspaceId: string,
+  async matchFiles(
     content: string,
     topK: number = 5,
     signal?: AbortSignal,
-    threshold: number = 0.5
+    threshold: number = 0.8
   ) {
     if (!this.embeddingClient) return [];
     const embedding = await this.embeddingClient.getEmbedding(content, signal);
     if (!embedding) return [];
 
-    const fileChunks = await this.models.copilotWorkspace.matchFileEmbedding(
-      workspaceId,
+    const fileChunks = await this.models.copilotUser.matchFileEmbedding(
       embedding,
       topK * 2,
       threshold
@@ -167,100 +151,6 @@ export class CopilotContextService implements OnApplicationBootstrap {
     if (!fileChunks.length) return [];
 
     return await this.embeddingClient.reRank(content, fileChunks, topK, signal);
-  }
-
-  async matchWorkspaceDocs(
-    workspaceId: string,
-    content: string,
-    topK: number = 5,
-    signal?: AbortSignal,
-    threshold: number = 0.5
-  ) {
-    if (!this.embeddingClient) return [];
-    const embedding = await this.embeddingClient.getEmbedding(content, signal);
-    if (!embedding) return [];
-
-    const workspaceChunks =
-      await this.models.copilotContext.matchWorkspaceEmbedding(
-        embedding,
-        workspaceId,
-        topK * 2,
-        threshold
-      );
-    if (!workspaceChunks.length) return [];
-
-    return await this.embeddingClient.reRank(
-      content,
-      workspaceChunks,
-      topK,
-      signal
-    );
-  }
-
-  async matchWorkspaceAll(
-    workspaceId: string,
-    content: string,
-    topK: number,
-    signal?: AbortSignal,
-    threshold: number = 0.8,
-    docIds?: string[],
-    scopedThreshold: number = 0.85
-  ) {
-    if (!this.embeddingClient) return [];
-    const embedding = await this.embeddingClient.getEmbedding(content, signal);
-    if (!embedding) return [];
-
-    const [fileChunks, workspaceChunks, scopedWorkspaceChunks] =
-      await Promise.all([
-        this.models.copilotWorkspace.matchFileEmbedding(
-          workspaceId,
-          embedding,
-          topK * 2,
-          threshold
-        ),
-        this.models.copilotContext.matchWorkspaceEmbedding(
-          embedding,
-          workspaceId,
-          topK * 2,
-          threshold
-        ),
-        docIds
-          ? this.models.copilotContext.matchWorkspaceEmbedding(
-              embedding,
-              workspaceId,
-              topK * 2,
-              scopedThreshold,
-              docIds
-            )
-          : null,
-      ]);
-
-    if (
-      !fileChunks.length &&
-      !workspaceChunks.length &&
-      !scopedWorkspaceChunks?.length
-    ) {
-      return [];
-    }
-
-    return await this.embeddingClient.reRank(
-      content,
-      [...fileChunks, ...workspaceChunks, ...(scopedWorkspaceChunks || [])],
-      topK,
-      signal
-    );
-  }
-
-  @OnEvent('workspace.doc.embed.failed')
-  async onDocEmbedFailed({
-    contextId,
-    docId,
-  }: Events['workspace.doc.embed.failed']) {
-    const context = await this.get(contextId);
-    await context.saveDocRecord(docId, doc => ({
-      ...(doc as ContextDoc),
-      status: ContextEmbedStatus.failed,
-    }));
   }
 
   @OnEvent('workspace.file.embed.finished')

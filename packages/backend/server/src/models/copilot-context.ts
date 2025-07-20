@@ -6,11 +6,9 @@ import { Prisma } from '@prisma/client';
 import { CopilotSessionNotFound } from '../base';
 import { BaseModel } from './base';
 import {
+  ContextConfig,
   ContextConfigSchema,
-  ContextDoc,
-  ContextEmbedStatus,
   CopilotContext,
-  DocChunkSimilarity,
   Embedding,
   FileChunkSimilarity,
   MinimalContextConfigSchema,
@@ -28,7 +26,7 @@ export class CopilotContextModel extends BaseModel {
   async create(sessionId: string) {
     const session = await this.db.aiSession.findFirst({
       where: { id: sessionId },
-      select: { workspaceId: true },
+      select: { userId: true },
     });
     if (!session) {
       throw new CopilotSessionNotFound();
@@ -38,7 +36,7 @@ export class CopilotContextModel extends BaseModel {
       data: {
         sessionId,
         config: {
-          workspaceId: session.workspaceId,
+          userId: session.userId,
           docs: [],
           files: [],
           categories: [],
@@ -55,7 +53,7 @@ export class CopilotContextModel extends BaseModel {
     return row;
   }
 
-  async getConfig(id: string) {
+  async getConfig(id: string): Promise<ContextConfig | null> {
     const row = await this.get(id);
     if (row) {
       const config = ContextConfigSchema.safeParse(row.config);
@@ -67,9 +65,7 @@ export class CopilotContextModel extends BaseModel {
         // fulfill the missing fields
         return {
           ...minimalConfig.data,
-          docs: [],
           files: [],
-          categories: [],
         };
       }
     }
@@ -81,28 +77,6 @@ export class CopilotContextModel extends BaseModel {
       where: { sessionId },
     });
     return row;
-  }
-
-  async mergeDocStatus(workspaceId: string, docs: ContextDoc[]) {
-    const canEmbedding = await this.checkEmbeddingAvailable();
-    const finishedDoc = canEmbedding
-      ? await this.listWorkspaceEmbedding(
-          workspaceId,
-          Array.from(new Set(docs.map(doc => doc.id)))
-        )
-      : [];
-    const finishedDocSet = new Set(finishedDoc);
-
-    for (const doc of docs) {
-      const status = finishedDocSet.has(doc.id)
-        ? ContextEmbedStatus.finished
-        : undefined;
-      // NOTE: when the document has not been synchronized to the server or is in the embedding queue
-      // the status will be empty, fallback to processing if no status is provided
-      doc.status = status || doc.status || ContextEmbedStatus.processing;
-    }
-
-    return docs;
   }
 
   async update(contextId: string, data: UpdateCopilotContextInput) {
@@ -118,26 +92,6 @@ export class CopilotContextModel extends BaseModel {
   }
 
   // ================ embeddings ================
-
-  async checkEmbeddingAvailable(): Promise<boolean> {
-    const [{ count }] = await this.db.$queryRaw<
-      { count: number }[]
-    >`SELECT count(1) FROM pg_tables WHERE tablename in ('ai_context_embeddings', 'ai_workspace_embeddings')`;
-    return Number(count) === 2;
-  }
-
-  async listWorkspaceEmbedding(workspaceId: string, docIds?: string[]) {
-    const existsIds = await this.db.aiWorkspaceEmbedding
-      .groupBy({
-        where: {
-          workspaceId,
-          docId: docIds ? { in: docIds } : undefined,
-        },
-        by: ['docId'],
-      })
-      .then(r => r.map(r => r.docId));
-    return existsIds;
-  }
 
   private processEmbeddings(
     contextOrWorkspaceId: string,
@@ -203,69 +157,5 @@ export class CopilotContextModel extends BaseModel {
       LIMIT ${topK};
     `;
     return similarityChunks.filter(c => Number(c.distance) <= threshold);
-  }
-
-  async insertWorkspaceEmbedding(
-    workspaceId: string,
-    docId: string,
-    embeddings: Embedding[]
-  ) {
-    if (embeddings.length === 0) {
-      this.logger.warn(
-        `No embeddings provided for workspaceId: ${workspaceId}, docId: ${docId}. Skipping insertion.`
-      );
-      return;
-    }
-
-    const values = this.processEmbeddings(
-      workspaceId,
-      docId,
-      embeddings,
-      false
-    );
-    await this.db.$executeRaw`
-      INSERT INTO "ai_workspace_embeddings"
-        ("workspace_id", "doc_id", "chunk", "content", "embedding", "updated_at")
-      VALUES ${values}
-      ON CONFLICT (workspace_id, doc_id, chunk)
-      DO UPDATE SET
-        embedding = EXCLUDED.embedding,
-        updated_at = excluded.updated_at;
-    `;
-  }
-
-  async deleteWorkspaceEmbedding(workspaceId: string, docId: string) {
-    await this.db.aiWorkspaceEmbedding.deleteMany({
-      where: { workspaceId, docId },
-    });
-  }
-
-  async matchWorkspaceEmbedding(
-    embedding: number[],
-    workspaceId: string,
-    topK: number,
-    threshold: number,
-    matchDocIds?: string[]
-  ): Promise<DocChunkSimilarity[]> {
-    const similarityChunks = await this.db.$queryRaw<Array<DocChunkSimilarity>>`
-      SELECT
-        w."doc_id" as "docId",
-        w."chunk",
-        w."content",
-        w."embedding" <=> ${embedding}::vector as "distance"
-      FROM "ai_workspace_embeddings" w
-      LEFT JOIN "ai_workspace_ignored_docs" i
-        ON i."workspace_id" = w."workspace_id"
-          AND i."doc_id" = w."doc_id"
-          ${matchDocIds?.length ? Prisma.sql`AND w."doc_id" NOT IN (${Prisma.join(matchDocIds)})` : Prisma.empty}
-      WHERE
-        w."workspace_id" = ${workspaceId}
-        AND i."doc_id" IS NULL
-        AND (w."embedding" <=> ${embedding}::vector) <= ${threshold}
-      ORDER BY "distance" ASC
-      LIMIT ${topK};
-    `;
-
-    return similarityChunks;
   }
 }

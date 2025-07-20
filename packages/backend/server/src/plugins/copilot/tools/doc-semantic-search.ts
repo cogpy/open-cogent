@@ -56,7 +56,7 @@ export const buildDocSearchGetter = (
     if (!canAccess)
       return 'You do not have permission to access this workspace.';
     const [chunks, contextChunks] = await Promise.all([
-      context.matchWorkspaceAll(options.workspace, query, 10, abortSignal),
+      context.matchFiles(options.workspace, query, 10, abortSignal),
       docContext?.matchFiles(query, 10, abortSignal) ?? [],
     ]);
 

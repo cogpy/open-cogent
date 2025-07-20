@@ -13,9 +13,8 @@ import { getTokenEncoder } from '../native';
 import { BaseModel } from './base';
 
 export enum SessionType {
-  Workspace = 'workspace', // docId is null and pinned is false
+  User = 'user', // pinned is false
   Pinned = 'pinned', // pinned is true
-  Doc = 'doc', // docId points to specific document
 }
 
 type ChatPrompt = {
@@ -47,8 +46,6 @@ type ChatMessage = {
 
 type PureChatSession = {
   sessionId: string;
-  workspaceId: string;
-  docId?: string | null;
   pinned?: boolean;
   title: string | null;
   messages?: ChatMessage[];
@@ -83,13 +80,13 @@ type UpdateChatSessionMessage = ChatSessionBaseState & {
 };
 
 export type UpdateChatSessionOptions = ChatSessionBaseState &
-  Pick<Partial<ChatSession>, 'docId' | 'pinned' | 'promptName' | 'title'>;
+  Pick<Partial<ChatSession>, 'pinned' | 'promptName' | 'title'>;
 
 export type UpdateChatSession = ChatSessionBaseState & UpdateChatSessionOptions;
 
 export type ListSessionOptions = Pick<
   Partial<ChatSession>,
-  'sessionId' | 'workspaceId' | 'docId' | 'pinned'
+  'sessionId' | 'pinned'
 > & {
   userId: string | undefined;
   action?: boolean;
@@ -104,23 +101,19 @@ export type ListSessionOptions = Pick<
   withMessages?: boolean;
 };
 
-export type CleanupSessionOptions = Pick<
-  ChatSession,
-  'userId' | 'workspaceId' | 'docId'
-> & {
+export type CleanupSessionOptions = Pick<ChatSession, 'userId'> & {
   sessionIds: string[];
 };
 
 @Injectable()
 export class CopilotSessionModel extends BaseModel {
-  getSessionType(session: Pick<ChatSession, 'docId' | 'pinned'>): SessionType {
+  getSessionType(session: Pick<ChatSession, 'pinned'>): SessionType {
     if (session.pinned) return SessionType.Pinned;
-    if (!session.docId) return SessionType.Workspace;
-    return SessionType.Doc;
+    return SessionType.User;
   }
 
   checkSessionPrompt(
-    session: Pick<ChatSession, 'docId' | 'pinned'>,
+    session: Pick<ChatSession, 'pinned'>,
     prompt: Partial<ChatPrompt>
   ): boolean {
     const sessionType = this.getSessionType(session);
@@ -128,7 +121,7 @@ export class CopilotSessionModel extends BaseModel {
 
     // workspace and pinned sessions cannot use action prompts
     if (
-      [SessionType.Workspace, SessionType.Pinned].includes(sessionType) &&
+      [SessionType.User, SessionType.Pinned].includes(sessionType) &&
       !!promptAction?.trim()
     ) {
       throw new CopilotPromptInvalid(
@@ -155,14 +148,12 @@ export class CopilotSessionModel extends BaseModel {
     }
 
     if (state.pinned) {
-      await this.unpin(state.workspaceId, state.userId);
+      await this.unpin(state.userId);
     }
 
     const session = await this.db.aiSession.create({
       data: {
         id: state.sessionId,
-        workspaceId: state.workspaceId,
-        docId: state.docId,
         pinned: state.pinned ?? false,
         // connect
         userId: state.userId,
@@ -190,7 +181,7 @@ export class CopilotSessionModel extends BaseModel {
   @Transactional()
   async fork(options: ForkSessionOptions): Promise<string> {
     if (options.pinned) {
-      await this.unpin(options.workspaceId, options.userId);
+      await this.unpin(options.userId);
     }
     const { messages, ...forkedState } = options;
 
@@ -234,8 +225,6 @@ export class CopilotSessionModel extends BaseModel {
     const session = await this.db.aiSession.findFirst({
       where: {
         userId: state.userId,
-        workspaceId: state.workspaceId,
-        docId: state.docId,
         parentSessionId: null,
         prompt: { action: { equals: null } },
         ...extraCondition,
@@ -263,8 +252,6 @@ export class CopilotSessionModel extends BaseModel {
     return await this.getExists(sessionId, {
       id: true,
       userId: true,
-      workspaceId: true,
-      docId: true,
       parentSessionId: true,
       pinned: true,
       title: true,
@@ -290,7 +277,7 @@ export class CopilotSessionModel extends BaseModel {
   private getListConditions(
     options: ListSessionOptions
   ): Prisma.AiSessionWhereInput {
-    const { userId, sessionId, workspaceId, docId, action, fork } = options;
+    const { userId, sessionId, action, fork } = options;
 
     function getNullCond<T>(
       maybeBool: boolean | undefined,
@@ -310,8 +297,6 @@ export class CopilotSessionModel extends BaseModel {
     const conditions: Prisma.AiSessionWhereInput['OR'] = [
       {
         userId,
-        workspaceId,
-        docId: getEqCond(docId),
         id: getEqCond(sessionId),
         deletedAt: null,
         pinned: getEqCond(options.pinned),
@@ -325,8 +310,6 @@ export class CopilotSessionModel extends BaseModel {
       // only query forked session if fork == true and action == false
       conditions.push({
         userId: { not: userId },
-        workspaceId: workspaceId,
-        docId: docId ?? null,
         id: getEqCond(sessionId),
         prompt: { action: null },
         // should only find forked session
@@ -350,8 +333,6 @@ export class CopilotSessionModel extends BaseModel {
       select: {
         id: true,
         userId: true,
-        workspaceId: true,
-        docId: true,
         parentSessionId: true,
         pinned: true,
         title: true,
@@ -386,9 +367,9 @@ export class CopilotSessionModel extends BaseModel {
   }
 
   @Transactional()
-  async unpin(workspaceId: string, userId: string): Promise<boolean> {
+  async unpin(userId: string): Promise<boolean> {
     const { count } = await this.db.aiSession.updateMany({
-      where: { userId, workspaceId, pinned: true, deletedAt: null },
+      where: { userId, pinned: true, deletedAt: null },
       data: { pinned: false },
     });
 
@@ -397,13 +378,11 @@ export class CopilotSessionModel extends BaseModel {
 
   @Transactional()
   async update(options: UpdateChatSessionOptions): Promise<string> {
-    const { userId, sessionId, docId, promptName, pinned, title } = options;
+    const { userId, sessionId, promptName, pinned, title } = options;
     const session = await this.getExists(
       sessionId,
       {
         id: true,
-        workspaceId: true,
-        docId: true,
         parentSessionId: true,
         pinned: true,
         prompt: true,
@@ -418,10 +397,6 @@ export class CopilotSessionModel extends BaseModel {
     if (session.prompt.action) {
       throw new CopilotSessionInvalidInput(
         `Cannot update action: ${session.id}`
-      );
-    } else if (docId && session.parentSessionId) {
-      throw new CopilotSessionInvalidInput(
-        `Cannot update docId for forked session: ${session.id}`
       );
     }
 
@@ -438,12 +413,12 @@ export class CopilotSessionModel extends BaseModel {
     }
     if (pinned && pinned !== session.pinned) {
       // if pin the session, unpin exists session in the workspace
-      await this.unpin(session.workspaceId, userId);
+      await this.unpin(userId);
     }
 
     await this.db.aiSession.update({
       where: { id: sessionId },
-      data: { docId, promptName, pinned, title },
+      data: { promptName, pinned, title },
     });
 
     return sessionId;
@@ -455,8 +430,6 @@ export class CopilotSessionModel extends BaseModel {
       where: {
         id: { in: options.sessionIds },
         userId: options.userId,
-        workspaceId: options.workspaceId,
-        docId: options.docId,
         deletedAt: null,
       },
       select: { id: true, prompt: true },

@@ -1,10 +1,7 @@
 import { nanoid } from 'nanoid';
 
 import {
-  ContextCategories,
-  ContextCategory,
   ContextConfig,
-  ContextDoc,
   ContextEmbedStatus,
   ContextFile,
   ContextList,
@@ -26,118 +23,19 @@ export class ContextSession implements AsyncDisposable {
     return this.contextId;
   }
 
-  get workspaceId() {
-    return this.config.workspaceId;
-  }
-
-  get categories(): ContextCategory[] {
-    return this.config.categories.map(c => ({
-      ...c,
-      docs: c.docs.map(d => ({ ...d })),
-    }));
-  }
-
-  get tags() {
-    const categories = this.config.categories;
-    return categories.filter(c => c.type === ContextCategories.Tag);
-  }
-
-  get collections() {
-    const categories = this.config.categories;
-    return categories.filter(c => c.type === ContextCategories.Collection);
-  }
-
-  get docs(): ContextDoc[] {
-    return this.config.docs.map(d => ({ ...d }));
+  get userId() {
+    return this.config.userId;
   }
 
   get files() {
     return this.config.files.map(f => this.fulfillFile(f));
   }
 
-  get docIds() {
-    return Array.from(
-      new Set(
-        [this.config.docs, this.config.categories.flatMap(c => c.docs)]
-          .flat()
-          .map(d => d.id)
-      )
-    );
-  }
-
   get sortedList(): ContextList {
-    const { docs, files } = this.config;
-    return [...docs, ...files].toSorted(
+    const { files } = this.config;
+    return [...files].toSorted(
       (a, b) => a.createdAt - b.createdAt
     ) as ContextList;
-  }
-
-  async addCategoryRecord(type: ContextCategories, id: string, docs: string[]) {
-    const category = this.config.categories.find(
-      c => c.type === type && c.id === id
-    );
-    if (category) {
-      const missingDocs = docs.filter(
-        docId => !category.docs.some(d => d.id === docId)
-      );
-      if (missingDocs.length) {
-        category.docs.push(
-          ...missingDocs.map(id => ({
-            id,
-            createdAt: Date.now(),
-            status: ContextEmbedStatus.processing,
-          }))
-        );
-        await this.save();
-      }
-
-      return category;
-    }
-    const createdAt = Date.now();
-    const record = {
-      id,
-      type,
-      docs: docs.map(id => ({
-        id,
-        createdAt,
-        status: ContextEmbedStatus.processing,
-      })),
-      createdAt,
-    };
-    this.config.categories.push(record);
-    await this.save();
-    return record;
-  }
-
-  async removeCategoryRecord(type: ContextCategories, id: string) {
-    const index = this.config.categories.findIndex(
-      c => c.type === type && c.id === id
-    );
-    if (index >= 0) {
-      this.config.categories.splice(index, 1);
-      await this.save();
-    }
-    return true;
-  }
-
-  async addDocRecord(docId: string): Promise<ContextDoc> {
-    const doc = this.config.docs.find(f => f.id === docId);
-    if (doc) {
-      return doc;
-    }
-    const record = { id: docId, createdAt: Date.now() };
-    this.config.docs.push(record);
-    await this.save();
-    return record;
-  }
-
-  async removeDocRecord(docId: string): Promise<boolean> {
-    const index = this.config.docs.findIndex(f => f.id === docId);
-    if (index >= 0) {
-      this.config.docs.splice(index, 1);
-      await this.save();
-    }
-    return true;
   }
 
   private fulfillFile(file: ContextFile): Required<ContextFile> {
@@ -215,8 +113,7 @@ export class ContextSession implements AsyncDisposable {
         topK * 2,
         scopedThreshold
       ),
-      this.models.copilotWorkspace.matchFileEmbedding(
-        this.workspaceId,
+      this.models.copilotUser.matchFileEmbedding(
         embedding,
         topK * 2,
         threshold
@@ -240,75 +137,6 @@ export class ContextSession implements AsyncDisposable {
       topK,
       signal
     );
-  }
-
-  /**
-   * Match the input text with the workspace chunks
-   * @param content input text to match
-   * @param topK number of similar chunks to return, default 5
-   * @param signal abort signal
-   * @param threshold relevance threshold for the similarity score, higher threshold means more similar chunks, default 0.7, good enough based on prior experiments
-   * @returns list of similar chunks
-   */
-  async matchWorkspaceDocs(
-    content: string,
-    topK: number = 5,
-    signal?: AbortSignal,
-    scopedThreshold: number = 0.85,
-    threshold: number = 0.5
-  ) {
-    if (!this.client) return [];
-    const embedding = await this.client.getEmbedding(content, signal);
-    if (!embedding) return [];
-
-    const docIds = this.docIds;
-    const [inContext, workspace] = await Promise.all([
-      this.models.copilotContext.matchWorkspaceEmbedding(
-        embedding,
-        this.workspaceId,
-        topK * 2,
-        scopedThreshold,
-        docIds
-      ),
-      this.models.copilotContext.matchWorkspaceEmbedding(
-        embedding,
-        this.workspaceId,
-        topK * 2,
-        threshold
-      ),
-    ]);
-
-    const result = await this.client.reRank(
-      content,
-      [...inContext, ...workspace],
-      topK,
-      signal
-    );
-
-    // sort result, doc recorded in context first
-    const docIdSet = new Set(docIds);
-    return result.toSorted(
-      (a, b) =>
-        (docIdSet.has(a.docId) ? -1 : 1) - (docIdSet.has(b.docId) ? -1 : 1) ||
-        (a.distance || Infinity) - (b.distance || Infinity)
-    );
-  }
-
-  async saveDocRecord(
-    docId: string,
-    cb: (
-      record: Pick<ContextDoc, 'id' | 'status'> &
-        Partial<Omit<ContextDoc, 'id' | 'status'>>
-    ) => ContextDoc
-  ) {
-    const docs = [this.config.docs, ...this.config.categories.map(c => c.docs)]
-      .flat()
-      .filter(d => d.id === docId);
-    for (const doc of docs) {
-      Object.assign(doc, cb({ ...doc }));
-    }
-
-    await this.save();
   }
 
   async saveFileRecord(

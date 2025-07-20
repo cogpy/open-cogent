@@ -26,21 +26,11 @@ export enum ContextEmbedStatus {
   failed = 'failed',
 }
 
-export enum ContextCategories {
-  Tag = 'tag',
-  Collection = 'collection',
-}
-
 const ContextEmbedStatusSchema = z.enum([
   ContextEmbedStatus.processing,
   ContextEmbedStatus.finished,
   ContextEmbedStatus.failed,
 ]);
-
-const ContextDocSchema = z.object({
-  id: z.string(),
-  createdAt: z.number(),
-});
 
 export const ContextFileSchema = z.object({
   id: z.string(),
@@ -53,34 +43,18 @@ export const ContextFileSchema = z.object({
   createdAt: z.number(),
 });
 
-export const ContextCategorySchema = z.object({
-  id: z.string(),
-  type: z.enum([ContextCategories.Tag, ContextCategories.Collection]),
-  docs: ContextDocSchema.merge(
-    z.object({ status: ContextEmbedStatusSchema })
-  ).array(),
-  createdAt: z.number(),
-});
-
 export const ContextConfigSchema = z.object({
-  workspaceId: z.string(),
+  userId: z.string(),
   files: ContextFileSchema.array(),
-  docs: ContextDocSchema.merge(
-    z.object({ status: ContextEmbedStatusSchema.optional() })
-  ).array(),
-  categories: ContextCategorySchema.array(),
 });
 
 export const MinimalContextConfigSchema = ContextConfigSchema.pick({
-  workspaceId: true,
+  userId: true,
 });
 
-export type ContextCategory = z.infer<typeof ContextCategorySchema>;
 export type ContextConfig = z.infer<typeof ContextConfigSchema>;
-export type ContextDoc = z.infer<typeof ContextConfigSchema>['docs'][number];
 export type ContextFile = z.infer<typeof ContextConfigSchema>['files'][number];
-export type ContextListItem = ContextDoc | ContextFile;
-export type ContextList = ContextListItem[];
+export type ContextList = ContextFile[];
 
 // embeddings
 
@@ -106,10 +80,6 @@ export type FileChunkSimilarity = ChunkSimilarity & {
   mimeType: string;
 };
 
-export type DocChunkSimilarity = ChunkSimilarity & {
-  docId: string;
-};
-
 export const CopilotWorkspaceFileSchema = z.object({
   fileName: z.string(),
   blobId: z.string(),
@@ -117,23 +87,11 @@ export const CopilotWorkspaceFileSchema = z.object({
   size: z.number(),
 });
 
-export type CopilotWorkspaceFileMetadata = z.infer<
+export type CopilotUserFileMetadata = z.infer<
   typeof CopilotWorkspaceFileSchema
 >;
-export type CopilotWorkspaceFile = CopilotWorkspaceFileMetadata & {
-  workspaceId: string;
+export type CopilotUserFile = CopilotUserFileMetadata & {
+  userId: string;
   fileId: string;
   createdAt: Date;
-};
-
-export type IgnoredDoc = {
-  docId: string;
-  createdAt: Date;
-  // metadata
-  docCreatedAt: Date | undefined;
-  docUpdatedAt: Date | undefined;
-  title: string | undefined;
-  createdBy: string | undefined;
-  createdByAvatar: string | undefined;
-  updatedBy: string | undefined;
 };

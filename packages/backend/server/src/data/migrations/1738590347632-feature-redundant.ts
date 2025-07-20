@@ -38,15 +38,6 @@ export class FeatureRedundant1738590347632 {
           type: def.type,
         },
       });
-      await db.workspaceFeature.updateMany({
-        where: {
-          featureId: id,
-        },
-        data: {
-          name: def.name,
-          type: def.type,
-        },
-      });
     }
   }
 

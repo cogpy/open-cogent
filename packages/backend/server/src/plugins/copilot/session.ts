@@ -48,10 +48,6 @@ declare global {
     'copilot.session.generateTitle': {
       sessionId: string;
     };
-    'copilot.session.deleteDoc': {
-      workspaceId: string;
-      docId: string;
-    };
   }
 }
 
@@ -76,12 +72,10 @@ export class ChatSession implements AsyncDisposable {
     const {
       sessionId,
       userId,
-      workspaceId,
-      docId,
       prompt: { name: promptName, config: promptConfig },
     } = this.state;
 
-    return { sessionId, userId, workspaceId, docId, promptName, promptConfig };
+    return { sessionId, userId, promptName, promptConfig };
   }
 
   get stashMessages() {
@@ -283,8 +277,6 @@ export class ChatSessionService {
     return {
       ...pick(session, [
         'userId',
-        'workspaceId',
-        'docId',
         'parentSessionId',
         'pinned',
         'title',
@@ -393,20 +385,10 @@ export class ChatSessionService {
   }
 
   async getQuota(userId: string) {
-    const isCopilotUser = await this.models.userFeature.has(
-      userId,
-      'unlimited_copilot'
-    );
-
-    let limit: number | undefined;
-    if (!isCopilotUser) {
-      const quota = await this.quota.getUserQuota(userId);
-      limit = quota.copilotActionLimit;
-    }
-
+    const quota = await this.quota.getUserQuota(userId);
     const used = await this.models.copilotSession.countUserMessages(userId);
 
-    return { limit, used };
+    return { limit: quota.copilotLimit, used };
   }
 
   async checkQuota(userId: string) {
@@ -425,7 +407,7 @@ export class ChatSessionService {
     }
 
     if (options.pinned) {
-      await this.unpin(options.workspaceId, options.userId);
+      await this.unpin(options.userId);
     }
 
     // validate prompt compatibility with session type
@@ -446,8 +428,8 @@ export class ChatSessionService {
   }
 
   @Transactional()
-  async unpin(workspaceId: string, userId: string) {
-    await this.models.copilotSession.unpin(workspaceId, userId);
+  async unpin(userId: string) {
+    await this.models.copilotSession.unpin(userId);
   }
 
   @Transactional()
@@ -472,7 +454,6 @@ export class ChatSessionService {
       finalData.promptName = prompt.name;
     }
     finalData.pinned = options.pinned;
-    finalData.docId = options.docId;
 
     if (Object.keys(finalData).length === 0) {
       throw new CopilotSessionInvalidInput(
@@ -507,8 +488,6 @@ export class ChatSessionService {
     return await this.models.copilotSession.fork({
       ...session,
       userId: options.userId,
-      // docId can be changed in fork
-      docId: options.docId,
       sessionId: randomUUID(),
       parentSessionId: options.sessionId,
       messages,
@@ -575,24 +554,6 @@ export class ChatSessionService {
     }
 
     return provider.text(cond, [...prompt.finish({}), msg], config);
-  }
-
-  @OnJob('copilot.session.deleteDoc')
-  async deleteDocSessions(doc: Jobs['copilot.session.deleteDoc']) {
-    const sessionIds = await this.models.copilotSession
-      .list({
-        userId: undefined,
-        workspaceId: doc.workspaceId,
-        docId: doc.docId,
-      })
-      .then(s => s.map(s => [s.userId, s.id]));
-    for (const [userId, sessionId] of sessionIds) {
-      await this.models.copilotSession.update({
-        userId,
-        sessionId,
-        docId: null,
-      });
-    }
   }
 
   @OnJob('copilot.session.generateTitle')

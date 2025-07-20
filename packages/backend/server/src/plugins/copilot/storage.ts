@@ -40,13 +40,8 @@ export class CopilotStorage {
   }
 
   @CallMetric('ai', 'blob_put')
-  async put(
-    userId: string,
-    workspaceId: string,
-    key: string,
-    blob: BlobInputType
-  ) {
-    const name = `${userId}/${workspaceId}/${key}`;
+  async put(userId: string, key: string, blob: BlobInputType) {
+    const name = `${userId}/${key}`;
     await this.provider.put(name, blob);
     if (!env.prod) {
       // return image base64url for dev environment
@@ -56,13 +51,8 @@ export class CopilotStorage {
   }
 
   @CallMetric('ai', 'blob_get')
-  async get(
-    userId: string,
-    workspaceId: string,
-    key: string,
-    signedUrl?: boolean
-  ) {
-    return this.provider.get(`${userId}/${workspaceId}/${key}`, signedUrl);
+  async get(userId: string, key: string, signedUrl?: boolean) {
+    return this.provider.get(`${userId}/${key}`, signedUrl);
   }
 
   @CallMetric('ai', 'blob_delete')
@@ -87,10 +77,10 @@ export class CopilotStorage {
   }
 
   @CallMetric('ai', 'blob_proxy_remote_url')
-  async handleRemoteLink(userId: string, workspaceId: string, link: string) {
+  async handleRemoteLink(userId: string, link: string) {
     const response = await fetch(link);
     const buffer = new Uint8Array(await response.arrayBuffer());
     const filename = createHash('sha256').update(buffer).digest('base64url');
-    return this.put(userId, workspaceId, filename, Buffer.from(buffer));
+    return this.put(userId, filename, Buffer.from(buffer));
   }
 }

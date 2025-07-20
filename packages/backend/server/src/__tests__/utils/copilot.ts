@@ -19,8 +19,6 @@ export const cleanObject = (
 
 export async function createCopilotSession(
   app: TestingApp,
-  workspaceId: string,
-  docId: string | null,
   promptName: string,
   pinned: boolean = false
 ): Promise<string> {
@@ -30,45 +28,31 @@ export async function createCopilotSession(
       createCopilotSession(options: $options)
     }
   `,
-    { options: { workspaceId, docId, promptName, pinned } }
+    { options: { promptName, pinned } }
   );
 
   return res.createCopilotSession;
 }
 
-export async function createWorkspaceCopilotSession(
+export async function createUserCopilotSession(
   app: TestingApp,
-  workspaceId: string,
   promptName: string
 ): Promise<string> {
-  return createCopilotSession(app, workspaceId, null, promptName);
+  return createCopilotSession(app, promptName);
 }
 
 export async function createPinnedCopilotSession(
   app: TestingApp,
-  workspaceId: string,
-  docId: string,
   promptName: string
 ): Promise<string> {
-  return createCopilotSession(app, workspaceId, docId, promptName, true);
-}
-
-export async function createDocCopilotSession(
-  app: TestingApp,
-  workspaceId: string,
-  docId: string,
-  promptName: string
-): Promise<string> {
-  return createCopilotSession(app, workspaceId, docId, promptName);
+  return createCopilotSession(app, promptName, true);
 }
 
 export async function getCopilotSession(
   app: TestingApp,
-  workspaceId: string,
   sessionId: string
 ): Promise<{
   id: string;
-  docId: string | null;
   parentSessionId: string | null;
   pinned: boolean;
   promptName: string;
@@ -76,14 +60,12 @@ export async function getCopilotSession(
   const res = await app.gql(
     `
       query getCopilotSession(
-        $workspaceId: String!
         $sessionId: String!
       ) {
         currentUser {
-          copilot(workspaceId: $workspaceId) {
+          copilot {
             session(sessionId: $sessionId) {
               id
-              docId
               parentSessionId
               pinned
               promptName
@@ -91,7 +73,7 @@ export async function getCopilotSession(
           }
         }
       }`,
-    { workspaceId, sessionId }
+    { sessionId }
   );
 
   return res.currentUser?.copilot?.session;
@@ -104,43 +86,23 @@ export async function updateCopilotSession(
 ): Promise<string> {
   const res = await app.gql(
     `
-    mutation updateCopilotSession($options: UpdateChatSessionInput!) {
-      updateCopilotSession(options: $options)
-    }
-  `,
+      mutation updateCopilotSession($options: UpdateChatSessionInput!) {
+        updateCopilotSession(options: $options)
+      }
+    `,
     { options: { sessionId, promptName } }
   );
 
   return res.updateCopilotSession;
 }
 
-export async function forkCopilotSession(
-  app: TestingApp,
-  workspaceId: string,
-  docId: string,
-  sessionId: string,
-  latestMessageId?: string
-): Promise<string> {
-  const res = await app.gql(
-    `
-    mutation forkCopilotSession($options: ForkChatSessionInput!) {
-      forkCopilotSession(options: $options)
-    }
-  `,
-    { options: { workspaceId, docId, sessionId, latestMessageId } }
-  );
-
-  return res.forkCopilotSession;
-}
-
 export async function createCopilotContext(
   app: TestingApp,
-  workspaceId: string,
   sessionId: string
 ): Promise<string> {
   const res = await app.gql(`
         mutation {
-          createCopilotContext(workspaceId: "${workspaceId}", sessionId: "${sessionId}")
+          createCopilotContext(sessionId: "${sessionId}")
         }
       `);
 
@@ -184,60 +146,16 @@ export async function matchFiles(
   return res.currentUser?.copilot?.contexts?.[0]?.matchFiles;
 }
 
-export async function matchWorkspaceDocs(
-  app: TestingApp,
-  contextId: string,
-  content: string,
-  limit: number
-): Promise<
-  | {
-      docId: string;
-      chunk: number;
-      content: string;
-      distance: number | null;
-    }[]
-  | undefined
-> {
-  const res = await app.gql(
-    `
-      query matchWorkspaceDocs($contextId: String!, $content: String!, $limit: SafeInt, $threshold: Float) {
-        currentUser {
-          copilot {
-            contexts(contextId: $contextId) {
-              matchWorkspaceDocs(content: $content, limit: $limit, threshold: $threshold) {
-                docId
-                chunk
-                content
-                distance
-              }
-            }
-          }
-        }
-      }
-      `,
-    { contextId, content, limit, threshold: 1 }
-  );
-
-  return res.currentUser?.copilot?.contexts?.[0]?.matchWorkspaceDocs;
-}
-
 export async function listContext(
   app: TestingApp,
-  workspaceId: string,
   sessionId: string
-): Promise<
-  {
-    id: string;
-    workspaceId: string;
-  }[]
-> {
+): Promise<{ id: string }[]> {
   const res = await app.gql(`
         query {
           currentUser {
-            copilot(workspaceId: "${workspaceId}") {
+            copilot {
               contexts(sessionId: "${sessionId}") {
                 id
-                workspaceId
               }
             }
           }
@@ -302,8 +220,7 @@ export async function removeContextFile(
 
 export async function addContextDoc(
   app: TestingApp,
-  contextId: string,
-  docId: string
+  contextId: string
 ): Promise<{ id: string }[]> {
   const res = await app.gql(
     `
@@ -313,7 +230,7 @@ export async function addContextDoc(
             }
           }
         `,
-    { options: { contextId, docId } }
+    { options: { contextId } }
   );
 
   return res.addContextDoc;
@@ -321,8 +238,7 @@ export async function addContextDoc(
 
 export async function removeContextDoc(
   app: TestingApp,
-  contextId: string,
-  docId: string
+  contextId: string
 ): Promise<string> {
   const res = await app.gql(
     `
@@ -330,25 +246,18 @@ export async function removeContextDoc(
         removeContextDoc(options: $options)
       }
     `,
-    { options: { contextId, docId } }
+    { options: { contextId } }
   );
 
   return res.removeContextDoc;
 }
 
-export async function listContextDocAndFiles(
+export async function listContextFiles(
   app: TestingApp,
-  workspaceId: string,
   sessionId: string,
   contextId: string
 ): Promise<
   | {
-      docs: {
-        id: string;
-        status: string;
-        error: string | null;
-        createdAt: number;
-      }[];
       files: {
         id: string;
         name: string;
@@ -364,14 +273,8 @@ export async function listContextDocAndFiles(
   const res = await app.gql(`
         query {
           currentUser {
-            copilot(workspaceId: "${workspaceId}") {
+            copilot {
               contexts(sessionId: "${sessionId}", contextId: "${contextId}") {
-                docs {
-                  id
-                  status
-                  error
-                  createdAt
-                }
                 files {
                   id
                   name
@@ -387,14 +290,13 @@ export async function listContextDocAndFiles(
         }
       `);
 
-  const { docs, files } = res.currentUser?.copilot?.contexts?.[0] || {};
+  const { files } = res.currentUser?.copilot?.contexts?.[0] || {};
 
-  return { docs, files };
+  return { files };
 }
 
 export async function submitAudioTranscription(
   app: TestingApp,
-  workspaceId: string,
   blobId: string,
   fileName: string,
   content: Buffer[]
@@ -406,8 +308,8 @@ export async function submitAudioTranscription(
       'operations',
       JSON.stringify({
         query: `
-          mutation submitAudioTranscription($blob: Upload, $blobs: [Upload!], $blobId: String!, $workspaceId: String!) {
-            submitAudioTranscription(blob: $blob, blobs: $blobs, blobId: $blobId, workspaceId: $workspaceId) {
+          mutation submitAudioTranscription($blob: Upload, $blobs: [Upload!], $blobId: String!) {
+            submitAudioTranscription(blob: $blob, blobs: $blobs, blobId: $blobId) {
               id
               status
             }
@@ -417,7 +319,6 @@ export async function submitAudioTranscription(
           blob: null,
           blobs: [],
           blobId,
-          workspaceId,
         },
       })
     )
@@ -444,19 +345,18 @@ export async function submitAudioTranscription(
 
 export async function retryAudioTranscription(
   app: TestingApp,
-  workspaceId: string,
   jobId: string
 ): Promise<{ id: string; status: string }> {
   const res = await app.gql(
     `
-      mutation retryAudioTranscription($workspaceId: String!, $jobId: String!) {
-        retryAudioTranscription(workspaceId: $workspaceId, jobId: $jobId) {
+      mutation retryAudioTranscription($jobId: String!) {
+        retryAudioTranscription(jobId: $jobId) {
           id
           status
         }
       }
     `,
-    { workspaceId, jobId }
+    { jobId }
   );
 
   return res.retryAudioTranscription;
@@ -506,7 +406,6 @@ export async function claimAudioTranscription(
 
 export async function audioTranscription(
   app: TestingApp,
-  workspaceId: string,
   jobId: string
 ): Promise<{
   id: string;
@@ -524,9 +423,9 @@ export async function audioTranscription(
 }> {
   const res = await app.gql(
     `
-      query audioTranscription($workspaceId: String!, $jobId: String!) {
+      query audioTranscription($jobId: String!) {
         currentUser {
-          copilot(workspaceId: $workspaceId) {
+          copilot {
             audioTranscription(jobId: $jobId) {
               id
               status
@@ -543,7 +442,7 @@ export async function audioTranscription(
         }
       }
     `,
-    { workspaceId, jobId }
+    { jobId }
   );
 
   return res.currentUser?.copilot?.audioTranscription;
@@ -620,7 +519,6 @@ export async function createCopilotMessage(
   }
 
   const res = await resp.expect(200);
-  console.log('createCopilotMessage', res.body);
   return res.body.data.createCopilotMessage;
 }
 
@@ -750,22 +648,16 @@ type HistoryOptions = {
 
 export async function getHistories(
   app: TestingApp,
-  variables: {
-    workspaceId: string;
-    docId?: string | null;
-    options?: HistoryOptions;
-  }
+  variables?: { options?: HistoryOptions }
 ): Promise<History[]> {
   const res = await app.gql(
     `
     query getCopilotHistories(
-      $workspaceId: String!
-      $docId: String
       $options: QueryChatHistoriesInput
     ) {
       currentUser {
-        copilot(workspaceId: $workspaceId) {
-          histories(docId: $docId, options: $options) {
+        copilot {
+          histories(options: $options) {
             sessionId
             pinned
             tokens
@@ -789,68 +681,17 @@ export async function getHistories(
   return res.currentUser?.copilot?.histories || [];
 }
 
-export async function getWorkspaceSessions(
+export async function getUserSessions(
   app: TestingApp,
-  variables: {
-    workspaceId: string;
-    options?: HistoryOptions;
-  }
+  variables?: { options?: HistoryOptions }
 ): Promise<History[]> {
   const res = await app.gql(
     `query getCopilotWorkspaceSessions(
-        $workspaceId: String!
         $options: QueryChatHistoriesInput
       ) {
         currentUser {
-          copilot(workspaceId: $workspaceId) {
-            histories(docId: null, options: $options) {
-              sessionId
-              pinned
-              tokens
-              action
-              createdAt
-              messages {
-                id
-                role
-                content
-                streamObjects {
-                  type
-                  textDelta
-                  toolCallId
-                  toolName
-                  args
-                  result
-                }
-                attachments
-                createdAt
-              }
-            }
-          }
-        }
-      }`,
-    variables
-  );
-
-  return res.currentUser?.copilot?.histories || [];
-}
-
-export async function getDocSessions(
-  app: TestingApp,
-  variables: {
-    workspaceId: string;
-    docId: string;
-    options?: HistoryOptions;
-  }
-): Promise<History[]> {
-  const res = await app.gql(
-    `query getCopilotDocSessions(
-        $workspaceId: String!
-        $docId: String!
-        $options: QueryChatHistoriesInput
-      ) {
-        currentUser {
-          copilot(workspaceId: $workspaceId) {
-            histories(docId: $docId, options: $options) {
+          copilot {
+            histories(options: $options) {
               sessionId
               pinned
               tokens
@@ -883,23 +724,19 @@ export async function getDocSessions(
 
 export async function getPinnedSessions(
   app: TestingApp,
-  variables: {
-    workspaceId: string;
-    docId?: string;
+  variables?: {
     messageOrder?: 'asc' | 'desc';
     withPrompt?: boolean;
   }
 ): Promise<History[]> {
   const res = await app.gql(
     `query getCopilotPinnedSessions(
-        $workspaceId: String!
-        $docId: String
         $messageOrder: ChatHistoryOrder
         $withPrompt: Boolean
       ) {
         currentUser {
-          copilot(workspaceId: $workspaceId) {
-            histories(docId: $docId, options: {
+          copilot {
+            histories(options: {
               limit: 1,
               pinned: true,
               messageOrder: $messageOrder,

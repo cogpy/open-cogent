@@ -2,7 +2,7 @@ import { Field, ObjectType } from '@nestjs/graphql';
 import { SafeIntResolver } from 'graphql-scalars';
 
 import { Paginated } from '../../../base';
-import { CopilotWorkspaceFile, IgnoredDoc } from '../../../models';
+import { CopilotUserFile } from '../../../models';
 
 declare global {
   interface Events {
@@ -15,42 +15,10 @@ declare global {
   }
 }
 
-@ObjectType('CopilotWorkspaceIgnoredDoc')
-export class CopilotWorkspaceIgnoredDocType implements IgnoredDoc {
+@ObjectType('CopilotUserFile')
+export class CopilotUserFileType implements CopilotUserFile {
   @Field(() => String)
-  docId!: string;
-
-  @Field(() => Date)
-  createdAt!: Date;
-
-  @Field(() => Date, { nullable: true })
-  docCreatedAt!: Date | undefined;
-
-  @Field(() => Date, { nullable: true })
-  docUpdatedAt!: Date | undefined;
-
-  @Field(() => String, { nullable: true })
-  title!: string | undefined;
-
-  @Field(() => String, { nullable: true })
-  createdBy!: string | undefined;
-
-  @Field(() => String, { nullable: true })
-  createdByAvatar!: string | undefined;
-
-  @Field(() => String, { nullable: true })
-  updatedBy!: string | undefined;
-}
-
-@ObjectType()
-export class PaginatedIgnoredDocsType extends Paginated(
-  CopilotWorkspaceIgnoredDocType
-) {}
-
-@ObjectType('CopilotWorkspaceFile')
-export class CopilotWorkspaceFileType implements CopilotWorkspaceFile {
-  @Field(() => String)
-  workspaceId!: string;
+  userId!: string;
 
   @Field(() => String)
   fileId!: string;
@@ -71,7 +39,7 @@ export class CopilotWorkspaceFileType implements CopilotWorkspaceFile {
   createdAt!: Date;
 }
 
-@ObjectType()
-export class PaginatedCopilotWorkspaceFileType extends Paginated(
-  CopilotWorkspaceFileType
+@ObjectType('PaginatedCopilotUserFile')
+export class PaginatedCopilotUserFileType extends Paginated(
+  CopilotUserFileType
 ) {}

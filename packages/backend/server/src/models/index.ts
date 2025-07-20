@@ -14,12 +14,10 @@ import { AppConfigModel } from './config';
 import { CopilotContextModel } from './copilot-context';
 import { CopilotJobModel } from './copilot-job';
 import { CopilotSessionModel } from './copilot-session';
-import { CopilotWorkspaceConfigModel } from './copilot-workspace';
-import { DocModel } from './doc';
+import { CopilotUserConfigModel } from './copilot-user';
 import { DocUserModel } from './doc-user';
 import { FeatureModel } from './feature';
 import { HistoryModel } from './history';
-import { NotificationModel } from './notification';
 import { MODELS_SYMBOL } from './provider';
 import { SessionModel } from './session';
 import { UserModel } from './user';
@@ -27,28 +25,20 @@ import { UserDocModel } from './user-doc';
 import { UserFeatureModel } from './user-feature';
 import { UserSettingsModel } from './user-settings';
 import { VerificationTokenModel } from './verification-token';
-import { WorkspaceModel } from './workspace';
-import { WorkspaceFeatureModel } from './workspace-feature';
-import { WorkspaceUserModel } from './workspace-user';
 
 const MODELS = {
   user: UserModel,
   session: SessionModel,
   verificationToken: VerificationTokenModel,
   feature: FeatureModel,
-  workspace: WorkspaceModel,
   userFeature: UserFeatureModel,
-  workspaceFeature: WorkspaceFeatureModel,
-  doc: DocModel,
   userDoc: UserDocModel,
-  workspaceUser: WorkspaceUserModel,
   docUser: DocUserModel,
   history: HistoryModel,
-  notification: NotificationModel,
   userSettings: UserSettingsModel,
   copilotSession: CopilotSessionModel,
   copilotContext: CopilotContextModel,
-  copilotWorkspace: CopilotWorkspaceConfigModel,
+  copilotUser: CopilotUserConfigModel,
   copilotJob: CopilotJobModel,
   appConfig: AppConfigModel,
   comment: CommentModel,
@@ -112,18 +102,13 @@ export * from './common';
 export * from './copilot-context';
 export * from './copilot-job';
 export * from './copilot-session';
-export * from './copilot-workspace';
-export * from './doc';
+export * from './copilot-user';
 export * from './doc-user';
 export * from './feature';
 export * from './history';
-export * from './notification';
 export * from './session';
 export * from './user';
 export * from './user-doc';
 export * from './user-feature';
 export * from './user-settings';
 export * from './verification-token';
-export * from './workspace';
-export * from './workspace-feature';
-export * from './workspace-user';

@@ -24,7 +24,6 @@ declare global {
     'copilot.embedding.files': {
       contextId?: string;
       userId: string;
-      workspaceId: string;
       blobId: string;
       fileId: string;
       fileName: string;

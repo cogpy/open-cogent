@@ -18,7 +18,6 @@ import { EmbeddingClient } from './types';
 
 @Injectable()
 export class CopilotEmbeddingJob {
-  private supportEmbedding = false;
   private client: EmbeddingClient | undefined;
 
   constructor(
@@ -40,11 +39,7 @@ export class CopilotEmbeddingJob {
   }
 
   private async setup() {
-    this.supportEmbedding =
-      await this.models.copilotContext.checkEmbeddingAvailable();
-    if (this.supportEmbedding) {
-      this.client = await getEmbeddingClient(this.moduleRef);
-    }
+    this.client = await getEmbeddingClient(this.moduleRef);
   }
 
   // public this client to allow overriding in tests
@@ -54,12 +49,9 @@ export class CopilotEmbeddingJob {
 
   @CallMetric('ai', 'addFileEmbeddingQueue')
   async addFileEmbeddingQueue(file: Jobs['copilot.embedding.files']) {
-    if (!this.supportEmbedding) return;
-
-    const { userId, workspaceId, contextId, blobId, fileId, fileName } = file;
+    const { userId, contextId, blobId, fileId, fileName } = file;
     await this.queue.add('copilot.embedding.files', {
       userId,
-      workspaceId,
       contextId,
       blobId,
       fileId,
@@ -69,12 +61,11 @@ export class CopilotEmbeddingJob {
 
   private async readCopilotBlob(
     userId: string,
-    workspaceId: string,
     blobId: string,
     fileName: string
   ) {
-    const { body } = await this.storage.get(userId, workspaceId, blobId);
-    if (!body) throw new BlobNotFound({ spaceId: workspaceId, blobId });
+    const { body } = await this.storage.get(userId, blobId);
+    if (!body) throw new BlobNotFound({ spaceId: blobId });
     const buffer = await readStream(body);
     return new File([buffer], fileName);
   }
@@ -82,21 +73,15 @@ export class CopilotEmbeddingJob {
   @OnJob('copilot.embedding.files')
   async embedPendingFile({
     userId,
-    workspaceId,
     contextId,
     blobId,
     fileId,
     fileName,
   }: Jobs['copilot.embedding.files']) {
-    if (!this.supportEmbedding || !this.embeddingClient) return;
+    if (!this.embeddingClient) return;
 
     try {
-      const file = await this.readCopilotBlob(
-        userId,
-        workspaceId,
-        blobId,
-        fileName
-      );
+      const file = await this.readCopilotBlob(userId, blobId, fileName);
 
       // no need to check if embeddings is empty, will throw internally
       const chunks = await this.embeddingClient.getFileChunks(file);
@@ -112,9 +97,9 @@ export class CopilotEmbeddingJob {
             embeddings
           );
         } else {
-          // for workspace files
-          await this.models.copilotWorkspace.insertFileEmbeddings(
-            workspaceId,
+          // for user files
+          await this.models.copilotUser.insertFileEmbeddings(
+            userId,
             fileId,
             embeddings
           );

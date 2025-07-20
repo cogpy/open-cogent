@@ -50,12 +50,6 @@ export const COPILOT_LOCKER = 'copilot';
 
 @InputType()
 class CreateChatSessionInput {
-  @Field(() => String)
-  workspaceId!: string;
-
-  @Field(() => String, { nullable: true })
-  docId?: string;
-
   @Field(() => String, {
     description: 'The prompt name to use for the session',
   })
@@ -77,12 +71,6 @@ class UpdateChatSessionInput
 {
   @Field(() => String)
   sessionId!: string;
-
-  @Field(() => String, {
-    description: 'The workspace id of the session',
-    nullable: true,
-  })
-  docId!: string | null | undefined;
 
   @Field(() => Boolean, {
     description: 'Whether to pin the session',
@@ -248,12 +236,6 @@ class CopilotHistoriesType implements Omit<ChatHistory, 'userId'> {
   @Field(() => String)
   sessionId!: string;
 
-  @Field(() => String)
-  workspaceId!: string;
-
-  @Field(() => String, { nullable: true })
-  docId!: string | null;
-
   @Field(() => String, { nullable: true })
   parentSessionId!: string | null;
 
@@ -363,9 +345,6 @@ export class CopilotSessionType {
   @Field(() => ID)
   id!: string;
 
-  @Field(() => String, { nullable: true })
-  docId!: string | null;
-
   @Field(() => Boolean)
   pinned!: boolean;
 
@@ -388,10 +367,7 @@ export class CopilotSessionType {
 // ================== Resolver ==================
 
 @ObjectType('Copilot')
-export class CopilotType {
-  @Field(() => ID, { nullable: true })
-  workspaceId!: string | null;
-}
+export class CopilotType {}
 
 @Throttle()
 @Resolver(() => CopilotType)
@@ -412,40 +388,13 @@ export class CopilotResolver {
     return await this.chatSession.getQuota(user.id);
   }
 
-  private async assertPermission(
-    user: CurrentUser,
-    options: { workspaceId?: string | null; docId?: string | null }
-  ) {
-    const { workspaceId, docId } = options;
-    if (!workspaceId) {
-      throw new NotFoundException('Workspace not found');
-    }
-    if (docId) {
-      await this.ac
-        .user(user.id)
-        .doc({ workspaceId, docId })
-        .allowLocal()
-        .assert('Doc.Update');
-    } else {
-      await this.ac
-        .user(user.id)
-        .workspace(workspaceId)
-        .allowLocal()
-        .assert('Workspace.Copilot');
-    }
-    return { userId: user.id, workspaceId, docId: docId || undefined };
-  }
-
   @ResolveField(() => CopilotSessionType, {
     description: 'Get the session by id',
     complexity: 2,
   })
   async session(
-    @Parent() copilot: CopilotType,
-    @CurrentUser() user: CurrentUser,
     @Args('sessionId') sessionId: string
   ): Promise<CopilotSessionType> {
-    await this.assertPermission(user, copilot);
     const session = await this.chatSession.getSessionInfo(sessionId);
     if (!session) {
       throw new NotFoundException('Session not found');
@@ -459,35 +408,15 @@ export class CopilotResolver {
     complexity: 2,
   })
   async sessions(
-    @Parent() copilot: CopilotType,
+    @Parent() _copilot: CopilotType,
     @CurrentUser() user: CurrentUser,
-    @Args('docId', { nullable: true }) maybeDocId?: string,
     @Args('options', { nullable: true }) options?: QueryChatSessionsInput
   ): Promise<CopilotSessionType[]> {
-    if (!copilot.workspaceId) {
-      return [];
-    }
-
-    const appendOptions = await this.assertPermission(
-      user,
-      Object.assign({}, copilot, { docId: maybeDocId })
-    );
-
     const sessions = await this.chatSession.list(
-      Object.assign({}, options, appendOptions),
+      Object.assign({}, options, { userId: user.id }),
       false
     );
-    if (appendOptions.docId) {
-      type Session = ChatHistory & { docId: string };
-      const filtered = sessions.filter((s): s is Session => !!s.docId);
-      const accessible = await this.ac
-        .user(user.id)
-        .workspace(copilot.workspaceId)
-        .docs(filtered, 'Doc.Update');
-      return accessible.map(this.transformToSessionType);
-    } else {
-      return sessions.map(this.transformToSessionType);
-    }
+    return sessions.map(this.transformToSessionType);
   }
 
   @ResolveField(() => [CopilotHistoriesType], {
@@ -495,20 +424,12 @@ export class CopilotResolver {
   })
   @CallMetric('ai', 'histories')
   async histories(
-    @Parent() copilot: CopilotType,
+    @Parent() _copilot: CopilotType,
     @CurrentUser() user: CurrentUser,
-    @Args('docId', { nullable: true }) docId?: string,
     @Args('options', { nullable: true }) options?: QueryChatHistoriesInput
   ): Promise<CopilotHistoriesType[]> {
-    const workspaceId = copilot.workspaceId;
-    if (!workspaceId) {
-      return [];
-    } else {
-      await this.assertPermission(user, { workspaceId, docId });
-    }
-
     const histories = await this.chatSession.list(
-      Object.assign({}, options, { userId: user.id, workspaceId, docId }),
+      Object.assign({}, options, { userId: user.id }),
       true
     );
 
@@ -524,23 +445,15 @@ export class CopilotResolver {
   @ResolveField(() => PaginatedCopilotHistoriesType, {})
   @CallMetric('ai', 'histories')
   async chats(
-    @Parent() copilot: CopilotType,
+    @Parent() _copilot: CopilotType,
     @CurrentUser() user: CurrentUser,
     @Args('pagination', PaginationInput.decode) pagination: PaginationInput,
-    @Args('docId', { nullable: true }) docId?: string,
     @Args('options', { nullable: true }) options?: QueryChatHistoriesInput
   ): Promise<PaginatedCopilotHistoriesType> {
-    const workspaceId = copilot.workspaceId;
-    if (!workspaceId) {
-      return paginate([], 'updatedAt', pagination, 0);
-    } else {
-      await this.assertPermission(user, { workspaceId, docId });
-    }
-
     const finalOptions = Object.assign(
       {},
       options,
-      { userId: user.id, workspaceId, docId },
+      { userId: user.id },
       { skip: pagination.offset, limit: pagination.first }
     );
     const totalCount = await this.chatSession.count(finalOptions);
@@ -572,10 +485,7 @@ export class CopilotResolver {
     @Args({ name: 'options', type: () => CreateChatSessionInput })
     options: CreateChatSessionInput
   ): Promise<string> {
-    // permission check based on session type
-    await this.assertPermission(user, options);
-
-    const lockFlag = `${COPILOT_LOCKER}:session:${user.id}:${options.workspaceId}`;
+    const lockFlag = `${COPILOT_LOCKER}:session:${user.id}`;
     await using lock = await this.mutex.acquire(lockFlag);
     if (!lock) {
       throw new TooManyRequest('Server is busy');
@@ -586,7 +496,6 @@ export class CopilotResolver {
     return await this.chatSession.create({
       ...options,
       pinned: options.pinned ?? false,
-      docId: options.docId ?? null,
       userId: user.id,
     });
   }
@@ -601,19 +510,11 @@ export class CopilotResolver {
     options: UpdateChatSessionInput
   ): Promise<string> {
     const session = await this.chatSession.get(options.sessionId);
-    if (!session) {
+    if (!session || session.config.userId !== user.id) {
       throw new CopilotSessionNotFound();
     }
 
-    const config = await this.assertPermission(user, session.config);
-    const { workspaceId, docId: currentDocId } = config;
-    const { docId: newDocId } = options;
-    // check permission if the docId is changed
-    if (newDocId !== undefined && newDocId !== currentDocId) {
-      await this.assertPermission(user, { workspaceId, docId: newDocId });
-    }
-
-    const lockFlag = `${COPILOT_LOCKER}:session:${user.id}:${workspaceId}`;
+    const lockFlag = `${COPILOT_LOCKER}:session:${user.id}`;
     await using lock = await this.mutex.acquire(lockFlag);
     if (!lock) {
       throw new TooManyRequest('Server is busy');
@@ -701,8 +602,6 @@ export class CopilotResolver {
 
     const attachments: PromptMessage['attachments'] = options.attachments || [];
     if (options.blob || options.blobs) {
-      const { workspaceId } = session.config;
-
       const blobs = await Promise.all(
         options.blob ? [options.blob] : options.blobs || []
       );
@@ -716,7 +615,6 @@ export class CopilotResolver {
           .digest('base64url');
         const attachment = await this.storage.put(
           user.id,
-          workspaceId,
           filename,
           uploaded.buffer
         );

@@ -19,4 +19,3 @@ import { QuotaService } from './service';
 export class QuotaModule {}
 
 export { QuotaService };
-export { WorkspaceQuotaHumanReadableType, WorkspaceQuotaType } from './types';

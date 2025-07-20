@@ -15,7 +15,6 @@ import GraphQLUpload, {
 
 import {
   BlobQuotaExceeded,
-  CopilotEmbeddingUnavailable,
   CopilotFailedToAddWorkspaceFileEmbedding,
   Mutex,
   paginate,
@@ -24,22 +23,16 @@ import {
   UserFriendlyError,
 } from '../../../base';
 import { CurrentUser } from '../../../core/auth';
-import { AccessController } from '../../../core/permission';
-import { WorkspaceType } from '../../../core/workspaces';
+import { UserType } from '../../../core/user';
 import { COPILOT_LOCKER } from '../resolver';
 import { MAX_EMBEDDABLE_SIZE } from '../types';
-import { CopilotWorkspaceService } from './service';
-import {
-  CopilotWorkspaceFileType,
-  CopilotWorkspaceIgnoredDocType,
-  PaginatedCopilotWorkspaceFileType,
-  PaginatedIgnoredDocsType,
-} from './types';
+import { CopilotUserService } from './service';
+import { CopilotUserFileType, PaginatedCopilotUserFileType } from './types';
 
 @ObjectType('CopilotWorkspaceConfig')
-export class CopilotWorkspaceConfigType {
+export class CopilotUserConfigType {
   @Field(() => String)
-  workspaceId!: string;
+  userId!: string;
 }
 
 /**
@@ -47,103 +40,41 @@ export class CopilotWorkspaceConfigType {
  * Public apis rate limit: 10 req/m
  * Other rate limit: 120 req/m
  */
-@Resolver(() => WorkspaceType)
-export class CopilotWorkspaceEmbeddingResolver {
-  constructor(private readonly ac: AccessController) {}
-
-  @ResolveField(() => CopilotWorkspaceConfigType, {
+@Resolver(() => UserType)
+export class CopilotUserEmbeddingResolver {
+  @ResolveField(() => CopilotUserConfigType, {
     complexity: 2,
   })
   async embedding(
-    @CurrentUser() user: CurrentUser,
-    @Parent() workspace: WorkspaceType
-  ): Promise<CopilotWorkspaceConfigType> {
-    await this.ac
-      .user(user.id)
-      .workspace(workspace.id)
-      .assert('Workspace.Read');
-
-    return { workspaceId: workspace.id };
+    @CurrentUser() user: CurrentUser
+  ): Promise<CopilotUserConfigType> {
+    return { userId: user.id };
   }
 }
 
-@Resolver(() => CopilotWorkspaceConfigType)
-export class CopilotWorkspaceEmbeddingConfigResolver {
+@Resolver(() => CopilotUserConfigType)
+export class CopilotUserEmbeddingConfigResolver {
   constructor(
-    private readonly ac: AccessController,
     private readonly mutex: Mutex,
-    private readonly copilotWorkspace: CopilotWorkspaceService
+    private readonly copilotUser: CopilotUserService
   ) {}
 
-  @ResolveField(() => PaginatedIgnoredDocsType, {
-    complexity: 2,
-  })
-  async ignoredDocs(
-    @Parent() config: CopilotWorkspaceConfigType,
-    @Args('pagination', PaginationInput.decode) pagination: PaginationInput
-  ): Promise<PaginatedIgnoredDocsType> {
-    const [ignoredDocs, totalCount] =
-      await this.copilotWorkspace.listIgnoredDocs(
-        config.workspaceId,
-        pagination
-      );
-
-    return paginate(ignoredDocs, 'createdAt', pagination, totalCount);
-  }
-
-  @ResolveField(() => [CopilotWorkspaceIgnoredDocType], {
-    complexity: 2,
-  })
-  async allIgnoredDocs(
-    @Parent() config: CopilotWorkspaceConfigType
-  ): Promise<CopilotWorkspaceIgnoredDocType[]> {
-    const [ignoredDocs] = await this.copilotWorkspace.listIgnoredDocs(
-      config.workspaceId
-    );
-
-    return ignoredDocs;
-  }
-  @Mutation(() => Number, {
-    name: 'updateWorkspaceEmbeddingIgnoredDocs',
-    complexity: 2,
-    description: 'Update ignored docs',
-  })
-  async updateIgnoredDocs(
-    @CurrentUser() user: CurrentUser,
-    @Args('workspaceId', { type: () => String })
-    workspaceId: string,
-    @Args('add', { type: () => [String], nullable: true })
-    add?: string[],
-    @Args('remove', { type: () => [String], nullable: true })
-    remove?: string[]
-  ): Promise<number> {
-    await this.ac
-      .user(user.id)
-      .workspace(workspaceId)
-      .assert('Workspace.Settings.Update');
-    return await this.copilotWorkspace.updateIgnoredDocs(
-      workspaceId,
-      add,
-      remove
-    );
-  }
-
-  @ResolveField(() => PaginatedCopilotWorkspaceFileType, {
+  @ResolveField(() => PaginatedCopilotUserFileType, {
     complexity: 2,
   })
   async files(
-    @Parent() config: CopilotWorkspaceConfigType,
+    @Parent() config: CopilotUserConfigType,
     @Args('pagination', PaginationInput.decode) pagination: PaginationInput
-  ): Promise<PaginatedCopilotWorkspaceFileType> {
-    const [files, totalCount] = await this.copilotWorkspace.listFiles(
-      config.workspaceId,
+  ): Promise<PaginatedCopilotUserFileType> {
+    const [files, totalCount] = await this.copilotUser.listFiles(
+      config.userId,
       pagination
     );
 
     return paginate(files, 'createdAt', pagination, totalCount);
   }
 
-  @Mutation(() => CopilotWorkspaceFileType, {
+  @Mutation(() => CopilotUserFileType, {
     name: 'addWorkspaceEmbeddingFiles',
     complexity: 2,
     description: 'Update workspace embedding files',
@@ -151,21 +82,11 @@ export class CopilotWorkspaceEmbeddingConfigResolver {
   async addFiles(
     @Context() ctx: { req: Request },
     @CurrentUser() user: CurrentUser,
-    @Args('workspaceId', { type: () => String })
-    workspaceId: string,
+
     @Args({ name: 'blob', type: () => GraphQLUpload })
     content: FileUpload
-  ): Promise<CopilotWorkspaceFileType> {
-    await this.ac
-      .user(user.id)
-      .workspace(workspaceId)
-      .assert('Workspace.Settings.Update');
-
-    if (!this.copilotWorkspace.canEmbedding) {
-      throw new CopilotEmbeddingUnavailable();
-    }
-
-    const lockFlag = `${COPILOT_LOCKER}:workspace:${workspaceId}`;
+  ): Promise<CopilotUserFileType> {
+    const lockFlag = `${COPILOT_LOCKER}:user:${user.id}`;
     await using lock = await this.mutex.acquire(lockFlag);
     if (!lock) {
       throw new TooManyRequest('Server is busy');
@@ -177,14 +98,9 @@ export class CopilotWorkspaceEmbeddingConfigResolver {
     }
 
     try {
-      const { blobId, file } = await this.copilotWorkspace.addFile(
-        user.id,
-        workspaceId,
-        content
-      );
-      await this.copilotWorkspace.queueFileEmbedding({
+      const { blobId, file } = await this.copilotUser.addFile(user.id, content);
+      await this.copilotUser.queueFileEmbedding({
         userId: user.id,
-        workspaceId,
         blobId,
         fileId: file.fileId,
         fileName: file.fileName,
@@ -203,22 +119,15 @@ export class CopilotWorkspaceEmbeddingConfigResolver {
   }
 
   @Mutation(() => Boolean, {
-    name: 'removeWorkspaceEmbeddingFiles',
+    name: 'removeUserEmbeddingFiles',
     complexity: 2,
-    description: 'Remove workspace embedding files',
+    description: 'Remove user embedding files',
   })
   async removeFiles(
     @CurrentUser() user: CurrentUser,
-    @Args('workspaceId', { type: () => String })
-    workspaceId: string,
     @Args('fileId', { type: () => String })
     fileId: string
   ): Promise<boolean> {
-    await this.ac
-      .user(user.id)
-      .workspace(workspaceId)
-      .assert('Workspace.Settings.Update');
-
-    return await this.copilotWorkspace.removeFile(workspaceId, fileId);
+    return await this.copilotUser.removeFile(user.id, fileId);
   }
 }

@@ -6,7 +6,6 @@ import { ServerConfigModule } from '../../core';
 import { FeatureModule } from '../../core/features';
 import { PermissionModule } from '../../core/permission';
 import { QuotaModule } from '../../core/quota';
-import { WorkspaceModule } from '../../core/workspaces';
 import {
   CopilotContextResolver,
   CopilotContextRootResolver,
@@ -31,19 +30,13 @@ import {
 } from './transcript';
 import { CopilotWorkflowExecutors, CopilotWorkflowService } from './workflow';
 import {
-  CopilotWorkspaceEmbeddingConfigResolver,
-  CopilotWorkspaceEmbeddingResolver,
-  CopilotWorkspaceService,
+  CopilotUserEmbeddingConfigResolver,
+  CopilotUserEmbeddingResolver,
+  CopilotUserService,
 } from './workspace';
 
 @Module({
-  imports: [
-    FeatureModule,
-    QuotaModule,
-    PermissionModule,
-    ServerConfigModule,
-    WorkspaceModule,
-  ],
+  imports: [FeatureModule, QuotaModule, PermissionModule, ServerConfigModule],
   providers: [
     // providers
     ...CopilotProviders,
@@ -67,9 +60,9 @@ import {
     CopilotTranscriptionService,
     CopilotTranscriptionResolver,
     // workspace embeddings
-    CopilotWorkspaceService,
-    CopilotWorkspaceEmbeddingResolver,
-    CopilotWorkspaceEmbeddingConfigResolver,
+    CopilotUserService,
+    CopilotUserEmbeddingConfigResolver,
+    CopilotUserEmbeddingResolver,
     // gql resolvers
     UserCopilotResolver,
     PromptsManagementResolver,

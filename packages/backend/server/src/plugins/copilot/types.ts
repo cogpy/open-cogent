@@ -48,8 +48,6 @@ export const ChatHistorySchema = z
   .object({
     userId: z.string(),
     sessionId: z.string(),
-    workspaceId: z.string(),
-    docId: z.string().nullable(),
     parentSessionId: z.string().nullable(),
     pinned: z.boolean(),
     title: z.string().nullable(),
@@ -78,21 +76,21 @@ export type SubmittedMessage = z.infer<typeof SubmittedMessageSchema>;
 
 export type ChatSessionOptions = Pick<
   ChatHistory,
-  'userId' | 'workspaceId' | 'docId' | 'promptName' | 'pinned'
+  'userId' | 'promptName' | 'pinned'
 > & {
   reuseLatestChat?: boolean;
 };
 
 export type ChatSessionForkOptions = Pick<
   ChatHistory,
-  'userId' | 'sessionId' | 'workspaceId' | 'docId'
+  'userId' | 'sessionId'
 > & {
   latestMessageId?: string;
 };
 
 export type ChatSessionState = Pick<
   ChatHistory,
-  'userId' | 'sessionId' | 'workspaceId' | 'docId' | 'messages'
+  'userId' | 'sessionId' | 'messages'
 > & {
   prompt: ChatPrompt;
 };

@@ -8,8 +8,10 @@ import {
   ParseDocUrlExtension,
 } from '@blocksuite/affine/shared/services';
 import type { ExtensionType, Store, Workspace } from '@blocksuite/affine/store';
+import { CodeBlockPreviewExtension } from '@blocksuite/affine/blocks/code';
 import { type TestAffineEditorContainer } from '@blocksuite/integration-test';
 import { getTestViewManager } from '@blocksuite/integration-test/view';
+import { html } from 'lit';
 
 import {
   mockDocModeService,
@@ -33,6 +35,13 @@ export function getTestCommonExtensions(
         di.override(DocModeProvider, mockDocModeService(editor));
       },
     },
+    // HTML 代码块预览扩展
+    CodeBlockPreviewExtension('html', model => {
+      const code = model.props.text.toString();
+      if (!code.trim()) return null;
+
+      return html` <div .innerHTML=${code}></div> `;
+    }),
     // CommentProviderExtension(mockCommentProvider()),
   ];
 }

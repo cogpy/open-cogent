@@ -32,6 +32,7 @@ export const CalloutBlockSchema = defineBlockSchema({
       'affine:list',
       'affine:edgeless-text',
       'affine:transcription',
+      'affine:column',
     ],
     children: ['affine:paragraph', 'affine:list'],
   },

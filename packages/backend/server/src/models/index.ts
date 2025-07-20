@@ -7,16 +7,12 @@ import {
 import { ModuleRef } from '@nestjs/core';
 
 import { ApplyType } from '../base';
-import { BlobModel } from './blob';
-import { CommentModel } from './comment';
-import { CommentAttachmentModel } from './comment-attachment';
 import { AppConfigModel } from './config';
 import { CopilotContextModel } from './copilot-context';
 import { CopilotJobModel } from './copilot-job';
 import { CopilotSessionModel } from './copilot-session';
 import { CopilotUserConfigModel } from './copilot-user';
 import { FeatureModel } from './feature';
-import { HistoryModel } from './history';
 import { MODELS_SYMBOL } from './provider';
 import { SessionModel } from './session';
 import { UserModel } from './user';
@@ -30,16 +26,12 @@ const MODELS = {
   verificationToken: VerificationTokenModel,
   feature: FeatureModel,
   userFeature: UserFeatureModel,
-  history: HistoryModel,
   userSettings: UserSettingsModel,
   copilotSession: CopilotSessionModel,
   copilotContext: CopilotContextModel,
   copilotUser: CopilotUserConfigModel,
   copilotJob: CopilotJobModel,
   appConfig: AppConfigModel,
-  comment: CommentModel,
-  commentAttachment: CommentAttachmentModel,
-  blob: BlobModel,
 };
 
 type ModelsType = {
@@ -91,16 +83,12 @@ const ModelsSymbolProvider: ExistingProvider = {
 })
 export class ModelsModule {}
 
-export * from './blob';
-export * from './comment';
-export * from './comment-attachment';
 export * from './common';
 export * from './copilot-context';
 export * from './copilot-job';
 export * from './copilot-session';
 export * from './copilot-user';
 export * from './feature';
-export * from './history';
 export * from './session';
 export * from './user';
 export * from './user-feature';

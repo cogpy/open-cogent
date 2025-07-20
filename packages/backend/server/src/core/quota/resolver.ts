@@ -3,7 +3,7 @@ import { ResolveField, Resolver } from '@nestjs/graphql';
 import { CurrentUser } from '../auth/session';
 import { UserType } from '../user';
 import { QuotaService } from './service';
-import { UserQuotaType, UserQuotaUsageType } from './types';
+import { UserQuotaType } from './types';
 
 @Resolver(() => UserType)
 export class QuotaResolver {
@@ -16,17 +16,6 @@ export class QuotaResolver {
     return {
       ...quota,
       humanReadable: this.quota.formatUserQuota(quota),
-    };
-  }
-
-  @ResolveField(() => UserQuotaUsageType, { name: 'quotaUsage' })
-  async getQuotaUsage(
-    @CurrentUser() me: UserType
-  ): Promise<UserQuotaUsageType> {
-    const usage = await this.quota.getUserStorageUsage(me.id);
-
-    return {
-      storageQuota: usage,
     };
   }
 }

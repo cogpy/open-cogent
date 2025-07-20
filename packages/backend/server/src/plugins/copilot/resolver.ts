@@ -100,9 +100,6 @@ class CreateChatMessageInput implements Omit<SubmittedMessage, 'content'> {
   @Field(() => String, { nullable: true })
   content!: string | undefined;
 
-  @Field(() => [String], { nullable: true, deprecationReason: 'use blobs' })
-  attachments!: string[] | undefined;
-
   @Field(() => GraphQLUpload, { nullable: true })
   blob!: Promise<FileUpload> | undefined;
 
@@ -350,7 +347,7 @@ export class CopilotResolver {
 
   @ResolveField(() => CopilotQuotaType, {
     name: 'quota',
-    description: 'Get the quota of the user in the workspace',
+    description: 'Get the quota of the user',
     complexity: 2,
   })
   async getQuota(@CurrentUser() user: CurrentUser): Promise<CopilotQuotaType> {
@@ -369,46 +366,6 @@ export class CopilotResolver {
       throw new NotFoundException('Session not found');
     }
     return this.transformToSessionType(session);
-  }
-
-  @ResolveField(() => [CopilotSessionType], {
-    description: 'Get the session list in the workspace',
-    deprecationReason: 'use `chats` instead',
-    complexity: 2,
-  })
-  async sessions(
-    @Parent() _copilot: CopilotType,
-    @CurrentUser() user: CurrentUser,
-    @Args('options', { nullable: true }) options?: QueryChatSessionsInput
-  ): Promise<CopilotSessionType[]> {
-    const sessions = await this.chatSession.list(
-      Object.assign({}, options, { userId: user.id }),
-      false
-    );
-    return sessions.map(this.transformToSessionType);
-  }
-
-  @ResolveField(() => [CopilotHistoriesType], {
-    deprecationReason: 'use `chats` instead',
-  })
-  @CallMetric('ai', 'histories')
-  async histories(
-    @Parent() _copilot: CopilotType,
-    @CurrentUser() user: CurrentUser,
-    @Args('options', { nullable: true }) options?: QueryChatHistoriesInput
-  ): Promise<CopilotHistoriesType[]> {
-    const histories = await this.chatSession.list(
-      Object.assign({}, options, { userId: user.id }),
-      true
-    );
-
-    return histories.map(h => ({
-      ...h,
-      // filter out empty messages
-      messages: h.messages.filter(
-        m => m.content || m.attachments?.length
-      ) as ChatMessageType[],
-    }));
   }
 
   @ResolveField(() => PaginatedCopilotHistoriesType, {})
@@ -539,7 +496,7 @@ export class CopilotResolver {
       throw new BadRequestException('Session not found');
     }
 
-    const attachments: PromptMessage['attachments'] = options.attachments || [];
+    const attachments: PromptMessage['attachments'] = [];
     if (options.blob || options.blobs) {
       const blobs = await Promise.all(
         options.blob ? [options.blob] : options.blobs || []

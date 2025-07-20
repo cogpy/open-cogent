@@ -15,8 +15,5 @@ query quota {
         copilotLimit
       }
     }
-    quotaUsage {
-      storageQuota
-    }
   }
 }

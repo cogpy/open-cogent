@@ -695,11 +695,11 @@ ${copilotChatHistoryFragment}
 ${paginatedCopilotChatsFragment}`,
 };
 
-export const addWorkspaceEmbeddingFilesMutation = {
-  id: 'addWorkspaceEmbeddingFilesMutation' as const,
-  op: 'addWorkspaceEmbeddingFiles',
-  query: `mutation addWorkspaceEmbeddingFiles($blob: Upload!) {
-  addWorkspaceEmbeddingFiles(blob: $blob) {
+export const addUserEmbeddingFilesMutation = {
+  id: 'addUserEmbeddingFilesMutation' as const,
+  op: 'addUserEmbeddingFiles',
+  query: `mutation addUserEmbeddingFiles($blob: Upload!) {
+  addUserEmbeddingFiles(blob: $blob) {
     fileId
     fileName
     blobId
@@ -782,12 +782,8 @@ export const getCurrentUserQuery = {
     email
     emailVerified
     avatarUrl
-    token {
-      sessionToken
-    }
   }
 }`,
-  deprecations: ["'token' is deprecated: use [/api/auth/sign-in?native=true] instead"],
 };
 
 export const oauthProvidersQuery = {
@@ -878,12 +874,8 @@ export const quotaQuery = {
         copilotLimit
       }
     }
-    quotaUsage {
-      storageQuota
-    }
   }
 }`,
-  deprecations: ["'storageQuota' is deprecated: use `UserQuotaType['usedStorageQuota']` instead"],
 };
 
 export const removeAvatarMutation = {

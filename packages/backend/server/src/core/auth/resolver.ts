@@ -3,14 +3,11 @@ import {
   Field,
   Mutation,
   ObjectType,
-  Parent,
   Query,
-  ResolveField,
   Resolver,
 } from '@nestjs/graphql';
 
 import {
-  ActionForbidden,
   EmailAlreadyUsed,
   EmailTokenNotFound,
   EmailVerificationRequired,
@@ -59,27 +56,6 @@ export class AuthResolver {
   })
   currentUser(@CurrentUser() user?: CurrentUser): UserType | undefined {
     return user;
-  }
-
-  @ResolveField(() => ClientTokenType, {
-    name: 'token',
-    deprecationReason: 'use [/api/auth/sign-in?native=true] instead',
-  })
-  async clientToken(
-    @CurrentUser() currentUser: CurrentUser,
-    @Parent() user: UserType
-  ): Promise<ClientTokenType> {
-    if (user.id !== currentUser.id) {
-      throw new ActionForbidden();
-    }
-
-    const userSession = await this.auth.createUserSession(user.id);
-
-    return {
-      sessionToken: userSession.sessionId,
-      token: userSession.sessionId,
-      refresh: '',
-    };
   }
 
   @Public()
@@ -143,12 +119,7 @@ export class AuthResolver {
   @Mutation(() => Boolean)
   async sendChangePasswordEmail(
     @CurrentUser() user: CurrentUser,
-    @Args('callbackUrl') callbackUrl: string,
-    @Args('email', {
-      nullable: true,
-      deprecationReason: 'fetched from signed in user',
-    })
-    _email?: string
+    @Args('callbackUrl') callbackUrl: string
   ) {
     if (!user.emailVerified) {
       throw new EmailVerificationRequired();
@@ -167,12 +138,7 @@ export class AuthResolver {
   @Mutation(() => Boolean)
   async sendSetPasswordEmail(
     @CurrentUser() user: CurrentUser,
-    @Args('callbackUrl') callbackUrl: string,
-    @Args('email', {
-      nullable: true,
-      deprecationReason: 'fetched from signed in user',
-    })
-    _email?: string
+    @Args('callbackUrl') callbackUrl: string
   ) {
     return this.sendChangePasswordEmail(user, callbackUrl);
   }

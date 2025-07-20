@@ -49,11 +49,6 @@ export enum AiJobStatus {
   running = 'running',
 }
 
-export interface AlreadyInSpaceDataType {
-  __typename?: 'AlreadyInSpaceDataType';
-  spaceId: Scalars['String']['output'];
-}
-
 export interface AppConfigValidateResult {
   __typename?: 'AppConfigValidateResult';
   error: Maybe<Scalars['String']['output']>;
@@ -116,17 +111,10 @@ export interface Copilot {
   contexts: Array<CopilotContext>;
   /** query user embedding status */
   embeddingStatus: ContextUserEmbeddingStatus;
-  /** @deprecated use `chats` instead */
-  histories: Array<CopilotHistories>;
-  /** Get the quota of the user in the workspace */
+  /** Get the quota of the user */
   quota: CopilotQuota;
   /** Get the session by id */
   session: CopilotSessionType;
-  /**
-   * Get the session list in the workspace
-   * @deprecated use `chats` instead
-   */
-  sessions: Array<CopilotSessionType>;
   userId: Scalars['String']['output'];
 }
 
@@ -145,16 +133,8 @@ export interface CopilotContextsArgs {
   sessionId?: InputMaybe<Scalars['String']['input']>;
 }
 
-export interface CopilotHistoriesArgs {
-  options?: InputMaybe<QueryChatHistoriesInput>;
-}
-
 export interface CopilotSessionArgs {
   sessionId: Scalars['String']['input'];
-}
-
-export interface CopilotSessionsArgs {
-  options?: InputMaybe<QueryChatSessionsInput>;
 }
 
 export interface CopilotContext {
@@ -197,8 +177,8 @@ export interface CopilotDocNotFoundDataType {
   docId: Scalars['String']['output'];
 }
 
-export interface CopilotFailedToAddWorkspaceFileEmbeddingDataType {
-  __typename?: 'CopilotFailedToAddWorkspaceFileEmbeddingDataType';
+export interface CopilotFailedToAddUserFileEmbeddingDataType {
+  __typename?: 'CopilotFailedToAddUserFileEmbeddingDataType';
   message: Scalars['String']['output'];
 }
 
@@ -338,6 +318,16 @@ export interface CopilotSessionType {
   title: Maybe<Scalars['String']['output']>;
 }
 
+export interface CopilotUserConfig {
+  __typename?: 'CopilotUserConfig';
+  files: PaginatedCopilotUserFile;
+  userId: Scalars['String']['output'];
+}
+
+export interface CopilotUserConfigFilesArgs {
+  pagination: PaginationInput;
+}
+
 export interface CopilotUserFile {
   __typename?: 'CopilotUserFile';
   blobId: Scalars['String']['output'];
@@ -355,18 +345,7 @@ export interface CopilotUserFileTypeEdge {
   node: CopilotUserFile;
 }
 
-export interface CopilotWorkspaceConfig {
-  __typename?: 'CopilotWorkspaceConfig';
-  files: PaginatedCopilotUserFile;
-  userId: Scalars['String']['output'];
-}
-
-export interface CopilotWorkspaceConfigFilesArgs {
-  pagination: PaginationInput;
-}
-
 export interface CreateChatMessageInput {
-  attachments?: InputMaybe<Array<Scalars['String']['input']>>;
   blob?: InputMaybe<Scalars['Upload']['input']>;
   blobs?: InputMaybe<Array<Scalars['Upload']['input']>>;
   content?: InputMaybe<Scalars['String']['input']>;
@@ -411,38 +390,11 @@ export interface DeleteSessionInput {
   sessionIds: Array<Scalars['String']['input']>;
 }
 
-export interface DocActionDeniedDataType {
-  __typename?: 'DocActionDeniedDataType';
-  action: Scalars['String']['output'];
-  docId: Scalars['String']['output'];
-  spaceId: Scalars['String']['output'];
-}
-
-export interface DocHistoryNotFoundDataType {
-  __typename?: 'DocHistoryNotFoundDataType';
-  docId: Scalars['String']['output'];
-  spaceId: Scalars['String']['output'];
-  timestamp: Scalars['Int']['output'];
-}
-
-export interface DocNotFoundDataType {
-  __typename?: 'DocNotFoundDataType';
-  docId: Scalars['String']['output'];
-  spaceId: Scalars['String']['output'];
-}
-
-export interface DocUpdateBlockedDataType {
-  __typename?: 'DocUpdateBlockedDataType';
-  docId: Scalars['String']['output'];
-  spaceId: Scalars['String']['output'];
-}
-
 export type ErrorDataUnion =
-  | AlreadyInSpaceDataType
   | BlobNotFoundDataType
   | CopilotContextFileNotSupportedDataType
   | CopilotDocNotFoundDataType
-  | CopilotFailedToAddWorkspaceFileEmbeddingDataType
+  | CopilotFailedToAddUserFileEmbeddingDataType
   | CopilotFailedToGenerateEmbeddingDataType
   | CopilotFailedToMatchContextDataType
   | CopilotFailedToMatchGlobalContextDataType
@@ -452,77 +404,40 @@ export type ErrorDataUnion =
   | CopilotPromptNotFoundDataType
   | CopilotProviderNotSupportedDataType
   | CopilotProviderSideErrorDataType
-  | DocActionDeniedDataType
-  | DocHistoryNotFoundDataType
-  | DocNotFoundDataType
-  | DocUpdateBlockedDataType
-  | ExpectToGrantDocUserRolesDataType
-  | ExpectToRevokeDocUserRolesDataType
-  | ExpectToUpdateDocUserRoleDataType
   | GraphqlBadRequestDataType
   | HttpRequestErrorDataType
   | InvalidAppConfigDataType
   | InvalidAppConfigInputDataType
   | InvalidEmailDataType
-  | InvalidHistoryTimestampDataType
-  | InvalidIndexerInputDataType
-  | InvalidLicenseToActivateDataType
-  | InvalidLicenseUpdateParamsDataType
   | InvalidOauthCallbackCodeDataType
   | InvalidOauthResponseDataType
   | InvalidPasswordLengthDataType
   | InvalidRuntimeConfigTypeDataType
-  | InvalidSearchProviderRequestDataType
-  | MemberNotFoundInSpaceDataType
-  | MentionUserDocAccessDeniedDataType
   | MissingOauthQueryParameterDataType
   | NoCopilotProviderAvailableDataType
-  | NoMoreSeatDataType
-  | NotInSpaceDataType
   | QueryTooLongDataType
   | RuntimeConfigNotFoundDataType
-  | SameSubscriptionRecurringDataType
-  | SpaceAccessDeniedDataType
-  | SpaceNotFoundDataType
-  | SpaceOwnerNotFoundDataType
-  | SpaceShouldHaveOnlyOneOwnerDataType
-  | SubscriptionAlreadyExistsDataType
-  | SubscriptionNotExistsDataType
-  | SubscriptionPlanNotFoundDataType
   | UnknownOauthProviderDataType
   | UnsupportedClientVersionDataType
-  | UnsupportedSubscriptionPlanDataType
   | ValidationErrorDataType
-  | VersionRejectedDataType
-  | WorkspacePermissionNotFoundDataType
   | WrongSignInCredentialsDataType;
 
 export enum ErrorNames {
   ACCESS_DENIED = 'ACCESS_DENIED',
   ACTION_FORBIDDEN = 'ACTION_FORBIDDEN',
-  ACTION_FORBIDDEN_ON_NON_TEAM_WORKSPACE = 'ACTION_FORBIDDEN_ON_NON_TEAM_WORKSPACE',
-  ALREADY_IN_SPACE = 'ALREADY_IN_SPACE',
   AUTHENTICATION_REQUIRED = 'AUTHENTICATION_REQUIRED',
   BAD_REQUEST = 'BAD_REQUEST',
   BLOB_NOT_FOUND = 'BLOB_NOT_FOUND',
   BLOB_QUOTA_EXCEEDED = 'BLOB_QUOTA_EXCEEDED',
-  CANNOT_DELETE_ACCOUNT_WITH_OWNED_TEAM_WORKSPACE = 'CANNOT_DELETE_ACCOUNT_WITH_OWNED_TEAM_WORKSPACE',
   CANNOT_DELETE_ALL_ADMIN_ACCOUNT = 'CANNOT_DELETE_ALL_ADMIN_ACCOUNT',
   CANNOT_DELETE_OWN_ACCOUNT = 'CANNOT_DELETE_OWN_ACCOUNT',
-  CANT_UPDATE_ONETIME_PAYMENT_SUBSCRIPTION = 'CANT_UPDATE_ONETIME_PAYMENT_SUBSCRIPTION',
-  CAN_NOT_BATCH_GRANT_DOC_OWNER_PERMISSIONS = 'CAN_NOT_BATCH_GRANT_DOC_OWNER_PERMISSIONS',
-  CAN_NOT_REVOKE_YOURSELF = 'CAN_NOT_REVOKE_YOURSELF',
   CAPTCHA_VERIFICATION_FAILED = 'CAPTCHA_VERIFICATION_FAILED',
-  COMMENT_ATTACHMENT_NOT_FOUND = 'COMMENT_ATTACHMENT_NOT_FOUND',
-  COMMENT_ATTACHMENT_QUOTA_EXCEEDED = 'COMMENT_ATTACHMENT_QUOTA_EXCEEDED',
-  COMMENT_NOT_FOUND = 'COMMENT_NOT_FOUND',
   COPILOT_ACTION_TAKEN = 'COPILOT_ACTION_TAKEN',
   COPILOT_CONTEXT_FILE_NOT_SUPPORTED = 'COPILOT_CONTEXT_FILE_NOT_SUPPORTED',
   COPILOT_DOCS_NOT_FOUND = 'COPILOT_DOCS_NOT_FOUND',
   COPILOT_DOC_NOT_FOUND = 'COPILOT_DOC_NOT_FOUND',
-  COPILOT_EMBEDDING_DISABLED = 'COPILOT_EMBEDDING_DISABLED',
   COPILOT_EMBEDDING_UNAVAILABLE = 'COPILOT_EMBEDDING_UNAVAILABLE',
-  COPILOT_FAILED_TO_ADD_WORKSPACE_FILE_EMBEDDING = 'COPILOT_FAILED_TO_ADD_WORKSPACE_FILE_EMBEDDING',
+  COPILOT_FAILED_TO_ADD_USER_FILE_EMBEDDING = 'COPILOT_FAILED_TO_ADD_USER_FILE_EMBEDDING',
   COPILOT_FAILED_TO_CREATE_MESSAGE = 'COPILOT_FAILED_TO_CREATE_MESSAGE',
   COPILOT_FAILED_TO_GENERATE_EMBEDDING = 'COPILOT_FAILED_TO_GENERATE_EMBEDDING',
   COPILOT_FAILED_TO_GENERATE_TEXT = 'COPILOT_FAILED_TO_GENERATE_TEXT',
@@ -542,120 +457,47 @@ export enum ErrorNames {
   COPILOT_TRANSCRIPTION_AUDIO_NOT_PROVIDED = 'COPILOT_TRANSCRIPTION_AUDIO_NOT_PROVIDED',
   COPILOT_TRANSCRIPTION_JOB_EXISTS = 'COPILOT_TRANSCRIPTION_JOB_EXISTS',
   COPILOT_TRANSCRIPTION_JOB_NOT_FOUND = 'COPILOT_TRANSCRIPTION_JOB_NOT_FOUND',
-  CUSTOMER_PORTAL_CREATE_FAILED = 'CUSTOMER_PORTAL_CREATE_FAILED',
-  DOC_ACTION_DENIED = 'DOC_ACTION_DENIED',
-  DOC_DEFAULT_ROLE_CAN_NOT_BE_OWNER = 'DOC_DEFAULT_ROLE_CAN_NOT_BE_OWNER',
-  DOC_HISTORY_NOT_FOUND = 'DOC_HISTORY_NOT_FOUND',
-  DOC_IS_NOT_PUBLIC = 'DOC_IS_NOT_PUBLIC',
-  DOC_NOT_FOUND = 'DOC_NOT_FOUND',
-  DOC_UPDATE_BLOCKED = 'DOC_UPDATE_BLOCKED',
   EARLY_ACCESS_REQUIRED = 'EARLY_ACCESS_REQUIRED',
   EMAIL_ALREADY_USED = 'EMAIL_ALREADY_USED',
   EMAIL_SERVICE_NOT_CONFIGURED = 'EMAIL_SERVICE_NOT_CONFIGURED',
   EMAIL_TOKEN_NOT_FOUND = 'EMAIL_TOKEN_NOT_FOUND',
   EMAIL_VERIFICATION_REQUIRED = 'EMAIL_VERIFICATION_REQUIRED',
-  EXPECT_TO_GRANT_DOC_USER_ROLES = 'EXPECT_TO_GRANT_DOC_USER_ROLES',
-  EXPECT_TO_PUBLISH_DOC = 'EXPECT_TO_PUBLISH_DOC',
-  EXPECT_TO_REVOKE_DOC_USER_ROLES = 'EXPECT_TO_REVOKE_DOC_USER_ROLES',
-  EXPECT_TO_REVOKE_PUBLIC_DOC = 'EXPECT_TO_REVOKE_PUBLIC_DOC',
-  EXPECT_TO_UPDATE_DOC_USER_ROLE = 'EXPECT_TO_UPDATE_DOC_USER_ROLE',
-  FAILED_TO_CHECKOUT = 'FAILED_TO_CHECKOUT',
-  FAILED_TO_SAVE_UPDATES = 'FAILED_TO_SAVE_UPDATES',
-  FAILED_TO_UPSERT_SNAPSHOT = 'FAILED_TO_UPSERT_SNAPSHOT',
   GRAPHQL_BAD_REQUEST = 'GRAPHQL_BAD_REQUEST',
   HTTP_REQUEST_ERROR = 'HTTP_REQUEST_ERROR',
   INTERNAL_SERVER_ERROR = 'INTERNAL_SERVER_ERROR',
   INVALID_APP_CONFIG = 'INVALID_APP_CONFIG',
   INVALID_APP_CONFIG_INPUT = 'INVALID_APP_CONFIG_INPUT',
   INVALID_AUTH_STATE = 'INVALID_AUTH_STATE',
-  INVALID_CHECKOUT_PARAMETERS = 'INVALID_CHECKOUT_PARAMETERS',
   INVALID_EMAIL = 'INVALID_EMAIL',
   INVALID_EMAIL_TOKEN = 'INVALID_EMAIL_TOKEN',
-  INVALID_HISTORY_TIMESTAMP = 'INVALID_HISTORY_TIMESTAMP',
-  INVALID_INDEXER_INPUT = 'INVALID_INDEXER_INPUT',
-  INVALID_INVITATION = 'INVALID_INVITATION',
-  INVALID_LICENSE_SESSION_ID = 'INVALID_LICENSE_SESSION_ID',
-  INVALID_LICENSE_TO_ACTIVATE = 'INVALID_LICENSE_TO_ACTIVATE',
-  INVALID_LICENSE_UPDATE_PARAMS = 'INVALID_LICENSE_UPDATE_PARAMS',
   INVALID_OAUTH_CALLBACK_CODE = 'INVALID_OAUTH_CALLBACK_CODE',
   INVALID_OAUTH_CALLBACK_STATE = 'INVALID_OAUTH_CALLBACK_STATE',
   INVALID_OAUTH_RESPONSE = 'INVALID_OAUTH_RESPONSE',
   INVALID_PASSWORD_LENGTH = 'INVALID_PASSWORD_LENGTH',
   INVALID_RUNTIME_CONFIG_TYPE = 'INVALID_RUNTIME_CONFIG_TYPE',
-  INVALID_SEARCH_PROVIDER_REQUEST = 'INVALID_SEARCH_PROVIDER_REQUEST',
-  INVALID_SUBSCRIPTION_PARAMETERS = 'INVALID_SUBSCRIPTION_PARAMETERS',
-  LICENSE_EXPIRED = 'LICENSE_EXPIRED',
-  LICENSE_NOT_FOUND = 'LICENSE_NOT_FOUND',
-  LICENSE_REVEALED = 'LICENSE_REVEALED',
   LINK_EXPIRED = 'LINK_EXPIRED',
   MAILER_SERVICE_IS_NOT_CONFIGURED = 'MAILER_SERVICE_IS_NOT_CONFIGURED',
-  MEMBER_NOT_FOUND_IN_SPACE = 'MEMBER_NOT_FOUND_IN_SPACE',
-  MEMBER_QUOTA_EXCEEDED = 'MEMBER_QUOTA_EXCEEDED',
-  MENTION_USER_DOC_ACCESS_DENIED = 'MENTION_USER_DOC_ACCESS_DENIED',
-  MENTION_USER_ONESELF_DENIED = 'MENTION_USER_ONESELF_DENIED',
   MISSING_OAUTH_QUERY_PARAMETER = 'MISSING_OAUTH_QUERY_PARAMETER',
   NETWORK_ERROR = 'NETWORK_ERROR',
-  NEW_OWNER_IS_NOT_ACTIVE_MEMBER = 'NEW_OWNER_IS_NOT_ACTIVE_MEMBER',
-  NOTIFICATION_NOT_FOUND = 'NOTIFICATION_NOT_FOUND',
   NOT_FOUND = 'NOT_FOUND',
-  NOT_IN_SPACE = 'NOT_IN_SPACE',
   NO_COPILOT_PROVIDER_AVAILABLE = 'NO_COPILOT_PROVIDER_AVAILABLE',
-  NO_MORE_SEAT = 'NO_MORE_SEAT',
   OAUTH_ACCOUNT_ALREADY_CONNECTED = 'OAUTH_ACCOUNT_ALREADY_CONNECTED',
   OAUTH_STATE_EXPIRED = 'OAUTH_STATE_EXPIRED',
-  OWNER_CAN_NOT_LEAVE_WORKSPACE = 'OWNER_CAN_NOT_LEAVE_WORKSPACE',
   PASSWORD_REQUIRED = 'PASSWORD_REQUIRED',
   QUERY_TOO_LONG = 'QUERY_TOO_LONG',
-  REPLY_NOT_FOUND = 'REPLY_NOT_FOUND',
   RUNTIME_CONFIG_NOT_FOUND = 'RUNTIME_CONFIG_NOT_FOUND',
   SAME_EMAIL_PROVIDED = 'SAME_EMAIL_PROVIDED',
-  SAME_SUBSCRIPTION_RECURRING = 'SAME_SUBSCRIPTION_RECURRING',
-  SEARCH_PROVIDER_NOT_FOUND = 'SEARCH_PROVIDER_NOT_FOUND',
   SIGN_UP_FORBIDDEN = 'SIGN_UP_FORBIDDEN',
-  SPACE_ACCESS_DENIED = 'SPACE_ACCESS_DENIED',
-  SPACE_NOT_FOUND = 'SPACE_NOT_FOUND',
-  SPACE_OWNER_NOT_FOUND = 'SPACE_OWNER_NOT_FOUND',
-  SPACE_SHOULD_HAVE_ONLY_ONE_OWNER = 'SPACE_SHOULD_HAVE_ONLY_ONE_OWNER',
   STORAGE_QUOTA_EXCEEDED = 'STORAGE_QUOTA_EXCEEDED',
-  SUBSCRIPTION_ALREADY_EXISTS = 'SUBSCRIPTION_ALREADY_EXISTS',
-  SUBSCRIPTION_EXPIRED = 'SUBSCRIPTION_EXPIRED',
-  SUBSCRIPTION_HAS_BEEN_CANCELED = 'SUBSCRIPTION_HAS_BEEN_CANCELED',
-  SUBSCRIPTION_HAS_NOT_BEEN_CANCELED = 'SUBSCRIPTION_HAS_NOT_BEEN_CANCELED',
-  SUBSCRIPTION_NOT_EXISTS = 'SUBSCRIPTION_NOT_EXISTS',
-  SUBSCRIPTION_PLAN_NOT_FOUND = 'SUBSCRIPTION_PLAN_NOT_FOUND',
   TOO_MANY_REQUEST = 'TOO_MANY_REQUEST',
   UNKNOWN_OAUTH_PROVIDER = 'UNKNOWN_OAUTH_PROVIDER',
   UNSPLASH_IS_NOT_CONFIGURED = 'UNSPLASH_IS_NOT_CONFIGURED',
   UNSUPPORTED_CLIENT_VERSION = 'UNSUPPORTED_CLIENT_VERSION',
-  UNSUPPORTED_SUBSCRIPTION_PLAN = 'UNSUPPORTED_SUBSCRIPTION_PLAN',
   USER_AVATAR_NOT_FOUND = 'USER_AVATAR_NOT_FOUND',
   USER_NOT_FOUND = 'USER_NOT_FOUND',
   VALIDATION_ERROR = 'VALIDATION_ERROR',
-  VERSION_REJECTED = 'VERSION_REJECTED',
-  WORKSPACE_ID_REQUIRED_FOR_TEAM_SUBSCRIPTION = 'WORKSPACE_ID_REQUIRED_FOR_TEAM_SUBSCRIPTION',
-  WORKSPACE_ID_REQUIRED_TO_UPDATE_TEAM_SUBSCRIPTION = 'WORKSPACE_ID_REQUIRED_TO_UPDATE_TEAM_SUBSCRIPTION',
-  WORKSPACE_LICENSE_ALREADY_EXISTS = 'WORKSPACE_LICENSE_ALREADY_EXISTS',
-  WORKSPACE_PERMISSION_NOT_FOUND = 'WORKSPACE_PERMISSION_NOT_FOUND',
   WRONG_SIGN_IN_CREDENTIALS = 'WRONG_SIGN_IN_CREDENTIALS',
   WRONG_SIGN_IN_METHOD = 'WRONG_SIGN_IN_METHOD',
-}
-
-export interface ExpectToGrantDocUserRolesDataType {
-  __typename?: 'ExpectToGrantDocUserRolesDataType';
-  docId: Scalars['String']['output'];
-  spaceId: Scalars['String']['output'];
-}
-
-export interface ExpectToRevokeDocUserRolesDataType {
-  __typename?: 'ExpectToRevokeDocUserRolesDataType';
-  docId: Scalars['String']['output'];
-  spaceId: Scalars['String']['output'];
-}
-
-export interface ExpectToUpdateDocUserRoleDataType {
-  __typename?: 'ExpectToUpdateDocUserRoleDataType';
-  docId: Scalars['String']['output'];
-  spaceId: Scalars['String']['output'];
 }
 
 export enum FeatureType {
@@ -696,26 +538,6 @@ export interface InvalidEmailDataType {
   email: Scalars['String']['output'];
 }
 
-export interface InvalidHistoryTimestampDataType {
-  __typename?: 'InvalidHistoryTimestampDataType';
-  timestamp: Scalars['String']['output'];
-}
-
-export interface InvalidIndexerInputDataType {
-  __typename?: 'InvalidIndexerInputDataType';
-  reason: Scalars['String']['output'];
-}
-
-export interface InvalidLicenseToActivateDataType {
-  __typename?: 'InvalidLicenseToActivateDataType';
-  reason: Scalars['String']['output'];
-}
-
-export interface InvalidLicenseUpdateParamsDataType {
-  __typename?: 'InvalidLicenseUpdateParamsDataType';
-  reason: Scalars['String']['output'];
-}
-
 export interface InvalidOauthCallbackCodeDataType {
   __typename?: 'InvalidOauthCallbackCodeDataType';
   body: Scalars['String']['output'];
@@ -740,12 +562,6 @@ export interface InvalidRuntimeConfigTypeDataType {
   want: Scalars['String']['output'];
 }
 
-export interface InvalidSearchProviderRequestDataType {
-  __typename?: 'InvalidSearchProviderRequestDataType';
-  reason: Scalars['String']['output'];
-  type: Scalars['String']['output'];
-}
-
 export interface LimitedUserType {
   __typename?: 'LimitedUserType';
   /** User email */
@@ -766,16 +582,6 @@ export interface ManageUserInput {
   name?: InputMaybe<Scalars['String']['input']>;
 }
 
-export interface MemberNotFoundInSpaceDataType {
-  __typename?: 'MemberNotFoundInSpaceDataType';
-  spaceId: Scalars['String']['output'];
-}
-
-export interface MentionUserDocAccessDeniedDataType {
-  __typename?: 'MentionUserDocAccessDeniedDataType';
-  docId: Scalars['String']['output'];
-}
-
 export interface MissingOauthQueryParameterDataType {
   __typename?: 'MissingOauthQueryParameterDataType';
   name: Scalars['String']['output'];
@@ -785,9 +591,8 @@ export interface Mutation {
   __typename?: 'Mutation';
   /** add a file to context */
   addContextFile: CopilotContextFile;
-  /** Update workspace embedding files */
-  addWorkspaceEmbeddingFiles: CopilotUserFile;
-  addWorkspaceFeature: Scalars['Boolean']['output'];
+  /** Upload user embedding files */
+  addUserEmbeddingFiles: CopilotUserFile;
   /** Ban an user */
   banUser: UserType;
   changeEmail: UserType;
@@ -820,7 +625,6 @@ export interface Mutation {
   removeContextFile: Scalars['Boolean']['output'];
   /** Remove user embedding files */
   removeUserEmbeddingFiles: Scalars['Boolean']['output'];
-  removeWorkspaceFeature: Scalars['Boolean']['output'];
   retryAudioTranscription: Maybe<TranscriptionResultType>;
   sendChangeEmail: Scalars['Boolean']['output'];
   sendChangePasswordEmail: Scalars['Boolean']['output'];
@@ -856,13 +660,8 @@ export interface MutationAddContextFileArgs {
   options: AddContextFileInput;
 }
 
-export interface MutationAddWorkspaceEmbeddingFilesArgs {
+export interface MutationAddUserEmbeddingFilesArgs {
   blob: Scalars['Upload']['input'];
-}
-
-export interface MutationAddWorkspaceFeatureArgs {
-  feature: FeatureType;
-  workspaceId: Scalars['String']['input'];
 }
 
 export interface MutationBanUserArgs {
@@ -933,11 +732,6 @@ export interface MutationRemoveUserEmbeddingFilesArgs {
   fileId: Scalars['String']['input'];
 }
 
-export interface MutationRemoveWorkspaceFeatureArgs {
-  feature: FeatureType;
-  workspaceId: Scalars['String']['input'];
-}
-
 export interface MutationRetryAudioTranscriptionArgs {
   jobId: Scalars['String']['input'];
 }
@@ -949,12 +743,10 @@ export interface MutationSendChangeEmailArgs {
 
 export interface MutationSendChangePasswordEmailArgs {
   callbackUrl: Scalars['String']['input'];
-  email?: InputMaybe<Scalars['String']['input']>;
 }
 
 export interface MutationSendSetPasswordEmailArgs {
   callbackUrl: Scalars['String']['input'];
-  email?: InputMaybe<Scalars['String']['input']>;
 }
 
 export interface MutationSendTestEmailArgs {
@@ -1023,16 +815,6 @@ export interface MutationVerifyEmailArgs {
 export interface NoCopilotProviderAvailableDataType {
   __typename?: 'NoCopilotProviderAvailableDataType';
   modelId: Scalars['String']['output'];
-}
-
-export interface NoMoreSeatDataType {
-  __typename?: 'NoMoreSeatDataType';
-  spaceId: Scalars['String']['output'];
-}
-
-export interface NotInSpaceDataType {
-  __typename?: 'NotInSpaceDataType';
-  spaceId: Scalars['String']['output'];
 }
 
 export enum OAuthProviderType {
@@ -1147,13 +929,6 @@ export interface QueryChatHistoriesInput {
   withPrompt?: InputMaybe<Scalars['Boolean']['input']>;
 }
 
-export interface QueryChatSessionsInput {
-  action?: InputMaybe<Scalars['Boolean']['input']>;
-  limit?: InputMaybe<Scalars['Int']['input']>;
-  pinned?: InputMaybe<Scalars['Boolean']['input']>;
-  skip?: InputMaybe<Scalars['Int']['input']>;
-}
-
 export interface QueryTooLongDataType {
   __typename?: 'QueryTooLongDataType';
   max: Scalars['Int']['output'];
@@ -1174,18 +949,8 @@ export interface RuntimeConfigNotFoundDataType {
   key: Scalars['String']['output'];
 }
 
-export interface SameSubscriptionRecurringDataType {
-  __typename?: 'SameSubscriptionRecurringDataType';
-  recurring: Scalars['String']['output'];
-}
-
 export interface ServerConfigType {
   __typename?: 'ServerConfigType';
-  /**
-   * Whether allow guest users to create demo workspaces.
-   * @deprecated This field is deprecated, please use `features` instead. Will be removed in 0.25.0
-   */
-  allowGuestDemoWorkspace: Scalars['Boolean']['output'];
   /** Features for user that can be configured */
   availableUserFeatures: Array<FeatureType>;
   /** server base url */
@@ -1211,33 +976,8 @@ export enum ServerDeploymentType {
 
 export enum ServerFeature {
   Captcha = 'Captcha',
-  Comment = 'Comment',
   Copilot = 'Copilot',
-  CopilotEmbedding = 'CopilotEmbedding',
-  Indexer = 'Indexer',
-  LocalWorkspace = 'LocalWorkspace',
   OAuth = 'OAuth',
-  Payment = 'Payment',
-}
-
-export interface SpaceAccessDeniedDataType {
-  __typename?: 'SpaceAccessDeniedDataType';
-  spaceId: Scalars['String']['output'];
-}
-
-export interface SpaceNotFoundDataType {
-  __typename?: 'SpaceNotFoundDataType';
-  spaceId: Scalars['String']['output'];
-}
-
-export interface SpaceOwnerNotFoundDataType {
-  __typename?: 'SpaceOwnerNotFoundDataType';
-  spaceId: Scalars['String']['output'];
-}
-
-export interface SpaceShouldHaveOnlyOneOwnerDataType {
-  __typename?: 'SpaceShouldHaveOnlyOneOwnerDataType';
-  spaceId: Scalars['String']['output'];
 }
 
 export interface StreamObject {
@@ -1248,22 +988,6 @@ export interface StreamObject {
   toolCallId: Maybe<Scalars['String']['output']>;
   toolName: Maybe<Scalars['String']['output']>;
   type: Scalars['String']['output'];
-}
-
-export interface SubscriptionAlreadyExistsDataType {
-  __typename?: 'SubscriptionAlreadyExistsDataType';
-  plan: Scalars['String']['output'];
-}
-
-export interface SubscriptionNotExistsDataType {
-  __typename?: 'SubscriptionNotExistsDataType';
-  plan: Scalars['String']['output'];
-}
-
-export interface SubscriptionPlanNotFoundDataType {
-  __typename?: 'SubscriptionPlanNotFoundDataType';
-  plan: Scalars['String']['output'];
-  recurring: Scalars['String']['output'];
 }
 
 export interface TranscriptionItemType {
@@ -1293,11 +1017,6 @@ export interface UnsupportedClientVersionDataType {
   __typename?: 'UnsupportedClientVersionDataType';
   clientVersion: Scalars['String']['output'];
   requiredVersion: Scalars['String']['output'];
-}
-
-export interface UnsupportedSubscriptionPlanDataType {
-  __typename?: 'UnsupportedSubscriptionPlanDataType';
-  plan: Scalars['String']['output'];
 }
 
 export interface UpdateAppConfigInput {
@@ -1357,12 +1076,6 @@ export interface UserQuotaType {
   usedStorageQuota: Scalars['SafeInt']['output'];
 }
 
-export interface UserQuotaUsageType {
-  __typename?: 'UserQuotaUsageType';
-  /** @deprecated use `UserQuotaType['usedStorageQuota']` instead */
-  storageQuota: Scalars['SafeInt']['output'];
-}
-
 export interface UserSettingsType {
   __typename?: 'UserSettingsType';
   /** Receive comment email */
@@ -1378,18 +1091,13 @@ export interface UserType {
   /** User avatar url */
   avatarUrl: Maybe<Scalars['String']['output']>;
   copilot: Copilot;
-  /**
-   * User email verified
-   * @deprecated useless
-   */
-  createdAt: Maybe<Scalars['DateTime']['output']>;
   /** User is disabled */
   disabled: Scalars['Boolean']['output'];
   /** User email */
   email: Scalars['String']['output'];
   /** User email verified */
   emailVerified: Scalars['Boolean']['output'];
-  embedding: CopilotWorkspaceConfig;
+  embedding: CopilotUserConfig;
   /** Enabled features of a user */
   features: Array<FeatureType>;
   /** User password has been set */
@@ -1398,11 +1106,8 @@ export interface UserType {
   /** User name */
   name: Scalars['String']['output'];
   quota: UserQuotaType;
-  quotaUsage: UserQuotaUsageType;
   /** Get user settings */
   settings: UserSettingsType;
-  /** @deprecated use [/api/auth/sign-in?native=true] instead */
-  token: TokenType;
 }
 
 export interface ValidationErrorDataType {
@@ -1410,27 +1115,9 @@ export interface ValidationErrorDataType {
   errors: Scalars['String']['output'];
 }
 
-export interface VersionRejectedDataType {
-  __typename?: 'VersionRejectedDataType';
-  serverVersion: Scalars['String']['output'];
-  version: Scalars['String']['output'];
-}
-
-export interface WorkspacePermissionNotFoundDataType {
-  __typename?: 'WorkspacePermissionNotFoundDataType';
-  spaceId: Scalars['String']['output'];
-}
-
 export interface WrongSignInCredentialsDataType {
   __typename?: 'WrongSignInCredentialsDataType';
   email: Scalars['String']['output'];
-}
-
-export interface TokenType {
-  __typename?: 'tokenType';
-  refresh: Scalars['String']['output'];
-  sessionToken: Maybe<Scalars['String']['output']>;
-  token: Scalars['String']['output'];
 }
 
 export type AdminServerConfigQueryVariables = Exact<{ [key: string]: never }>;
@@ -2417,13 +2104,13 @@ export type GetCopilotSessionsQuery = {
   } | null;
 };
 
-export type AddWorkspaceEmbeddingFilesMutationVariables = Exact<{
+export type AddUserEmbeddingFilesMutationVariables = Exact<{
   blob: Scalars['Upload']['input'];
 }>;
 
-export type AddWorkspaceEmbeddingFilesMutation = {
+export type AddUserEmbeddingFilesMutation = {
   __typename?: 'Mutation';
-  addWorkspaceEmbeddingFiles: {
+  addUserEmbeddingFiles: {
     __typename?: 'CopilotUserFile';
     fileId: string;
     fileName: string;
@@ -2443,7 +2130,7 @@ export type GetUserEmbeddingFilesQuery = {
   currentUser: {
     __typename?: 'UserType';
     embedding: {
-      __typename?: 'CopilotWorkspaceConfig';
+      __typename?: 'CopilotUserConfig';
       files: {
         __typename?: 'PaginatedCopilotUserFile';
         totalCount: number;
@@ -2622,7 +2309,6 @@ export type GetCurrentUserQuery = {
     email: string;
     emailVerified: boolean;
     avatarUrl: string | null;
-    token: { __typename?: 'tokenType'; sessionToken: string | null };
   } | null;
 };
 
@@ -2722,7 +2408,6 @@ export type QuotaQuery = {
         copilotLimit: string;
       };
     };
-    quotaUsage: { __typename?: 'UserQuotaUsageType'; storageQuota: number };
   } | null;
 };
 
@@ -3114,9 +2799,9 @@ export type Mutations =
       response: UpdateCopilotSessionMutation;
     }
   | {
-      name: 'addWorkspaceEmbeddingFilesMutation';
-      variables: AddWorkspaceEmbeddingFilesMutationVariables;
-      response: AddWorkspaceEmbeddingFilesMutation;
+      name: 'addUserEmbeddingFilesMutation';
+      variables: AddUserEmbeddingFilesMutationVariables;
+      response: AddUserEmbeddingFilesMutation;
     }
   | {
       name: 'removeUserEmbeddingFilesMutation';

@@ -40,13 +40,6 @@ export class UserType implements CurrentUser {
   })
   hasPassword!: boolean | null;
 
-  @Field(() => Date, {
-    deprecationReason: 'useless',
-    description: 'User email verified',
-    nullable: true,
-  })
-  createdAt?: Date | null;
-
   @Field(() => Boolean, {
     description: 'User is disabled',
   })

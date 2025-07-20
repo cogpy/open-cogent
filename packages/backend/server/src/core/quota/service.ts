@@ -38,6 +38,18 @@ export class QuotaService {
     } as UserQuotaWithUsage;
   }
 
+  async getUserQuotaWithUsage(userId: string): Promise<UserQuotaWithUsage> {
+    const quota = await this.getUserQuota(userId);
+    const usedStorageQuota = await this.getUserStorageUsage(userId);
+
+    return { ...quota, usedStorageQuota };
+  }
+
+  // TODO(@darkskygit): implement this
+  async getUserStorageUsage(_userId: string) {
+    return 0;
+  }
+
   formatUserQuota(
     quota: Omit<UserQuotaType, 'humanReadable'>
   ): UserQuotaHumanReadableType {

@@ -414,230 +414,6 @@ export const USER_FRIENDLY_ERRORS = {
     message: 'You must verify your email before accessing this resource.',
   },
 
-  // Workspace & Userspace & Doc & Sync errors
-  workspace_permission_not_found: {
-    type: 'resource_not_found',
-    args: { spaceId: 'string' },
-    message: ({ spaceId }) => `Space ${spaceId} permission not found.`,
-  },
-  space_not_found: {
-    type: 'resource_not_found',
-    args: { spaceId: 'string' },
-    message: ({ spaceId }) => `Space ${spaceId} not found.`,
-  },
-  member_not_found_in_space: {
-    type: 'action_forbidden',
-    args: { spaceId: 'string' },
-    message: ({ spaceId }) => `Member not found in Space ${spaceId}.`,
-  },
-  not_in_space: {
-    type: 'action_forbidden',
-    args: { spaceId: 'string' },
-    message: ({ spaceId }) =>
-      `You should join in Space ${spaceId} before broadcasting messages.`,
-  },
-  already_in_space: {
-    type: 'action_forbidden',
-    args: { spaceId: 'string' },
-    message: ({ spaceId }) => `You have already joined in Space ${spaceId}.`,
-  },
-  space_access_denied: {
-    type: 'no_permission',
-    args: { spaceId: 'string' },
-    message: ({ spaceId }) =>
-      `You do not have permission to access Space ${spaceId}.`,
-  },
-  space_owner_not_found: {
-    type: 'internal_server_error',
-    args: { spaceId: 'string' },
-    message: ({ spaceId }) => `Owner of Space ${spaceId} not found.`,
-  },
-  space_should_have_only_one_owner: {
-    type: 'invalid_input',
-    args: { spaceId: 'string' },
-    message: 'Space should have only one owner.',
-  },
-  owner_can_not_leave_workspace: {
-    type: 'action_forbidden',
-    message: 'Owner can not leave the workspace.',
-  },
-  can_not_revoke_yourself: {
-    type: 'action_forbidden',
-    message: 'You can not revoke your own permission.',
-  },
-  doc_not_found: {
-    type: 'resource_not_found',
-    args: { spaceId: 'string', docId: 'string' },
-    message: ({ spaceId, docId }) =>
-      `Doc ${docId} under Space ${spaceId} not found.`,
-  },
-  doc_action_denied: {
-    type: 'no_permission',
-    args: { spaceId: 'string', docId: 'string', action: 'string' },
-    message: ({ docId, action }) =>
-      `You do not have permission to perform ${action} action on doc ${docId}.`,
-  },
-  doc_update_blocked: {
-    type: 'action_forbidden',
-    args: { spaceId: 'string', docId: 'string' },
-    message: ({ spaceId, docId }) =>
-      `Doc ${docId} under Space ${spaceId} is blocked from updating.`,
-  },
-  version_rejected: {
-    type: 'action_forbidden',
-    args: { version: 'string', serverVersion: 'string' },
-    message: ({ version, serverVersion }) =>
-      `Your client with version ${version} is rejected by remote sync server. Please upgrade to ${serverVersion}.`,
-  },
-  invalid_history_timestamp: {
-    type: 'invalid_input',
-    args: { timestamp: 'string' },
-    message: 'Invalid doc history timestamp provided.',
-  },
-  doc_history_not_found: {
-    type: 'resource_not_found',
-    args: { spaceId: 'string', docId: 'string', timestamp: 'number' },
-    message: ({ spaceId, docId, timestamp }) =>
-      `History of ${docId} at ${timestamp} under Space ${spaceId}.`,
-  },
-  blob_not_found: {
-    type: 'resource_not_found',
-    args: { userId: 'string', blobId: 'string' },
-    message: ({ userId, blobId }) =>
-      `Blob ${blobId} not found for user ${userId}.`,
-  },
-  expect_to_publish_doc: {
-    type: 'invalid_input',
-    message: 'Expected to publish a doc, not a Space.',
-  },
-  expect_to_revoke_public_doc: {
-    type: 'invalid_input',
-    message: 'Expected to revoke a public doc, not a Space.',
-  },
-  expect_to_grant_doc_user_roles: {
-    type: 'invalid_input',
-    args: { spaceId: 'string', docId: 'string' },
-    message: ({ spaceId, docId }) =>
-      `Expect grant roles on doc ${docId} under Space ${spaceId}, not a Space.`,
-  },
-  expect_to_revoke_doc_user_roles: {
-    type: 'invalid_input',
-    args: { spaceId: 'string', docId: 'string' },
-    message: ({ spaceId, docId }) =>
-      `Expect revoke roles on doc ${docId} under Space ${spaceId}, not a Space.`,
-  },
-  expect_to_update_doc_user_role: {
-    type: 'invalid_input',
-    args: { spaceId: 'string', docId: 'string' },
-    message: ({ spaceId, docId }) =>
-      `Expect update roles on doc ${docId} under Space ${spaceId}, not a Space.`,
-  },
-  doc_is_not_public: {
-    type: 'bad_request',
-    message: 'Doc is not public.',
-  },
-  failed_to_save_updates: {
-    type: 'internal_server_error',
-    message: 'Failed to store doc updates.',
-  },
-  failed_to_upsert_snapshot: {
-    type: 'internal_server_error',
-    message: 'Failed to store doc snapshot.',
-  },
-  action_forbidden_on_non_team_workspace: {
-    type: 'action_forbidden',
-    message: 'A Team workspace is required to perform this action.',
-  },
-  doc_default_role_can_not_be_owner: {
-    type: 'invalid_input',
-    message: 'Doc default role can not be owner.',
-  },
-  can_not_batch_grant_doc_owner_permissions: {
-    type: 'invalid_input',
-    message: 'Can not batch grant doc owner permissions.',
-  },
-  new_owner_is_not_active_member: {
-    type: 'bad_request',
-    message: 'Can not set a non-active member as owner.',
-  },
-  invalid_invitation: {
-    type: 'invalid_input',
-    message: 'Invalid invitation provided.',
-  },
-  no_more_seat: {
-    type: 'bad_request',
-    args: { spaceId: 'string' },
-    message: ({ spaceId }) => `No more seat available in the Space ${spaceId}.`,
-  },
-
-  // Subscription Errors
-  unsupported_subscription_plan: {
-    type: 'invalid_input',
-    args: { plan: 'string' },
-    message: ({ plan }) => `Unsupported subscription plan: ${plan}.`,
-  },
-  failed_to_checkout: {
-    type: 'internal_server_error',
-    message: 'Failed to create checkout session.',
-  },
-  invalid_checkout_parameters: {
-    type: 'invalid_input',
-    message: 'Invalid checkout parameters provided.',
-  },
-  subscription_already_exists: {
-    type: 'resource_already_exists',
-    args: { plan: 'string' },
-    message: ({ plan }) => `You have already subscribed to the ${plan} plan.`,
-  },
-  invalid_subscription_parameters: {
-    type: 'invalid_input',
-    message: 'Invalid subscription parameters provided.',
-  },
-  subscription_not_exists: {
-    type: 'resource_not_found',
-    args: { plan: 'string' },
-    message: ({ plan }) => `You didn't subscribe to the ${plan} plan.`,
-  },
-  subscription_has_been_canceled: {
-    type: 'action_forbidden',
-    message: 'Your subscription has already been canceled.',
-  },
-  subscription_has_not_been_canceled: {
-    type: 'action_forbidden',
-    message: 'Your subscription has not been canceled.',
-  },
-  subscription_expired: {
-    type: 'action_forbidden',
-    message: 'Your subscription has expired.',
-  },
-  same_subscription_recurring: {
-    type: 'bad_request',
-    args: { recurring: 'string' },
-    message: ({ recurring }) =>
-      `Your subscription has already been in ${recurring} recurring state.`,
-  },
-  customer_portal_create_failed: {
-    type: 'internal_server_error',
-    message: 'Failed to create customer portal session.',
-  },
-  subscription_plan_not_found: {
-    type: 'resource_not_found',
-    args: { plan: 'string', recurring: 'string' },
-    message: 'You are trying to access a unknown subscription plan.',
-  },
-  cant_update_onetime_payment_subscription: {
-    type: 'action_forbidden',
-    message: 'You cannot update an onetime payment subscription.',
-  },
-  workspace_id_required_for_team_subscription: {
-    type: 'invalid_input',
-    message: 'A workspace is required to checkout for team subscription.',
-  },
-  workspace_id_required_to_update_team_subscription: {
-    type: 'invalid_input',
-    message: 'Workspace id is required to update team subscription.',
-  },
-
   // Copilot errors
   copilot_session_not_found: {
     type: 'resource_not_found',
@@ -742,10 +518,6 @@ export const USER_FRIENDLY_ERRORS = {
     message: ({ userId, content, message }) =>
       `Failed to match context for user ${userId} with "${escape(content)}": ${message}`,
   },
-  copilot_embedding_disabled: {
-    type: 'action_forbidden',
-    message: `Embedding feature is disabled, please contact the administrator to enable it in the workspace settings.`,
-  },
   copilot_embedding_unavailable: {
     type: 'action_forbidden',
     message: `Embedding feature not available, you may need to install pgvector extension to your database`,
@@ -769,6 +541,12 @@ export const USER_FRIENDLY_ERRORS = {
   },
 
   // Quota & Limit errors
+  blob_not_found: {
+    type: 'resource_not_found',
+    args: { userId: 'string', blobId: 'string' },
+    message: ({ userId, blobId }) =>
+      `Blob ${blobId} not found for user ${userId}.`,
+  },
   blob_quota_exceeded: {
     type: 'quota_exceeded',
     message: 'You have exceeded your blob size quota.',
@@ -777,14 +555,9 @@ export const USER_FRIENDLY_ERRORS = {
     type: 'quota_exceeded',
     message: 'You have exceeded your storage quota.',
   },
-  member_quota_exceeded: {
-    type: 'quota_exceeded',
-    message: 'You have exceeded your workspace member quota.',
-  },
   copilot_quota_exceeded: {
     type: 'quota_exceeded',
-    message:
-      'You have reached the limit of actions in this workspace, please upgrade your plan.',
+    message: 'You have reached the limit of actions, please upgrade your plan.',
   },
 
   // Config errors
@@ -813,49 +586,11 @@ export const USER_FRIENDLY_ERRORS = {
     type: 'action_forbidden',
     message: 'Cannot delete own account.',
   },
-  cannot_delete_account_with_owned_team_workspace: {
-    type: 'action_forbidden',
-    message:
-      'Cannot delete account. You are the owner of one or more team workspaces. Please transfer ownership or delete them first.',
-  },
 
   // captcha errors
   captcha_verification_failed: {
     type: 'bad_request',
     message: 'Captcha verification failed.',
-  },
-
-  // license errors
-  invalid_license_session_id: {
-    type: 'invalid_input',
-    message: 'Invalid session id to generate license key.',
-  },
-  license_revealed: {
-    type: 'action_forbidden',
-    message:
-      'License key has been revealed. Please check your mail box of the one provided during checkout.',
-  },
-  workspace_license_already_exists: {
-    type: 'action_forbidden',
-    message: 'Workspace already has a license applied.',
-  },
-  license_not_found: {
-    type: 'resource_not_found',
-    message: 'License not found.',
-  },
-  invalid_license_to_activate: {
-    type: 'bad_request',
-    args: { reason: 'string' },
-    message: ({ reason }) => `Invalid license to activate. ${reason}`,
-  },
-  invalid_license_update_params: {
-    type: 'invalid_input',
-    args: { reason: 'string' },
-    message: ({ reason }) => `Invalid license update params. ${reason}`,
-  },
-  license_expired: {
-    type: 'bad_request',
-    message: 'License has expired.',
   },
 
   // version errors
@@ -869,21 +604,6 @@ export const USER_FRIENDLY_ERRORS = {
       `Unsupported client with version [${clientVersion}], required version is [${requiredVersion}].`,
   },
 
-  // Notification Errors
-  notification_not_found: {
-    type: 'resource_not_found',
-    message: 'Notification not found.',
-  },
-  mention_user_doc_access_denied: {
-    type: 'no_permission',
-    args: { docId: 'string' },
-    message: ({ docId }) => `Mentioned user can not access doc ${docId}.`,
-  },
-  mention_user_oneself_denied: {
-    type: 'action_forbidden',
-    message: 'You can not mention yourself.',
-  },
-
   // app config
   invalid_app_config: {
     type: 'invalid_input',
@@ -895,40 +615,5 @@ export const USER_FRIENDLY_ERRORS = {
     type: 'invalid_input',
     args: { message: 'string' },
     message: ({ message }) => `Invalid app config input: ${message}`,
-  },
-
-  // indexer errors
-  search_provider_not_found: {
-    type: 'resource_not_found',
-    message: 'Search provider not found.',
-  },
-  invalid_search_provider_request: {
-    type: 'invalid_input',
-    args: { reason: 'string', type: 'string' },
-    message: ({ reason }) =>
-      `Invalid request argument to search provider: ${reason}`,
-  },
-  invalid_indexer_input: {
-    type: 'invalid_input',
-    args: { reason: 'string' },
-    message: ({ reason }) => `Invalid indexer input: ${reason}`,
-  },
-
-  // comment and reply errors
-  comment_not_found: {
-    type: 'resource_not_found',
-    message: 'Comment not found.',
-  },
-  reply_not_found: {
-    type: 'resource_not_found',
-    message: 'Reply not found.',
-  },
-  comment_attachment_not_found: {
-    type: 'resource_not_found',
-    message: 'Comment attachment not found.',
-  },
-  comment_attachment_quota_exceeded: {
-    type: 'quota_exceeded',
-    message: 'You have exceeded the comment attachment size quota.',
   },
 } satisfies Record<string, UserFriendlyErrorOptions>;

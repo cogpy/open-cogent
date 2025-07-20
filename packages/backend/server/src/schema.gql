@@ -14,10 +14,6 @@ enum AiJobStatus {
   running
 }
 
-type AlreadyInSpaceDataType {
-  spaceId: String!
-}
-
 type AppConfigValidateResult {
   error: String
   key: String!
@@ -76,16 +72,12 @@ type Copilot {
 
   """query user embedding status"""
   embeddingStatus: ContextUserEmbeddingStatus!
-  histories(options: QueryChatHistoriesInput): [CopilotHistories!]! @deprecated(reason: "use `chats` instead")
 
-  """Get the quota of the user in the workspace"""
+  """Get the quota of the user"""
   quota: CopilotQuota!
 
   """Get the session by id"""
   session(sessionId: String!): CopilotSessionType!
-
-  """Get the session list in the workspace"""
-  sessions(options: QueryChatSessionsInput): [CopilotSessionType!]! @deprecated(reason: "use `chats` instead")
   userId: String!
 }
 
@@ -119,7 +111,7 @@ type CopilotDocNotFoundDataType {
   docId: String!
 }
 
-type CopilotFailedToAddWorkspaceFileEmbeddingDataType {
+type CopilotFailedToAddUserFileEmbeddingDataType {
   message: String!
 }
 
@@ -244,6 +236,11 @@ type CopilotSessionType {
   title: String
 }
 
+type CopilotUserConfig {
+  files(pagination: PaginationInput!): PaginatedCopilotUserFile!
+  userId: String!
+}
+
 type CopilotUserFile {
   blobId: String!
   createdAt: DateTime!
@@ -259,13 +256,7 @@ type CopilotUserFileTypeEdge {
   node: CopilotUserFile!
 }
 
-type CopilotWorkspaceConfig {
-  files(pagination: PaginationInput!): PaginatedCopilotUserFile!
-  userId: String!
-}
-
 input CreateChatMessageInput {
-  attachments: [String!]
   blob: Upload
   blobs: [Upload!]
   content: String
@@ -315,56 +306,24 @@ input DeleteSessionInput {
   sessionIds: [String!]!
 }
 
-type DocActionDeniedDataType {
-  action: String!
-  docId: String!
-  spaceId: String!
-}
-
-type DocHistoryNotFoundDataType {
-  docId: String!
-  spaceId: String!
-  timestamp: Int!
-}
-
-type DocNotFoundDataType {
-  docId: String!
-  spaceId: String!
-}
-
-type DocUpdateBlockedDataType {
-  docId: String!
-  spaceId: String!
-}
-
-union ErrorDataUnion = AlreadyInSpaceDataType | BlobNotFoundDataType | CopilotContextFileNotSupportedDataType | CopilotDocNotFoundDataType | CopilotFailedToAddWorkspaceFileEmbeddingDataType | CopilotFailedToGenerateEmbeddingDataType | CopilotFailedToMatchContextDataType | CopilotFailedToMatchGlobalContextDataType | CopilotFailedToModifyContextDataType | CopilotInvalidContextDataType | CopilotMessageNotFoundDataType | CopilotPromptNotFoundDataType | CopilotProviderNotSupportedDataType | CopilotProviderSideErrorDataType | DocActionDeniedDataType | DocHistoryNotFoundDataType | DocNotFoundDataType | DocUpdateBlockedDataType | ExpectToGrantDocUserRolesDataType | ExpectToRevokeDocUserRolesDataType | ExpectToUpdateDocUserRoleDataType | GraphqlBadRequestDataType | HttpRequestErrorDataType | InvalidAppConfigDataType | InvalidAppConfigInputDataType | InvalidEmailDataType | InvalidHistoryTimestampDataType | InvalidIndexerInputDataType | InvalidLicenseToActivateDataType | InvalidLicenseUpdateParamsDataType | InvalidOauthCallbackCodeDataType | InvalidOauthResponseDataType | InvalidPasswordLengthDataType | InvalidRuntimeConfigTypeDataType | InvalidSearchProviderRequestDataType | MemberNotFoundInSpaceDataType | MentionUserDocAccessDeniedDataType | MissingOauthQueryParameterDataType | NoCopilotProviderAvailableDataType | NoMoreSeatDataType | NotInSpaceDataType | QueryTooLongDataType | RuntimeConfigNotFoundDataType | SameSubscriptionRecurringDataType | SpaceAccessDeniedDataType | SpaceNotFoundDataType | SpaceOwnerNotFoundDataType | SpaceShouldHaveOnlyOneOwnerDataType | SubscriptionAlreadyExistsDataType | SubscriptionNotExistsDataType | SubscriptionPlanNotFoundDataType | UnknownOauthProviderDataType | UnsupportedClientVersionDataType | UnsupportedSubscriptionPlanDataType | ValidationErrorDataType | VersionRejectedDataType | WorkspacePermissionNotFoundDataType | WrongSignInCredentialsDataType
+union ErrorDataUnion = BlobNotFoundDataType | CopilotContextFileNotSupportedDataType | CopilotDocNotFoundDataType | CopilotFailedToAddUserFileEmbeddingDataType | CopilotFailedToGenerateEmbeddingDataType | CopilotFailedToMatchContextDataType | CopilotFailedToMatchGlobalContextDataType | CopilotFailedToModifyContextDataType | CopilotInvalidContextDataType | CopilotMessageNotFoundDataType | CopilotPromptNotFoundDataType | CopilotProviderNotSupportedDataType | CopilotProviderSideErrorDataType | GraphqlBadRequestDataType | HttpRequestErrorDataType | InvalidAppConfigDataType | InvalidAppConfigInputDataType | InvalidEmailDataType | InvalidOauthCallbackCodeDataType | InvalidOauthResponseDataType | InvalidPasswordLengthDataType | InvalidRuntimeConfigTypeDataType | MissingOauthQueryParameterDataType | NoCopilotProviderAvailableDataType | QueryTooLongDataType | RuntimeConfigNotFoundDataType | UnknownOauthProviderDataType | UnsupportedClientVersionDataType | ValidationErrorDataType | WrongSignInCredentialsDataType
 
 enum ErrorNames {
   ACCESS_DENIED
   ACTION_FORBIDDEN
-  ACTION_FORBIDDEN_ON_NON_TEAM_WORKSPACE
-  ALREADY_IN_SPACE
   AUTHENTICATION_REQUIRED
   BAD_REQUEST
   BLOB_NOT_FOUND
   BLOB_QUOTA_EXCEEDED
-  CANNOT_DELETE_ACCOUNT_WITH_OWNED_TEAM_WORKSPACE
   CANNOT_DELETE_ALL_ADMIN_ACCOUNT
   CANNOT_DELETE_OWN_ACCOUNT
-  CANT_UPDATE_ONETIME_PAYMENT_SUBSCRIPTION
-  CAN_NOT_BATCH_GRANT_DOC_OWNER_PERMISSIONS
-  CAN_NOT_REVOKE_YOURSELF
   CAPTCHA_VERIFICATION_FAILED
-  COMMENT_ATTACHMENT_NOT_FOUND
-  COMMENT_ATTACHMENT_QUOTA_EXCEEDED
-  COMMENT_NOT_FOUND
   COPILOT_ACTION_TAKEN
   COPILOT_CONTEXT_FILE_NOT_SUPPORTED
   COPILOT_DOCS_NOT_FOUND
   COPILOT_DOC_NOT_FOUND
-  COPILOT_EMBEDDING_DISABLED
   COPILOT_EMBEDDING_UNAVAILABLE
-  COPILOT_FAILED_TO_ADD_WORKSPACE_FILE_EMBEDDING
+  COPILOT_FAILED_TO_ADD_USER_FILE_EMBEDDING
   COPILOT_FAILED_TO_CREATE_MESSAGE
   COPILOT_FAILED_TO_GENERATE_EMBEDDING
   COPILOT_FAILED_TO_GENERATE_TEXT
@@ -384,117 +343,47 @@ enum ErrorNames {
   COPILOT_TRANSCRIPTION_AUDIO_NOT_PROVIDED
   COPILOT_TRANSCRIPTION_JOB_EXISTS
   COPILOT_TRANSCRIPTION_JOB_NOT_FOUND
-  CUSTOMER_PORTAL_CREATE_FAILED
-  DOC_ACTION_DENIED
-  DOC_DEFAULT_ROLE_CAN_NOT_BE_OWNER
-  DOC_HISTORY_NOT_FOUND
-  DOC_IS_NOT_PUBLIC
-  DOC_NOT_FOUND
-  DOC_UPDATE_BLOCKED
   EARLY_ACCESS_REQUIRED
   EMAIL_ALREADY_USED
   EMAIL_SERVICE_NOT_CONFIGURED
   EMAIL_TOKEN_NOT_FOUND
   EMAIL_VERIFICATION_REQUIRED
-  EXPECT_TO_GRANT_DOC_USER_ROLES
-  EXPECT_TO_PUBLISH_DOC
-  EXPECT_TO_REVOKE_DOC_USER_ROLES
-  EXPECT_TO_REVOKE_PUBLIC_DOC
-  EXPECT_TO_UPDATE_DOC_USER_ROLE
-  FAILED_TO_CHECKOUT
-  FAILED_TO_SAVE_UPDATES
-  FAILED_TO_UPSERT_SNAPSHOT
   GRAPHQL_BAD_REQUEST
   HTTP_REQUEST_ERROR
   INTERNAL_SERVER_ERROR
   INVALID_APP_CONFIG
   INVALID_APP_CONFIG_INPUT
   INVALID_AUTH_STATE
-  INVALID_CHECKOUT_PARAMETERS
   INVALID_EMAIL
   INVALID_EMAIL_TOKEN
-  INVALID_HISTORY_TIMESTAMP
-  INVALID_INDEXER_INPUT
-  INVALID_INVITATION
-  INVALID_LICENSE_SESSION_ID
-  INVALID_LICENSE_TO_ACTIVATE
-  INVALID_LICENSE_UPDATE_PARAMS
   INVALID_OAUTH_CALLBACK_CODE
   INVALID_OAUTH_CALLBACK_STATE
   INVALID_OAUTH_RESPONSE
   INVALID_PASSWORD_LENGTH
   INVALID_RUNTIME_CONFIG_TYPE
-  INVALID_SEARCH_PROVIDER_REQUEST
-  INVALID_SUBSCRIPTION_PARAMETERS
-  LICENSE_EXPIRED
-  LICENSE_NOT_FOUND
-  LICENSE_REVEALED
   LINK_EXPIRED
   MAILER_SERVICE_IS_NOT_CONFIGURED
-  MEMBER_NOT_FOUND_IN_SPACE
-  MEMBER_QUOTA_EXCEEDED
-  MENTION_USER_DOC_ACCESS_DENIED
-  MENTION_USER_ONESELF_DENIED
   MISSING_OAUTH_QUERY_PARAMETER
   NETWORK_ERROR
-  NEW_OWNER_IS_NOT_ACTIVE_MEMBER
-  NOTIFICATION_NOT_FOUND
   NOT_FOUND
-  NOT_IN_SPACE
   NO_COPILOT_PROVIDER_AVAILABLE
-  NO_MORE_SEAT
   OAUTH_ACCOUNT_ALREADY_CONNECTED
   OAUTH_STATE_EXPIRED
-  OWNER_CAN_NOT_LEAVE_WORKSPACE
   PASSWORD_REQUIRED
   QUERY_TOO_LONG
-  REPLY_NOT_FOUND
   RUNTIME_CONFIG_NOT_FOUND
   SAME_EMAIL_PROVIDED
-  SAME_SUBSCRIPTION_RECURRING
-  SEARCH_PROVIDER_NOT_FOUND
   SIGN_UP_FORBIDDEN
-  SPACE_ACCESS_DENIED
-  SPACE_NOT_FOUND
-  SPACE_OWNER_NOT_FOUND
-  SPACE_SHOULD_HAVE_ONLY_ONE_OWNER
   STORAGE_QUOTA_EXCEEDED
-  SUBSCRIPTION_ALREADY_EXISTS
-  SUBSCRIPTION_EXPIRED
-  SUBSCRIPTION_HAS_BEEN_CANCELED
-  SUBSCRIPTION_HAS_NOT_BEEN_CANCELED
-  SUBSCRIPTION_NOT_EXISTS
-  SUBSCRIPTION_PLAN_NOT_FOUND
   TOO_MANY_REQUEST
   UNKNOWN_OAUTH_PROVIDER
   UNSPLASH_IS_NOT_CONFIGURED
   UNSUPPORTED_CLIENT_VERSION
-  UNSUPPORTED_SUBSCRIPTION_PLAN
   USER_AVATAR_NOT_FOUND
   USER_NOT_FOUND
   VALIDATION_ERROR
-  VERSION_REJECTED
-  WORKSPACE_ID_REQUIRED_FOR_TEAM_SUBSCRIPTION
-  WORKSPACE_ID_REQUIRED_TO_UPDATE_TEAM_SUBSCRIPTION
-  WORKSPACE_LICENSE_ALREADY_EXISTS
-  WORKSPACE_PERMISSION_NOT_FOUND
   WRONG_SIGN_IN_CREDENTIALS
   WRONG_SIGN_IN_METHOD
-}
-
-type ExpectToGrantDocUserRolesDataType {
-  docId: String!
-  spaceId: String!
-}
-
-type ExpectToRevokeDocUserRolesDataType {
-  docId: String!
-  spaceId: String!
-}
-
-type ExpectToUpdateDocUserRoleDataType {
-  docId: String!
-  spaceId: String!
 }
 
 enum FeatureType {
@@ -530,22 +419,6 @@ type InvalidEmailDataType {
   email: String!
 }
 
-type InvalidHistoryTimestampDataType {
-  timestamp: String!
-}
-
-type InvalidIndexerInputDataType {
-  reason: String!
-}
-
-type InvalidLicenseToActivateDataType {
-  reason: String!
-}
-
-type InvalidLicenseUpdateParamsDataType {
-  reason: String!
-}
-
 type InvalidOauthCallbackCodeDataType {
   body: String!
   status: Int!
@@ -564,11 +437,6 @@ type InvalidRuntimeConfigTypeDataType {
   get: String!
   key: String!
   want: String!
-}
-
-type InvalidSearchProviderRequestDataType {
-  reason: String!
-  type: String!
 }
 
 """
@@ -602,14 +470,6 @@ input ManageUserInput {
   name: String
 }
 
-type MemberNotFoundInSpaceDataType {
-  spaceId: String!
-}
-
-type MentionUserDocAccessDeniedDataType {
-  docId: String!
-}
-
 type MissingOauthQueryParameterDataType {
   name: String!
 }
@@ -618,9 +478,8 @@ type Mutation {
   """add a file to context"""
   addContextFile(content: Upload!, options: AddContextFileInput!): CopilotContextFile!
 
-  """Update workspace embedding files"""
-  addWorkspaceEmbeddingFiles(blob: Upload!): CopilotUserFile!
-  addWorkspaceFeature(feature: FeatureType!, workspaceId: String!): Boolean!
+  """Upload user embedding files"""
+  addUserEmbeddingFiles(blob: Upload!): CopilotUserFile!
 
   """Ban an user"""
   banUser(id: String!): UserType!
@@ -667,11 +526,10 @@ type Mutation {
 
   """Remove user embedding files"""
   removeUserEmbeddingFiles(fileId: String!): Boolean!
-  removeWorkspaceFeature(feature: FeatureType!, workspaceId: String!): Boolean!
   retryAudioTranscription(jobId: String!): TranscriptionResultType
   sendChangeEmail(callbackUrl: String!, email: String): Boolean!
-  sendChangePasswordEmail(callbackUrl: String!, email: String @deprecated(reason: "fetched from signed in user")): Boolean!
-  sendSetPasswordEmail(callbackUrl: String!, email: String @deprecated(reason: "fetched from signed in user")): Boolean!
+  sendChangePasswordEmail(callbackUrl: String!): Boolean!
+  sendSetPasswordEmail(callbackUrl: String!): Boolean!
   sendTestEmail(config: JSONObject!): Boolean!
   sendVerifyChangeEmail(callbackUrl: String!, email: String!, token: String!): Boolean!
   sendVerifyEmail(callbackUrl: String!): Boolean!
@@ -709,14 +567,6 @@ type Mutation {
 
 type NoCopilotProviderAvailableDataType {
   modelId: String!
-}
-
-type NoMoreSeatDataType {
-  spaceId: String!
-}
-
-type NotInSpaceDataType {
-  spaceId: String!
 }
 
 enum OAuthProviderType {
@@ -812,13 +662,6 @@ input QueryChatHistoriesInput {
   withPrompt: Boolean
 }
 
-input QueryChatSessionsInput {
-  action: Boolean
-  limit: Int
-  pinned: Boolean
-  skip: Int
-}
-
 type QueryTooLongDataType {
   max: Int!
 }
@@ -841,14 +684,7 @@ The `SafeInt` scalar type represents non-fractional signed whole numeric values 
 """
 scalar SafeInt @specifiedBy(url: "https://www.ecma-international.org/ecma-262/#sec-number.issafeinteger")
 
-type SameSubscriptionRecurringDataType {
-  recurring: String!
-}
-
 type ServerConfigType {
-  """Whether allow guest users to create demo workspaces."""
-  allowGuestDemoWorkspace: Boolean! @deprecated(reason: "This field is deprecated, please use `features` instead. Will be removed in 0.25.0")
-
   """Features for user that can be configured"""
   availableUserFeatures: [FeatureType!]!
 
@@ -881,29 +717,8 @@ enum ServerDeploymentType {
 
 enum ServerFeature {
   Captcha
-  Comment
   Copilot
-  CopilotEmbedding
-  Indexer
-  LocalWorkspace
   OAuth
-  Payment
-}
-
-type SpaceAccessDeniedDataType {
-  spaceId: String!
-}
-
-type SpaceNotFoundDataType {
-  spaceId: String!
-}
-
-type SpaceOwnerNotFoundDataType {
-  spaceId: String!
-}
-
-type SpaceShouldHaveOnlyOneOwnerDataType {
-  spaceId: String!
 }
 
 type StreamObject {
@@ -913,19 +728,6 @@ type StreamObject {
   toolCallId: String
   toolName: String
   type: String!
-}
-
-type SubscriptionAlreadyExistsDataType {
-  plan: String!
-}
-
-type SubscriptionNotExistsDataType {
-  plan: String!
-}
-
-type SubscriptionPlanNotFoundDataType {
-  plan: String!
-  recurring: String!
 }
 
 type TranscriptionItemType {
@@ -951,10 +753,6 @@ type UnknownOauthProviderDataType {
 type UnsupportedClientVersionDataType {
   clientVersion: String!
   requiredVersion: String!
-}
-
-type UnsupportedSubscriptionPlanDataType {
-  plan: String!
 }
 
 input UpdateAppConfigInput {
@@ -1017,10 +815,6 @@ type UserQuotaType {
   usedStorageQuota: SafeInt!
 }
 
-type UserQuotaUsageType {
-  storageQuota: SafeInt! @deprecated(reason: "use `UserQuotaType['usedStorageQuota']` instead")
-}
-
 type UserSettingsType {
   """Receive comment email"""
   receiveCommentEmail: Boolean!
@@ -1037,9 +831,6 @@ type UserType {
   avatarUrl: String
   copilot: Copilot!
 
-  """User email verified"""
-  createdAt: DateTime @deprecated(reason: "useless")
-
   """User is disabled"""
   disabled: Boolean!
 
@@ -1048,7 +839,7 @@ type UserType {
 
   """User email verified"""
   emailVerified: Boolean!
-  embedding: CopilotWorkspaceConfig!
+  embedding: CopilotUserConfig!
 
   """Enabled features of a user"""
   features: [FeatureType!]!
@@ -1060,32 +851,15 @@ type UserType {
   """User name"""
   name: String!
   quota: UserQuotaType!
-  quotaUsage: UserQuotaUsageType!
 
   """Get user settings"""
   settings: UserSettingsType!
-  token: tokenType! @deprecated(reason: "use [/api/auth/sign-in?native=true] instead")
 }
 
 type ValidationErrorDataType {
   errors: String!
 }
 
-type VersionRejectedDataType {
-  serverVersion: String!
-  version: String!
-}
-
-type WorkspacePermissionNotFoundDataType {
-  spaceId: String!
-}
-
 type WrongSignInCredentialsDataType {
   email: String!
-}
-
-type tokenType {
-  refresh: String!
-  sessionToken: String
-  token: String!
 }

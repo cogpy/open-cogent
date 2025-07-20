@@ -8,12 +8,7 @@ import {
 } from '@nestjs/graphql';
 import { difference } from 'lodash-es';
 
-import {
-  Feature,
-  Models,
-  type UserFeatureName,
-  type WorkspaceFeatureName,
-} from '../../models';
+import { Feature, Models, type UserFeatureName } from '../../models';
 import { Admin } from '../common';
 import { UserType } from '../user/types';
 import { AvailableUserFeatureConfig } from './types';
@@ -72,27 +67,5 @@ export class AdminFeatureManagementResolver extends AvailableUserFeatureConfig {
     );
 
     return features;
-  }
-
-  @Mutation(() => Boolean)
-  async addWorkspaceFeature(
-    @Args('workspaceId') workspaceId: string,
-    @Args('feature', { type: () => Feature }) feature: WorkspaceFeatureName
-  ) {
-    await this.models.workspaceFeature.add(
-      workspaceId,
-      feature,
-      'by administrator'
-    );
-    return true;
-  }
-
-  @Mutation(() => Boolean)
-  async removeWorkspaceFeature(
-    @Args('workspaceId') workspaceId: string,
-    @Args('feature', { type: () => Feature }) feature: WorkspaceFeatureName
-  ) {
-    await this.models.workspaceFeature.remove(workspaceId, feature);
-    return true;
   }
 }

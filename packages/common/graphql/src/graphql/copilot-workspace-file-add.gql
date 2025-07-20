@@ -1,5 +1,5 @@
-mutation addWorkspaceEmbeddingFiles($blob: Upload!) {
-  addWorkspaceEmbeddingFiles(blob: $blob) {
+mutation addUserEmbeddingFiles($blob: Upload!) {
+  addUserEmbeddingFiles(blob: $blob) {
     fileId
     fileName
     blobId

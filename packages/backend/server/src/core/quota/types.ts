@@ -41,12 +41,3 @@ export class UserQuotaType implements UserQuota {
   @Field(() => UserQuotaHumanReadableType)
   humanReadable!: UserQuotaHumanReadableType;
 }
-
-@ObjectType()
-export class UserQuotaUsageType {
-  @Field(() => SafeIntResolver, {
-    name: 'storageQuota',
-    deprecationReason: "use `UserQuotaType['usedStorageQuota']` instead",
-  })
-  storageQuota!: number;
-}

@@ -1,25 +1,19 @@
 import { createHash } from 'node:crypto';
 
-import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
 import { FileUpload, JobQueue, PaginationInput } from '../../../base';
-import { ServerFeature, ServerService } from '../../../core';
 import { Models } from '../../../models';
 import { CopilotStorage } from '../storage';
 import { readStream } from '../utils';
 
 @Injectable()
-export class CopilotUserService implements OnApplicationBootstrap {
+export class CopilotUserService {
   constructor(
-    private readonly server: ServerService,
     private readonly models: Models,
     private readonly queue: JobQueue,
     private readonly storage: CopilotStorage
   ) {}
-
-  async onApplicationBootstrap() {
-    this.server.enableFeature(ServerFeature.CopilotEmbedding);
-  }
 
   async addFile(userId: string, content: FileUpload) {
     const fileName = content.filename;

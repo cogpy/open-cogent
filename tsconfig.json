@@ -131,6 +131,7 @@
     { "path": "./packages/common/graphql" },
     { "path": "./packages/common/reader" },
     { "path": "./packages/common/y-octo/node" },
+    { "path": "./packages/frontend/app" },
     { "path": "./packages/frontend/component" },
     { "path": "./tools/cli" },
     { "path": "./tools/utils" }

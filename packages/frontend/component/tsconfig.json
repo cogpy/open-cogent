@@ -15,6 +15,7 @@
     { "path": "../../common/debug" },
     { "path": "../../common/error" },
     { "path": "../../common/graphql" },
+    { "path": "../../../tools/utils" },
     { "path": "../../../blocksuite/affine/all" }
   ]
 }

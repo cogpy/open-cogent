@@ -1203,6 +1203,11 @@ export const PackageList = [
     workspaceDependencies: [],
   },
   {
+    location: 'packages/frontend/app',
+    name: '@afk/app',
+    workspaceDependencies: [],
+  },
+  {
     location: 'packages/frontend/component',
     name: '@affine/component',
     workspaceDependencies: [
@@ -1332,6 +1337,7 @@ export type PackageName =
   | '@affine/graphql'
   | '@affine/reader'
   | '@y-octo/node'
+  | '@afk/app'
   | '@affine/component'
   | '@types/build-config'
   | '@types/affine__env'

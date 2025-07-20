@@ -9,6 +9,15 @@ export const DividerBlockSchema = defineBlockSchema({
   metadata: {
     version: 1,
     role: 'content',
+    parent: [
+      'affine:note',
+      'affine:database',
+      'affine:paragraph',
+      'affine:list',
+      'affine:edgeless-text',
+      'affine:callout',
+      'affine:column',
+    ],
     children: [],
   },
   toModel: () => new DividerBlockModel(),

@@ -261,15 +261,6 @@ export default tseslint.config(
     },
   },
   {
-    files: ['packages/frontend/admin/**/*'],
-    rules: {
-      'import-x/no-extraneous-dependencies': [
-        'error',
-        { includeInternal: true, whitelist: ['@affine/admin'] },
-      ],
-    },
-  },
-  {
     files: ['packages/frontend/core/**/*'],
     rules: {
       'import-x/no-extraneous-dependencies': [

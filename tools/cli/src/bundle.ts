@@ -10,85 +10,10 @@ import WebpackDevServer, {
 } from 'webpack-dev-server';
 
 import { Option, PackageCommand } from './command';
-import {
-  createHTMLTargetConfig,
-  createNodeTargetConfig,
-  createWorkerTargetConfig,
-} from './webpack';
-
-function getBaseWorkerConfigs(pkg: Package) {
-  const core = new Package('@affine/core');
-
-  return [
-    createWorkerTargetConfig(
-      pkg,
-      core.srcPath.join(
-        'modules/workspace-engine/impls/workspace-profile.worker.ts'
-      ).value
-    ),
-    createWorkerTargetConfig(
-      pkg,
-      core.srcPath.join('modules/pdf/renderer/pdf.worker.ts').value
-    ),
-    createWorkerTargetConfig(
-      pkg,
-      core.srcPath.join(
-        'blocksuite/view-extensions/turbo-renderer/turbo-painter.worker.ts'
-      ).value
-    ),
-  ];
-}
+import { createNodeTargetConfig } from './webpack';
 
 function getBundleConfigs(pkg: Package) {
   switch (pkg.name) {
-    case '@affine/admin': {
-      return [createHTMLTargetConfig(pkg, pkg.srcPath.join('index.tsx').value)];
-    }
-    case '@affine/web':
-    case '@affine/mobile':
-    case '@affine/ios':
-    case '@affine/android': {
-      const workerConfigs = getBaseWorkerConfigs(pkg);
-      workerConfigs.push(
-        createWorkerTargetConfig(
-          pkg,
-          pkg.srcPath.join('nbstore.worker.ts').value
-        )
-      );
-
-      return [
-        createHTMLTargetConfig(
-          pkg,
-          pkg.srcPath.join('index.tsx').value,
-          {},
-          workerConfigs.map(config => config.name)
-        ),
-        ...workerConfigs,
-      ];
-    }
-    case '@affine/electron-renderer': {
-      const workerConfigs = getBaseWorkerConfigs(pkg);
-
-      return [
-        createHTMLTargetConfig(
-          pkg,
-          {
-            index: pkg.srcPath.join('app/index.tsx').value,
-            shell: pkg.srcPath.join('shell/index.tsx').value,
-            popup: pkg.srcPath.join('popup/index.tsx').value,
-            backgroundWorker: pkg.srcPath.join('background-worker/index.ts')
-              .value,
-          },
-          {
-            additionalEntryForSelfhost: false,
-            injectGlobalErrorHandler: false,
-            emitAssetsManifest: false,
-          },
-          workerConfigs.map(config => config.name)
-        ),
-        ...workerConfigs,
-      ];
-    }
     case '@affine/server': {
       return [createNodeTargetConfig(pkg, pkg.srcPath.join('index.ts').value)];
     }

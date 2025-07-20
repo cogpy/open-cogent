@@ -12,85 +12,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@affine-test/affine-cloud-copilot@workspace:tests/affine-cloud-copilot":
-  version: 0.0.0-use.local
-  resolution: "@affine-test/affine-cloud-copilot@workspace:tests/affine-cloud-copilot"
-  dependencies:
-    "@affine-test/kit": "workspace:*"
-    "@playwright/test": "npm:=1.52.0"
-  languageName: unknown
-  linkType: soft
-
-"@affine-test/affine-cloud@workspace:tests/affine-cloud":
-  version: 0.0.0-use.local
-  resolution: "@affine-test/affine-cloud@workspace:tests/affine-cloud"
-  dependencies:
-    "@affine-test/kit": "workspace:*"
-    "@playwright/test": "npm:=1.52.0"
-  languageName: unknown
-  linkType: soft
-
-"@affine-test/affine-desktop-cloud@workspace:tests/affine-desktop-cloud":
-  version: 0.0.0-use.local
-  resolution: "@affine-test/affine-desktop-cloud@workspace:tests/affine-desktop-cloud"
-  dependencies:
-    "@affine-test/kit": "workspace:*"
-    "@playwright/test": "npm:=1.52.0"
-  languageName: unknown
-  linkType: soft
-
-"@affine-test/affine-local@workspace:tests/affine-local":
-  version: 0.0.0-use.local
-  resolution: "@affine-test/affine-local@workspace:tests/affine-local"
-  dependencies:
-    "@affine-test/kit": "workspace:*"
-    "@affine-tools/cli": "workspace:*"
-    "@affine-tools/utils": "workspace:*"
-    "@playwright/test": "npm:=1.52.0"
-    webpack: "npm:^5.98.0"
-  languageName: unknown
-  linkType: soft
-
-"@affine-test/affine-mobile@workspace:tests/affine-mobile":
-  version: 0.0.0-use.local
-  resolution: "@affine-test/affine-mobile@workspace:tests/affine-mobile"
-  dependencies:
-    "@affine-test/kit": "workspace:*"
-    "@playwright/test": "npm:=1.52.0"
-  languageName: unknown
-  linkType: soft
-
-"@affine-test/blocksuite@workspace:tests/blocksuite":
-  version: 0.0.0-use.local
-  resolution: "@affine-test/blocksuite@workspace:tests/blocksuite"
-  dependencies:
-    "@blocksuite/affine": "workspace:*"
-    "@blocksuite/integration-test": "workspace:*"
-    "@playwright/test": "npm:=1.52.0"
-    "@toeverything/theme": "npm:^1.1.16"
-    json-stable-stringify: "npm:^1.2.1"
-    rxjs: "npm:^7.8.1"
-  languageName: unknown
-  linkType: soft
-
-"@affine-test/kit@workspace:*, @affine-test/kit@workspace:tests/kit":
-  version: 0.0.0-use.local
-  resolution: "@affine-test/kit@workspace:tests/kit"
-  dependencies:
-    "@affine-tools/utils": "workspace:*"
-    "@blocksuite/affine": "workspace:*"
-    "@node-rs/argon2": "npm:^2.0.2"
-    "@playwright/test": "npm:=1.52.0"
-    "@toeverything/infra": "workspace:*"
-    express: "npm:^5.0.0"
-    http-proxy-middleware: "npm:^3.0.3"
-  peerDependencies:
-    "@playwright/test": "*"
-    express: "*"
-    http-proxy-middleware: "*"
-  languageName: unknown
-  linkType: soft
-
 "@affine-tools/cli@workspace:*, @affine-tools/cli@workspace:tools/cli":
   version: 0.0.0-use.local
   resolution: "@affine-tools/cli@workspace:tools/cli"
@@ -466,18 +387,6 @@ __metadata:
     "@blocksuite/affine": "workspace:*"
     idb: ^8.0.0
     socket.io-client: ^4.7.5
-  languageName: unknown
-  linkType: soft
-
-"@affine/playstore-auto-bump@workspace:tools/playstore-auto-bump":
-  version: 0.0.0-use.local
-  resolution: "@affine/playstore-auto-bump@workspace:tools/playstore-auto-bump"
-  dependencies:
-    "@affine-tools/cli": "workspace:*"
-    "@affine-tools/utils": "workspace:*"
-    "@googleapis/androidpublisher": "npm:^28.0.0"
-    "@types/node": "npm:^22.0.0"
-    typescript: "npm:^5.7.2"
   languageName: unknown
   linkType: soft
 
@@ -5137,15 +5046,6 @@ __metadata:
   peerDependencies:
     "@opentelemetry/resources": ^1.0.0
   checksum: 10/119116a19549ea1a5c43d50f880959e2fe512860e316a1aa15e3e8088696629995c09c0287e7fcca42baa65fcacc5d3cd74eb3f6b0b9984dc523962d6cb36265
-  languageName: node
-  linkType: hard
-
-"@googleapis/androidpublisher@npm:^28.0.0":
-  version: 28.0.1
-  resolution: "@googleapis/androidpublisher@npm:28.0.1"
-  dependencies:
-    googleapis-common: "npm:^8.0.2-rc.0"
-  checksum: 10/6fffeb8c918bc9ac4ca370f0468803cb0d0ede8cc794efd045fdbdb353bedc5007098f22a896a5804bf819edd2d6b74e6059d2e9b37332b14facf9db560e6eee
   languageName: node
   linkType: hard
 
@@ -12987,7 +12887,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/http-proxy@npm:^1.17.15, @types/http-proxy@npm:^1.17.8":
+"@types/http-proxy@npm:^1.17.8":
   version: 1.17.16
   resolution: "@types/http-proxy@npm:1.17.16"
   dependencies:
@@ -17027,7 +16927,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"debug@npm:4, debug@npm:^4, debug@npm:^4.0.0, debug@npm:^4.1.0, debug@npm:^4.1.1, debug@npm:^4.3.1, debug@npm:^4.3.2, debug@npm:^4.3.4, debug@npm:^4.3.5, debug@npm:^4.3.6, debug@npm:^4.4.0, debug@npm:^4.4.1":
+"debug@npm:4, debug@npm:^4, debug@npm:^4.0.0, debug@npm:^4.1.0, debug@npm:^4.1.1, debug@npm:^4.3.1, debug@npm:^4.3.2, debug@npm:^4.3.4, debug@npm:^4.3.5, debug@npm:^4.4.0, debug@npm:^4.4.1":
   version: 4.4.1
   resolution: "debug@npm:4.4.1"
   dependencies:
@@ -18422,7 +18322,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"express@npm:5.1.0, express@npm:^5.0.0, express@npm:^5.0.1":
+"express@npm:5.1.0, express@npm:^5.0.1":
   version: 5.1.0
   resolution: "express@npm:5.1.0"
   dependencies:
@@ -19171,17 +19071,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"gaxios@npm:^7.0.0-rc.1, gaxios@npm:^7.0.0-rc.4":
-  version: 7.0.0-rc.6
-  resolution: "gaxios@npm:7.0.0-rc.6"
-  dependencies:
-    extend: "npm:^3.0.2"
-    https-proxy-agent: "npm:^7.0.1"
-    node-fetch: "npm:^3.3.2"
-  checksum: 10/60c688d4c65062c97bf0f33f959713df106e207065586bf5deb546ef5d02cddcba46d138c0b7eb8712950ca880fa28d3665936b19156224f8c478d9c4f817aea
-  languageName: node
-  linkType: hard
-
 "gcp-metadata@npm:^6.0.0, gcp-metadata@npm:^6.1.0":
   version: 6.1.1
   resolution: "gcp-metadata@npm:6.1.1"
@@ -19190,17 +19079,6 @@ __metadata:
     google-logging-utils: "npm:^0.0.2"
     json-bigint: "npm:^1.0.0"
   checksum: 10/f6b1a604d5888db261a9a3ca0a494338b5cdbf815efa393aa38051d814387545bbfd9f25874bf8ea36441f2052625add42658e8973648e53f9b90f151b4bad1b
-  languageName: node
-  linkType: hard
-
-"gcp-metadata@npm:^7.0.0-rc.1":
-  version: 7.0.0-rc.1
-  resolution: "gcp-metadata@npm:7.0.0-rc.1"
-  dependencies:
-    gaxios: "npm:^7.0.0-rc.1"
-    google-logging-utils: "npm:^1.0.0"
-    json-bigint: "npm:^1.0.0"
-  checksum: 10/2c58401c7945c41144bc6a44a066c050d36c34ee10e04e85ffde488afec6a3f67ebe29e697d0328aa20181b38a36aae9165896c0201387ea8cff031cdb790ab9
   languageName: node
   linkType: hard
 
@@ -19477,21 +19355,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"google-auth-library@npm:^10.0.0-rc.1":
-  version: 10.0.0-rc.3
-  resolution: "google-auth-library@npm:10.0.0-rc.3"
-  dependencies:
-    base64-js: "npm:^1.3.0"
-    ecdsa-sig-formatter: "npm:^1.0.11"
-    gaxios: "npm:^7.0.0-rc.4"
-    gcp-metadata: "npm:^7.0.0-rc.1"
-    google-logging-utils: "npm:^1.0.0"
-    gtoken: "npm:^8.0.0-rc.1"
-    jws: "npm:^4.0.0"
-  checksum: 10/d76f470ddba1d5ec84cb72b03af388722db2987a95f64c7d91169f3f67608528a327fd132bb00d74be10b08e6446906b16983cf0aa9f6fa10ac7a6d3aacff0d7
-  languageName: node
-  linkType: hard
-
 "google-auth-library@npm:^9.0.0, google-auth-library@npm:^9.15.0":
   version: 9.15.1
   resolution: "google-auth-library@npm:9.15.1"
@@ -19510,26 +19373,6 @@ __metadata:
   version: 0.0.2
   resolution: "google-logging-utils@npm:0.0.2"
   checksum: 10/f8f5ec3087ef4563d12ee1afc603e6b42b4d703c1f10c9f37b3080e6f4a2e9554e0fd9dcdce97ded5a46ead465c706ff2bc791ad2ca478ed8dc62fdc4b06cac6
-  languageName: node
-  linkType: hard
-
-"google-logging-utils@npm:^1.0.0":
-  version: 1.1.1
-  resolution: "google-logging-utils@npm:1.1.1"
-  checksum: 10/51f915d97a812af9edeccf24d43bbec5f4d98dab4f874a08083e847d495fc94185d309f21ae7f590c9f7951bc25bc3095fa4ae73113aba47e86482f69860a806
-  languageName: node
-  linkType: hard
-
-"googleapis-common@npm:^8.0.2-rc.0":
-  version: 8.0.2-rc.0
-  resolution: "googleapis-common@npm:8.0.2-rc.0"
-  dependencies:
-    extend: "npm:^3.0.2"
-    gaxios: "npm:^7.0.0-rc.4"
-    google-auth-library: "npm:^10.0.0-rc.1"
-    qs: "npm:^6.7.0"
-    url-template: "npm:^2.0.8"
-  checksum: 10/f630e8f37b2baa4980e3a66fb7736caa2a47f1f915bc6082ef844aa24be776ad2fbff39631346dcccc01c99dd5707fca02c786c6ba23ae459bcb23b125b4fb63
   languageName: node
   linkType: hard
 
@@ -19682,16 +19525,6 @@ __metadata:
     gaxios: "npm:^6.0.0"
     jws: "npm:^4.0.0"
   checksum: 10/640392261e55c9242137a81a4af8feb053b57061762cedddcbb6a0d62c2314316161808ac2529eea67d06d69fdc56d82361af50f2d840a04a87ea29e124d7382
-  languageName: node
-  linkType: hard
-
-"gtoken@npm:^8.0.0-rc.1":
-  version: 8.0.0-rc.1
-  resolution: "gtoken@npm:8.0.0-rc.1"
-  dependencies:
-    gaxios: "npm:^7.0.0-rc.1"
-    jws: "npm:^4.0.0"
-  checksum: 10/d2481344df8d9f62ec3ae7fe97b562c93dc294c7d1e7d8e1603162fe2726cfb5993f2b1a4e04388ee0f49c5fd02c1b0799dc58cebbf8af10489af8de80a72902
   languageName: node
   linkType: hard
 
@@ -20104,20 +19937,6 @@ __metadata:
     "@types/express":
       optional: true
   checksum: 10/4ece416a91d52e96f8136c5f4abfbf7ac2f39becbad21fa8b158a12d7e7d8f808287ff1ae342b903fd1f15f2249dee87fabc09e1f0e73106b83331c496d67660
-  languageName: node
-  linkType: hard
-
-"http-proxy-middleware@npm:^3.0.3":
-  version: 3.0.5
-  resolution: "http-proxy-middleware@npm:3.0.5"
-  dependencies:
-    "@types/http-proxy": "npm:^1.17.15"
-    debug: "npm:^4.3.6"
-    http-proxy: "npm:^1.18.1"
-    is-glob: "npm:^4.0.3"
-    is-plain-object: "npm:^5.0.0"
-    micromatch: "npm:^4.0.8"
-  checksum: 10/83c1956be6451a5f4a2f3c7b3d84085dbd47e1efb5bb684c1ed668a6606c18c7c07be823b0dbba1326955b64cf88de2672492940b0b48d140215fbdb06105c9a
   languageName: node
   linkType: hard
 
@@ -21202,13 +21021,6 @@ __metadata:
   version: 1.0.1
   resolution: "json-stable-stringify-without-jsonify@npm:1.0.1"
   checksum: 10/12786c2e2f22c27439e6db0532ba321f1d0617c27ad8cb1c352a0e9249a50182fd1ba8b52a18899291604b0c32eafa8afd09e51203f19109a0537f68db2b652d
-  languageName: node
-  linkType: hard
-
-"json-stable-stringify@npm:@nolyfill/json-stable-stringify@^1":
-  version: 1.0.44
-  resolution: "@nolyfill/json-stable-stringify@npm:1.0.44"
-  checksum: 10/8e22c9d4e8a0cf9f69d89f2bfda342e35ca1e361ba4a4020c69bbce7b7753d0a7316b4e61aa5329afdee699349551b280eb5a3e78ad199764dc3ec8555081fc0
   languageName: node
   linkType: hard
 
@@ -25485,7 +25297,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"qs@npm:^6.11.0, qs@npm:^6.14.0, qs@npm:^6.7.0":
+"qs@npm:^6.11.0, qs@npm:^6.14.0":
   version: 6.14.0
   resolution: "qs@npm:6.14.0"
   dependencies:
@@ -29143,13 +28955,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"url-template@npm:^2.0.8":
-  version: 2.0.8
-  resolution: "url-template@npm:2.0.8"
-  checksum: 10/fc6a4cf6c3c3c3d7f0a0bb4405c41b81934e583b454e52ace7b2e5d7ed32ec9c2970ff1826d240c5823955fcb13531a1fc4ff6ba4569b1886a2976665353e952
-  languageName: node
-  linkType: hard
-
 "urlpattern-polyfill@npm:^10.0.0":
   version: 10.1.0
   resolution: "urlpattern-polyfill@npm:10.1.0"
@@ -29796,7 +29601,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"webpack@npm:^5.97.1, webpack@npm:^5.98.0":
+"webpack@npm:^5.97.1":
   version: 5.99.9
   resolution: "webpack@npm:5.99.9"
   dependencies:

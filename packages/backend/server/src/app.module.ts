@@ -29,20 +29,12 @@ import { StorageProviderModule } from './base/storage';
 import { RateLimiterModule } from './base/throttler';
 import { WebSocketModule } from './base/websocket';
 import { AuthModule } from './core/auth';
-import { CommentModule } from './core/comment';
 import { ServerConfigModule, ServerConfigResolverModule } from './core/config';
-import { DocStorageModule } from './core/doc';
-import { DocRendererModule } from './core/doc-renderer';
-import { DocServiceModule } from './core/doc-service';
 import { FeatureModule } from './core/features';
 import { MailModule } from './core/mail';
-import { MonitorModule } from './core/monitor';
-import { NotificationModule } from './core/notification';
 import { PermissionModule } from './core/permission';
 import { QuotaModule } from './core/quota';
-import { SelfhostModule } from './core/selfhost';
 import { StorageModule } from './core/storage';
-import { SyncModule } from './core/sync';
 import { UserModule } from './core/user';
 import { VersionModule } from './core/version';
 import { WorkspaceModule } from './core/workspaces';
@@ -50,13 +42,8 @@ import { Env } from './env';
 import { ModelsModule } from './models';
 import { CaptchaModule } from './plugins/captcha';
 import { CopilotModule } from './plugins/copilot';
-import { CustomerIoModule } from './plugins/customerio';
 import { GCloudModule } from './plugins/gcloud';
-import { IndexerModule } from './plugins/indexer';
-import { LicenseModule } from './plugins/license';
 import { OAuthModule } from './plugins/oauth';
-import { PaymentModule } from './plugins/payment';
-import { WorkerModule } from './plugins/worker';
 
 export const FunctionalityModules = [
   ClsModule.forRoot({
@@ -114,7 +101,6 @@ export const FunctionalityModules = [
   JobModule.forRoot(),
   ModelsModule,
   ScheduleModule.forRoot(),
-  MonitorModule,
 ];
 
 export class AppModuleBuilder {
@@ -154,25 +140,12 @@ export function buildAppModule(env: Env) {
     // basic
     .use(...FunctionalityModules)
 
-    // enable indexer module on graphql server and doc service
-    .useIf(() => env.flavors.graphql || env.flavors.doc, IndexerModule)
-
     // auth
     .use(UserModule, AuthModule, PermissionModule)
 
     // business modules
-    .use(
-      ServerConfigModule,
-      FeatureModule,
-      QuotaModule,
-      DocStorageModule,
-      NotificationModule,
-      MailModule
-    )
-    // renderer server only
-    .useIf(() => env.flavors.renderer, DocRendererModule)
-    // sync server only
-    .useIf(() => env.flavors.sync, SyncModule)
+    .use(ServerConfigModule, FeatureModule, QuotaModule, MailModule)
+
     // graphql server only
     .useIf(
       () => env.flavors.graphql,
@@ -181,18 +154,10 @@ export function buildAppModule(env: Env) {
       StorageModule,
       ServerConfigResolverModule,
       WorkspaceModule,
-      LicenseModule,
-      PaymentModule,
       CopilotModule,
       CaptchaModule,
-      OAuthModule,
-      CustomerIoModule,
-      CommentModule
+      OAuthModule
     )
-    // doc service only
-    .useIf(() => env.flavors.doc, DocServiceModule)
-    // self hosted server only
-    .useIf(() => env.dev || env.selfhosted, WorkerModule, SelfhostModule)
 
     // gcloud
     .useIf(() => env.gcp, GCloudModule);

@@ -2,17 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Transactional } from '@nestjs-cls/transactional';
 import { Prisma, type Workspace } from '@prisma/client';
 
-import { EventBus } from '../base';
 import { BaseModel } from './base';
-
-declare global {
-  interface Events {
-    'workspace.updated': Workspace;
-    'workspace.deleted': {
-      id: string;
-    };
-  }
-}
 
 export type { Workspace };
 export type UpdateWorkspaceInput = Pick<
@@ -28,10 +18,6 @@ export type UpdateWorkspaceInput = Pick<
 
 @Injectable()
 export class WorkspaceModel extends BaseModel {
-  constructor(private readonly event: EventBus) {
-    super();
-  }
-
   // #region workspace
   /**
    * Create a new workspace for the user, default to private.
@@ -59,8 +45,6 @@ export class WorkspaceModel extends BaseModel {
     this.logger.debug(
       `Updated workspace ${workspaceId} with data ${JSON.stringify(data)}`
     );
-
-    this.event.emit('workspace.updated', workspace);
 
     return workspace;
   }
@@ -107,16 +91,11 @@ export class WorkspaceModel extends BaseModel {
   }
 
   async delete(workspaceId: string) {
-    const rawResult = await this.db.workspace.deleteMany({
+    await this.db.workspace.deleteMany({
       where: {
         id: workspaceId,
       },
     });
-
-    if (rawResult.count > 0) {
-      this.event.emit('workspace.deleted', { id: workspaceId });
-      this.logger.log(`Workspace [${workspaceId}] deleted`);
-    }
   }
 
   async allowUrlPreview(workspaceId: string) {

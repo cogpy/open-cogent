@@ -27,7 +27,6 @@ import {
   CopilotFailedToMatchGlobalContext,
   CopilotFailedToModifyContext,
   CopilotSessionNotFound,
-  EventBus,
   type FileUpload,
   RequestMutex,
   Throttle,
@@ -53,51 +52,6 @@ import { CopilotStorage } from '../storage';
 import { MAX_EMBEDDABLE_SIZE } from '../types';
 import { getSignal, readStream } from '../utils';
 import { CopilotContextService } from './service';
-
-@InputType()
-class AddContextCategoryInput {
-  @Field(() => String)
-  contextId!: string;
-
-  @Field(() => ContextCategories)
-  type!: ContextCategories;
-
-  @Field(() => String)
-  categoryId!: string;
-
-  @Field(() => [String], { nullable: true })
-  docs!: string[] | null;
-}
-
-@InputType()
-class RemoveContextCategoryInput {
-  @Field(() => String)
-  contextId!: string;
-
-  @Field(() => ContextCategories)
-  type!: ContextCategories;
-
-  @Field(() => String)
-  categoryId!: string;
-}
-
-@InputType()
-class AddContextDocInput {
-  @Field(() => String)
-  contextId!: string;
-
-  @Field(() => String)
-  docId!: string;
-}
-
-@InputType()
-class RemoveContextDocInput {
-  @Field(() => String)
-  contextId!: string;
-
-  @Field(() => String)
-  docId!: string;
-}
 
 @InputType()
 class AddContextFileInput {
@@ -244,7 +198,6 @@ class ContextMatchedDocChunk implements DocChunkSimilarity {
 export class CopilotContextRootResolver {
   constructor(
     private readonly ac: AccessController,
-    private readonly event: EventBus,
     private readonly mutex: RequestMutex,
     private readonly chatSession: ChatSessionService,
     private readonly context: CopilotContextService,
@@ -328,32 +281,6 @@ export class CopilotContextRootResolver {
 
     const context = await this.context.create(sessionId);
     return context.id;
-  }
-
-  @Mutation(() => Boolean, {
-    description: 'queue workspace doc embedding',
-  })
-  @CallMetric('ai', 'context_queue_workspace_doc')
-  async queueWorkspaceEmbedding(
-    @CurrentUser() user: CurrentUser,
-    @Args('workspaceId') workspaceId: string,
-    @Args('docId', { type: () => [String] }) docIds: string[]
-  ): Promise<boolean> {
-    await this.ac
-      .user(user.id)
-      .workspace(workspaceId)
-      .allowLocal()
-      .assert('Workspace.Copilot');
-
-    if (this.context.canEmbedding) {
-      this.event.emit(
-        'workspace.doc.embedding',
-        docIds.map(docId => ({ workspaceId, docId }))
-      );
-      return true;
-    }
-
-    return false;
   }
 
   @Query(() => ContextWorkspaceEmbeddingStatus, {
@@ -461,132 +388,6 @@ export class CopilotContextResolver {
     }
     const session = await this.context.get(context.id);
     return session.files;
-  }
-
-  @Mutation(() => CopilotContextCategory, {
-    description: 'add a category to context',
-  })
-  @CallMetric('ai', 'context_category_add')
-  async addContextCategory(
-    @Args({ name: 'options', type: () => AddContextCategoryInput })
-    options: AddContextCategoryInput
-  ): Promise<CopilotContextCategory> {
-    const lockFlag = `${COPILOT_LOCKER}:context:${options.contextId}`;
-    await using lock = await this.mutex.acquire(lockFlag);
-    if (!lock) {
-      throw new TooManyRequest('Server is busy');
-    }
-    const session = await this.context.get(options.contextId);
-
-    try {
-      const records = await session.addCategoryRecord(
-        options.type,
-        options.categoryId,
-        options.docs || []
-      );
-
-      if (options.docs) {
-        await this.jobs.addDocEmbeddingQueue(
-          options.docs.map(docId => ({
-            workspaceId: session.workspaceId,
-            docId,
-          })),
-          { contextId: session.id, priority: 0 }
-        );
-      }
-
-      return records;
-    } catch (e: any) {
-      throw new CopilotFailedToModifyContext({
-        contextId: options.contextId,
-        message: e.message,
-      });
-    }
-  }
-
-  @Mutation(() => Boolean, {
-    description: 'remove a category from context',
-  })
-  @CallMetric('ai', 'context_category_remove')
-  async removeContextCategory(
-    @Args({ name: 'options', type: () => RemoveContextCategoryInput })
-    options: RemoveContextCategoryInput
-  ): Promise<boolean> {
-    const lockFlag = `${COPILOT_LOCKER}:context:${options.contextId}`;
-    await using lock = await this.mutex.acquire(lockFlag);
-    if (!lock) {
-      throw new TooManyRequest('Server is busy');
-    }
-    const session = await this.context.get(options.contextId);
-
-    try {
-      return await session.removeCategoryRecord(
-        options.type,
-        options.categoryId
-      );
-    } catch (e: any) {
-      throw new CopilotFailedToModifyContext({
-        contextId: options.contextId,
-        message: e.message,
-      });
-    }
-  }
-
-  @Mutation(() => CopilotContextDoc, {
-    description: 'add a doc to context',
-  })
-  @CallMetric('ai', 'context_doc_add')
-  async addContextDoc(
-    @Args({ name: 'options', type: () => AddContextDocInput })
-    options: AddContextDocInput
-  ): Promise<CopilotDocType> {
-    const lockFlag = `${COPILOT_LOCKER}:context:${options.contextId}`;
-    await using lock = await this.mutex.acquire(lockFlag);
-    if (!lock) {
-      throw new TooManyRequest('Server is busy');
-    }
-    const session = await this.context.get(options.contextId);
-
-    try {
-      const record = await session.addDocRecord(options.docId);
-
-      await this.jobs.addDocEmbeddingQueue(
-        [{ workspaceId: session.workspaceId, docId: options.docId }],
-        { contextId: session.id, priority: 0 }
-      );
-
-      return { ...record, status: record.status || null };
-    } catch (e: any) {
-      throw new CopilotFailedToModifyContext({
-        contextId: options.contextId,
-        message: e.message,
-      });
-    }
-  }
-
-  @Mutation(() => Boolean, {
-    description: 'remove a doc from context',
-  })
-  @CallMetric('ai', 'context_doc_remove')
-  async removeContextDoc(
-    @Args({ name: 'options', type: () => RemoveContextDocInput })
-    options: RemoveContextDocInput
-  ): Promise<boolean> {
-    const lockFlag = `${COPILOT_LOCKER}:context:${options.contextId}`;
-    await using lock = await this.mutex.acquire(lockFlag);
-    if (!lock) {
-      throw new TooManyRequest('Server is busy');
-    }
-    const session = await this.context.get(options.contextId);
-
-    try {
-      return await session.removeDocRecord(options.docId);
-    } catch (e: any) {
-      throw new CopilotFailedToModifyContext({
-        contextId: options.contextId,
-        message: e.message,
-      });
-    }
   }
 
   @Mutation(() => CopilotContextFile, {

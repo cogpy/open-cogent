@@ -39,8 +39,7 @@ export enum NodeEnv {
 }
 
 export enum DeploymentType {
-  Affine = 'affine',
-  Selfhosted = 'selfhosted',
+  AgentServer = 'agent',
 }
 
 export enum Platform {
@@ -56,7 +55,7 @@ export type AppEnv = {
 };
 
 globalThis.CLS_REQUEST_HOST = 'CLS_REQUEST_HOST';
-globalThis.CUSTOM_CONFIG_PATH = join(homedir(), '.affine/config');
+globalThis.CUSTOM_CONFIG_PATH = join(homedir(), '.open-agent/config');
 globalThis.readEnv = function readEnv<T>(
   env: string,
   defaultValue: T,
@@ -87,17 +86,13 @@ export class Env implements AppEnv {
   );
   DEPLOYMENT_TYPE = readEnv(
     'DEPLOYMENT_TYPE',
-    this.dev ? DeploymentType.Affine : DeploymentType.Selfhosted,
+    DeploymentType.AgentServer,
     Object.values(DeploymentType)
   );
   FLAVOR = readEnv('SERVER_FLAVOR', Flavor.AllInOne, Object.values(Flavor));
   platform = readEnv('DEPLOYMENT_PLATFORM', Platform.Unknown);
   version = pkg.version;
   projectRoot = resolve(fileURLToPath(import.meta.url), '../../');
-
-  get selfhosted() {
-    return this.DEPLOYMENT_TYPE === DeploymentType.Selfhosted;
-  }
 
   isFlavor(flavor: Flavor) {
     return this.FLAVOR === flavor || this.FLAVOR === Flavor.AllInOne;
@@ -106,9 +101,6 @@ export class Env implements AppEnv {
   get flavors() {
     return {
       graphql: this.isFlavor(Flavor.Graphql),
-      sync: this.isFlavor(Flavor.Sync),
-      renderer: this.isFlavor(Flavor.Renderer),
-      doc: this.isFlavor(Flavor.Doc),
       // Script in a special flavor, return true only when it is set explicitly
       script: this.FLAVOR === Flavor.Script,
     };

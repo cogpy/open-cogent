@@ -1,10 +1,7 @@
 import { Module } from '@nestjs/common';
 
-import { DocStorageModule } from '../doc';
-import { DocRendererModule } from '../doc-renderer';
 import { FeatureModule } from '../features';
 import { MailModule } from '../mail';
-import { NotificationModule } from '../notification';
 import { PermissionModule } from '../permission';
 import { QuotaModule } from '../quota';
 import { StorageModule } from '../storage';
@@ -12,7 +9,6 @@ import { UserModule } from '../user';
 import { WorkspacesController } from './controller';
 import { WorkspaceEvents } from './event';
 import {
-  DocHistoryResolver,
   DocResolver,
   WorkspaceBlobResolver,
   WorkspaceDocResolver,
@@ -23,14 +19,11 @@ import { WorkspaceService } from './service';
 
 @Module({
   imports: [
-    DocStorageModule,
-    DocRendererModule,
     FeatureModule,
     QuotaModule,
     StorageModule,
     UserModule,
     PermissionModule,
-    NotificationModule,
     MailModule,
   ],
   controllers: [WorkspacesController],
@@ -39,7 +32,6 @@ import { WorkspaceService } from './service';
     WorkspaceMemberResolver,
     WorkspaceDocResolver,
     DocResolver,
-    DocHistoryResolver,
     WorkspaceBlobResolver,
     WorkspaceService,
     WorkspaceEvents,

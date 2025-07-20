@@ -9,23 +9,15 @@ import {
   CopilotProviderNotSupported,
   OnEvent,
 } from '../../../base';
-import { DocReader } from '../../../core/doc';
 import { AccessController } from '../../../core/permission';
 import { Models } from '../../../models';
-import { IndexerService } from '../../indexer';
 import { CopilotContextService } from '../context';
 import { PromptService } from '../prompt';
 import {
-  buildContentGetter,
-  buildDocContentGetter,
-  buildDocKeywordSearchGetter,
   buildDocSearchGetter,
   createCodeArtifactTool,
   createConversationSummaryTool,
   createDocComposeTool,
-  createDocEditTool,
-  createDocKeywordSearchTool,
-  createDocReadTool,
   createDocSemanticSearchTool,
   createExaCrawlTool,
   createExaSearchTool,
@@ -140,7 +132,6 @@ export abstract class CopilotProvider<C = any> {
     if (options?.tools?.length) {
       this.logger.debug(`getTools: ${JSON.stringify(options.tools)}`);
       const ac = this.moduleRef.get(AccessController, { strict: false });
-      const docReader = this.moduleRef.get(DocReader, { strict: false });
       const models = this.moduleRef.get(Models, { strict: false });
       const prompt = this.moduleRef.get(PromptService, {
         strict: false,
@@ -168,15 +159,6 @@ export abstract class CopilotProvider<C = any> {
             );
             break;
           }
-          case 'docEdit': {
-            const getDocContent = buildContentGetter(ac, docReader);
-            tools.doc_edit = createDocEditTool(
-              this.factory,
-              prompt,
-              getDocContent.bind(null, options)
-            );
-            break;
-          }
           case 'docSemanticSearch': {
             const context = this.moduleRef.get(CopilotContextService, {
               strict: false,
@@ -193,26 +175,6 @@ export abstract class CopilotProvider<C = any> {
             tools.doc_semantic_search = createDocSemanticSearchTool(
               searchDocs.bind(null, options)
             );
-            break;
-          }
-          case 'docKeywordSearch': {
-            if (this.AFFiNEConfig.indexer.enabled) {
-              const indexerService = this.moduleRef.get(IndexerService, {
-                strict: false,
-              });
-              const searchDocs = buildDocKeywordSearchGetter(
-                ac,
-                indexerService
-              );
-              tools.doc_keyword_search = createDocKeywordSearchTool(
-                searchDocs.bind(null, options)
-              );
-            }
-            break;
-          }
-          case 'docRead': {
-            const getDoc = buildDocContentGetter(ac, docReader, models);
-            tools.doc_read = createDocReadTool(getDoc.bind(null, options));
             break;
           }
           case 'webSearch': {

@@ -1,12 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { getStreamAsBuffer } from 'get-stream';
 
 import { JOB_SIGNAL, OnJob, sleep } from '../../base';
 import { type MailName, MailProps, Renderers } from '../../mails';
 import { UserProps, WorkspaceProps } from '../../mails/components';
 import { Models } from '../../models';
-import { DocReader } from '../doc/reader';
-import { WorkspaceBlobStorage } from '../storage';
 import { MailSender, SendOptions } from './sender';
 
 type DynamicallyFetchedProps<Props> = {
@@ -44,8 +41,6 @@ declare global {
 export class MailJob {
   constructor(
     private readonly sender: MailSender,
-    private readonly doc: DocReader,
-    private readonly workspaceBlob: WorkspaceBlobStorage,
     private readonly models: Models
   ) {}
 
@@ -61,39 +56,15 @@ export class MailJob {
     for (const key in props) {
       // @ts-expect-error allow
       const val = props[key];
-      if (val && typeof val === 'object') {
-        if ('$$workspaceId' in val) {
-          const workspaceProps = await this.fetchWorkspaceProps(
-            val.$$workspaceId
-          );
+      if (val && typeof val === 'object' && '$$userId' in val) {
+        const userProps = await this.fetchUserProps(val.$$userId);
 
-          if (!workspaceProps) {
-            return;
-          }
-
-          if (workspaceProps.avatar) {
-            options.attachments = [
-              {
-                cid: 'workspaceAvatar',
-                filename: 'workspaceAvatar',
-                content: workspaceProps.avatar,
-                encoding: 'base64',
-              },
-            ];
-            workspaceProps.avatar = 'cid:workspaceAvatar';
-          }
-          // @ts-expect-error replacement
-          props[key] = workspaceProps;
-        } else if ('$$userId' in val) {
-          const userProps = await this.fetchUserProps(val.$$userId);
-
-          if (!userProps) {
-            return;
-          }
-
-          // @ts-expect-error replacement
-          props[key] = userProps;
+        if (!userProps) {
+          return;
         }
+
+        // @ts-expect-error replacement
+        props[key] = userProps;
       }
     }
 
@@ -114,33 +85,6 @@ export class MailJob {
     }
 
     return undefined;
-  }
-
-  private async fetchWorkspaceProps(workspaceId: string) {
-    const workspace = await this.doc.getWorkspaceContent(workspaceId);
-
-    if (!workspace) {
-      return;
-    }
-
-    const props: WorkspaceProps = {
-      name: workspace.name,
-    };
-
-    if (workspace.avatarKey) {
-      const avatar = await this.workspaceBlob.get(
-        workspace.id,
-        workspace.avatarKey
-      );
-
-      if (avatar.body) {
-        props.avatar = (await getStreamAsBuffer(avatar.body)).toString(
-          'base64'
-        );
-      }
-    }
-
-    return props;
   }
 
   private async fetchUserProps(userId: string) {

@@ -1,16 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { getStreamAsBuffer } from 'get-stream';
 
-import { Cache, JobQueue, NotFound, URLHelper } from '../../base';
-import {
-  DEFAULT_WORKSPACE_AVATAR,
-  DEFAULT_WORKSPACE_NAME,
-  Models,
-} from '../../models';
-import { DocReader } from '../doc';
+import { Cache, NotFound, URLHelper } from '../../base';
+import { Models } from '../../models';
 import { Mailer } from '../mail';
 import { WorkspaceRole } from '../permission';
-import { WorkspaceBlobStorage } from '../storage';
 
 export type InviteInfo = {
   isLink: boolean;
@@ -27,10 +20,7 @@ export class WorkspaceService {
     private readonly cache: Cache,
     private readonly models: Models,
     private readonly url: URLHelper,
-    private readonly doc: DocReader,
-    private readonly blobStorage: WorkspaceBlobStorage,
-    private readonly mailer: Mailer,
-    private readonly queue: JobQueue
+    private readonly mailer: Mailer
   ) {}
 
   async getInviteInfo(inviteId: string): Promise<InviteInfo> {
@@ -57,44 +47,6 @@ export class WorkspaceService {
       inviteeUserId: workspaceUser.userId,
       inviterUserId: workspaceUser.inviterId,
     };
-  }
-
-  async getWorkspaceInfo(workspaceId: string) {
-    const workspaceContent = await this.doc.getWorkspaceContent(workspaceId);
-
-    let avatar = DEFAULT_WORKSPACE_AVATAR;
-    if (workspaceContent?.avatarKey) {
-      const avatarBlob = await this.blobStorage.get(
-        workspaceId,
-        workspaceContent.avatarKey
-      );
-
-      if (avatarBlob.body) {
-        avatar = (await getStreamAsBuffer(avatarBlob.body)).toString('base64');
-      }
-    }
-
-    return {
-      avatar,
-      id: workspaceId,
-      name: workspaceContent?.name ?? DEFAULT_WORKSPACE_NAME,
-    };
-  }
-
-  async sendInvitationAcceptedNotification(
-    inviterId: string,
-    inviteId: string
-  ) {
-    await this.queue.add('notification.sendInvitationAccepted', {
-      inviterId,
-      inviteId,
-    });
-  }
-  async sendInvitationNotification(inviterId: string, inviteId: string) {
-    await this.queue.add('notification.sendInvitation', {
-      inviterId,
-      inviteId,
-    });
   }
 
   // ================ Team ================
@@ -134,45 +86,6 @@ export class WorkspaceService {
         });
       })
     );
-  }
-
-  async sendReviewRequestNotification(inviteId: string) {
-    const { workspaceId, inviteeUserId } = await this.getInviteInfo(inviteId);
-    if (!inviteeUserId) {
-      this.logger.error(`Invitee user not found for inviteId: ${inviteId}`);
-      return;
-    }
-
-    const owner = await this.models.workspaceUser.getOwner(workspaceId);
-    const admins = await this.models.workspaceUser.getAdmins(workspaceId);
-
-    await Promise.allSettled(
-      [owner, ...admins].map(async reviewer => {
-        await this.queue.add('notification.sendInvitationReviewRequest', {
-          reviewerId: reviewer.id,
-          inviteId,
-        });
-      })
-    );
-  }
-
-  async sendReviewApprovedNotification(inviteId: string, reviewerId: string) {
-    await this.queue.add('notification.sendInvitationReviewApproved', {
-      reviewerId,
-      inviteId,
-    });
-  }
-
-  async sendReviewDeclinedNotification(
-    userId: string,
-    workspaceId: string,
-    reviewerId: string
-  ) {
-    await this.queue.add('notification.sendInvitationReviewDeclined', {
-      reviewerId,
-      userId,
-      workspaceId,
-    });
   }
 
   async sendRoleChangedEmail(
@@ -250,28 +163,5 @@ export class WorkspaceService {
         },
       },
     });
-  }
-
-  async allocateSeats(workspaceId: string, quantity: number) {
-    const pendings = await this.models.workspaceUser.allocateSeats(
-      workspaceId,
-      quantity
-    );
-
-    if (!pendings.length) {
-      return;
-    }
-
-    const owner = await this.models.workspaceUser.getOwner(workspaceId);
-    for (const member of pendings) {
-      try {
-        await this.queue.add('notification.sendInvitation', {
-          inviterId: member.inviterId ?? owner.id,
-          inviteId: member.id,
-        });
-      } catch (e) {
-        this.logger.error('Failed to send invitation notification', e);
-      }
-    }
   }
 }

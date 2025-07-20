@@ -9,21 +9,6 @@ import { parseDoc } from '../../../native';
 
 declare global {
   interface Events {
-    'workspace.embedding': {
-      workspaceId: string;
-      enableDocEmbedding?: boolean;
-    };
-
-    'workspace.doc.embedding': Array<{
-      workspaceId: string;
-      docId: string;
-    }>;
-
-    'workspace.doc.embed.failed': {
-      contextId: string;
-      docId: string;
-    };
-
     'workspace.file.embed.finished': {
       contextId: string;
       fileId: string;
@@ -37,22 +22,6 @@ declare global {
     };
   }
   interface Jobs {
-    'copilot.embedding.docs': {
-      contextId?: string;
-      workspaceId: string;
-      docId: string;
-    };
-
-    'copilot.embedding.updateDoc': {
-      workspaceId: string;
-      docId: string;
-    };
-
-    'copilot.embedding.deleteDoc': {
-      workspaceId: string;
-      docId: string;
-    };
-
     'copilot.embedding.files': {
       contextId?: string;
       userId: string;
@@ -60,10 +29,6 @@ declare global {
       blobId: string;
       fileId: string;
       fileName: string;
-    };
-
-    'copilot.embedding.cleanupTrashedDocEmbeddings': {
-      workspaceId: string;
     };
   }
 }

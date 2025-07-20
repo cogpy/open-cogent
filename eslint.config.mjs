@@ -219,13 +219,6 @@ export default tseslint.config(
       'blocksuite/**/*.{ts,tsx}',
     ],
     rules: {
-      '@typescript-eslint/no-floating-promises': [
-        'error',
-        {
-          ignoreVoid: false,
-          ignoreIIFE: false,
-        },
-      ],
       '@typescript-eslint/await-thenable': 'error',
       '@typescript-eslint/require-array-sort-compare': 'error',
       '@typescript-eslint/no-misused-promises': ['error'],
@@ -290,10 +283,6 @@ export default tseslint.config(
       '**/e2e/**/*',
     ],
     rules: {
-      '@typescript-eslint/no-floating-promises': [
-        'error',
-        { ignoreVoid: true },
-      ],
       '@typescript-eslint/no-misused-promises': 0,
       '@typescript-eslint/no-restricted-imports': 0,
     },

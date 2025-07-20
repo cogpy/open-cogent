@@ -1516,7 +1516,6 @@ export type GetEmbeddingStatusQuery = {
 };
 
 export type GetCopilotHistoryIdsQueryVariables = Exact<{
-  workspaceId: Scalars['String']['input'];
   pagination: PaginationInput;
   options?: InputMaybe<QueryChatHistoriesInput>;
 }>;

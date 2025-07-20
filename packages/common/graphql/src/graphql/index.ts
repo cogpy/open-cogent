@@ -425,7 +425,7 @@ export const getEmbeddingStatusQuery = {
 export const getCopilotHistoryIdsQuery = {
   id: 'getCopilotHistoryIdsQuery' as const,
   op: 'getCopilotHistoryIds',
-  query: `query getCopilotHistoryIds($workspaceId: String!, $pagination: PaginationInput!, $options: QueryChatHistoriesInput) {
+  query: `query getCopilotHistoryIds($pagination: PaginationInput!, $options: QueryChatHistoriesInput) {
   currentUser {
     copilot {
       chats(pagination: $pagination, options: $options) {

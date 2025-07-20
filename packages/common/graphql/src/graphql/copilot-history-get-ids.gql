@@ -1,5 +1,4 @@
 query getCopilotHistoryIds(
-  $workspaceId: String!
   $pagination: PaginationInput!
   $options: QueryChatHistoriesInput
 ) {

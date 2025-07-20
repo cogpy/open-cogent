@@ -95,6 +95,7 @@ __metadata:
     "@vitejs/plugin-react": "npm:^4.6.0"
     "@vitejs/plugin-react-swc": "npm:^3.11.0"
     globals: "npm:^16.3.0"
+    immer: "npm:^10.1.1"
     lodash-es: "npm:^4.17.21"
     react: "npm:^19.1.0"
     react-dom: "npm:^19.1.0"
@@ -19184,6 +19185,13 @@ __metadata:
   version: 3.0.6
   resolution: "immediate@npm:3.0.6"
   checksum: 10/f9b3486477555997657f70318cc8d3416159f208bec4cca3ff3442fd266bc23f50f0c9bd8547e1371a6b5e82b821ec9a7044a4f7b944798b25aa3cc6d5e63e62
+  languageName: node
+  linkType: hard
+
+"immer@npm:^10.1.1":
+  version: 10.1.1
+  resolution: "immer@npm:10.1.1"
+  checksum: 10/9dacf1e8c201d69191ccd88dc5d733bafe166cd45a5a360c5d7c88f1de0dff974a94114d72b35f3106adfe587fcfb131c545856184a2247d89d735ad25589863
   languageName: node
   linkType: hard
 

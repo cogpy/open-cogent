@@ -1,7 +1,5 @@
 import type { UserFriendlyError } from '@afk/error';
 import {
-  addContextCategoryMutation,
-  addContextDocMutation,
   addContextFileMutation,
   cleanupCopilotSessionMutation,
   createCopilotContextMutation,
@@ -19,8 +17,6 @@ import {
   type PaginationInput,
   type QueryOptions,
   type QueryResponse,
-  removeContextCategoryMutation,
-  removeContextDocMutation,
   removeContextFileMutation,
   type RequestOptions,
   updateCopilotSessionMutation,
@@ -121,11 +117,11 @@ export class CopilotClient {
     }
   }
 
-  async getSession(workspaceId: string, sessionId: string) {
+  async getSession(sessionId: string) {
     try {
       const res = await this.gql({
         query: getCopilotSessionQuery,
-        variables: { workspaceId, sessionId },
+        variables: { sessionId },
       });
       return res.currentUser?.copilot?.chats?.edges?.[0]?.node;
     } catch (err) {
@@ -134,9 +130,7 @@ export class CopilotClient {
   }
 
   async getSessions(
-    workspaceId: string,
     pagination: PaginationInput,
-    docId?: string,
     options?: RequestOptions<
       typeof getCopilotSessionsQuery
     >['variables']['options'],
@@ -146,9 +140,7 @@ export class CopilotClient {
       const res = await this.gql({
         query: getCopilotSessionsQuery,
         variables: {
-          workspaceId,
           pagination,
-          docId,
           options,
         },
         signal,
@@ -180,9 +172,7 @@ export class CopilotClient {
   }
 
   async getHistories(
-    workspaceId: string,
     pagination: PaginationInput,
-    docId?: string,
     options?: RequestOptions<
       typeof getCopilotHistoriesQuery
     >['variables']['options']
@@ -191,9 +181,7 @@ export class CopilotClient {
       const res = await this.gql({
         query: getCopilotHistoriesQuery,
         variables: {
-          workspaceId,
           pagination,
-          docId,
           options,
         },
       });
@@ -205,9 +193,7 @@ export class CopilotClient {
   }
 
   async getHistoryIds(
-    workspaceId: string,
     pagination: PaginationInput,
-    docId?: string,
     options?: RequestOptions<
       typeof getCopilotHistoryIdsQuery
     >['variables']['options']
@@ -216,9 +202,7 @@ export class CopilotClient {
       const res = await this.gql({
         query: getCopilotHistoryIdsQuery,
         variables: {
-          workspaceId,
           pagination,
-          docId,
           options,
         },
       });
@@ -247,48 +231,24 @@ export class CopilotClient {
     }
   }
 
-  async createContext(workspaceId: string, sessionId: string) {
+  async createContext(sessionId: string) {
     const res = await this.gql({
       query: createCopilotContextMutation,
       variables: {
-        workspaceId,
         sessionId,
       },
     });
     return res.createCopilotContext;
   }
 
-  async getContextId(workspaceId: string, sessionId: string) {
+  async getContextId(sessionId: string) {
     const res = await this.gql({
       query: listContextQuery,
       variables: {
-        workspaceId,
         sessionId,
       },
     });
     return res.currentUser?.copilot?.contexts?.[0]?.id || undefined;
-  }
-
-  async addContextDoc(options: OptionsField<typeof addContextDocMutation>) {
-    const res = await this.gql({
-      query: addContextDocMutation,
-      variables: {
-        options,
-      },
-    });
-    return res.addContextDoc;
-  }
-
-  async removeContextDoc(
-    options: OptionsField<typeof removeContextDocMutation>
-  ) {
-    const res = await this.gql({
-      query: removeContextDocMutation,
-      variables: {
-        options,
-      },
-    });
-    return res.removeContextDoc;
   }
 
   async addContextFile(
@@ -318,30 +278,6 @@ export class CopilotClient {
     return res.removeContextFile;
   }
 
-  async addContextCategory(
-    options: OptionsField<typeof addContextCategoryMutation>
-  ) {
-    const res = await this.gql({
-      query: addContextCategoryMutation,
-      variables: {
-        options,
-      },
-    });
-    return res.addContextCategory;
-  }
-
-  async removeContextCategory(
-    options: OptionsField<typeof removeContextCategoryMutation>
-  ) {
-    const res = await this.gql({
-      query: removeContextCategoryMutation,
-      variables: {
-        options,
-      },
-    });
-    return res.removeContextCategory;
-  }
-
   async getContextDocsAndFiles(
     workspaceId: string,
     sessionId: string,
@@ -361,7 +297,6 @@ export class CopilotClient {
   async matchContext(
     content: string,
     contextId?: string,
-    workspaceId?: string,
     limit?: number,
     scopedThreshold?: number,
     threshold?: number
@@ -371,15 +306,13 @@ export class CopilotClient {
       variables: {
         content,
         contextId,
-        workspaceId,
         limit,
         scopedThreshold,
         threshold,
       },
     });
-    const { matchFiles: files, matchWorkspaceDocs: docs } =
-      res.currentUser?.copilot?.contexts?.[0] || {};
-    return { files, docs };
+    const { matchFiles: files } = res.currentUser?.copilot?.contexts?.[0] || {};
+    return { files };
   }
 
   async chatText({

@@ -1,15 +1,15 @@
-# AFFiNE Monorepo Cli
+# Open-Agent Monorepo Cli
 
 ## Start
 
 ```bash
-yarn affine -h
+yarn oa -h
 ```
 
 ### Run build command defined in package.json
 
 ```bash
-yarn affine i18n build
+yarn oa i18n build
 # or
 yarn build -p i18n
 ```
@@ -17,7 +17,7 @@ yarn build -p i18n
 ### Run dev command defined in package.json
 
 ```bash
-yarn affine web dev
+yarn oa web dev
 # or
 yarn dev -p i18n
 ```
@@ -25,9 +25,9 @@ yarn dev -p i18n
 ### Clean
 
 ```bash
-yarn affine clean --dist --rust
+yarn oa clean --dist --rust
 # clean node_modules
-yarn affine clean --node-modules
+yarn oa clean --node-modules
 ```
 
 ### Init
@@ -35,14 +35,14 @@ yarn affine clean --node-modules
 > Generate files that make the monorepo work properly, the per project codegen will not be included anymore
 
 ```bash
-yarn affine init
+yarn oa init
 ```
 
 ## Tricks
 
 ### Define scripts to run a .ts files without `--loader ts-node/esm/transpile-only`
 
-`affine run` will automatically inject `ts-node`'s transpile service(swc used) for your scripts
+`oa run` will automatically inject `ts-node`'s transpile service(swc used) for your scripts
 
 ```json
 {
@@ -54,7 +54,7 @@ yarn affine init
 ```
 
 ```bash
-affine @afk/demo dev
+oa @afk/demo dev
 ```
 
 or
@@ -66,7 +66,7 @@ or
     "dev": "r ./src/index.ts"
   },
   "devDependencies": {
-    "@affine-tools/cli": "workspace:*"
+    "@afk-tools/cli": "workspace:*"
   }
 }
 ```
@@ -74,34 +74,34 @@ or
 ### Short your key presses
 
 ```bash
-# af is also available for running the scripts
-yarn af web build
+# oa is also available for running the scripts
+yarn oa web build
 ```
 
 #### by custom shell script
 
-> personally, I use 'af'
+> personally, I use 'oa'
 
-create file `af` in the root of AFFiNE project with the following content
+create file `oa` in the root of Open-Agent project with the following content
 
 ```bash
 #!/usr/bin/env sh
-./tools/scripts/bin/runner.js affine.ts $@
+./tools/scripts/bin/runner.js oa.ts $@
 ```
 
 or on windows:
 
 ```cmd
-node "./tools/cli/bin/runner.js" affine.ts %*
+node "./tools/cli/bin/runner.js" oa.ts %*
 ```
 
 and give it executable permission
 
 ```bash
-chmod a+x ./af
+chmod a+x ./oa
 
 # now you can run scripts with simply
-./af web build
+./oa web build
 ```
 
 if you want to go further, but for vscode(or other forks) only, add the following to your `.vscode/settings.json`
@@ -123,9 +123,5 @@ if you want to go further, but for vscode(or other forks) only, add the followin
 restart all the integrated terminals and now you get:
 
 ```bash
-af web build
-```
-
-```
-
+oa web build
 ```

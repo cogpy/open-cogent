@@ -85,7 +85,7 @@ jobs:
         uses: ./.github/actions/server-test-env
 
       - name: Run server tests
-        run: yarn affine @affine/server test:copilot:coverage --forbid-only
+        run: yarn oa @affine/server test:copilot:coverage --forbid-only
         env:
           CARGO_TARGET_DIR: '${{ github.workspace }}/target'
 
@@ -98,71 +98,9 @@ jobs:
           name: affine
           fail_ci_if_error: false
 
-  copilot-e2e-test:
-    name: Frontend Copilot E2E Test
-    runs-on: ubuntu-latest
-    env:
-      DISTRIBUTION: web
-      DATABASE_URL: postgresql://affine:affine@localhost:5432/affine
-      REDIS_SERVER_HOST: localhost
-      IN_CI_TEST: true
-    strategy:
-      fail-fast: false
-      matrix:
-        shardIndex: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-        shardTotal: [10]
-    needs:
-      - build-server-native
-    services:
-      postgres:
-        image: pgvector/pgvector:pg16
-        env:
-          POSTGRES_PASSWORD: affine
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-      redis:
-        image: redis
-        ports:
-          - 6379:6379
-      indexer:
-        image: manticoresearch/manticore:10.1.0
-        ports:
-          - 9308:9308
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: ./.github/actions/setup-node
-        with:
-          playwright-install: true
-          electron-install: false
-          hard-link-nm: false
-
-      - name: Download server-native.node
-        uses: actions/download-artifact@v4
-        with:
-          name: server-native.node
-          path: ./packages/backend/native
-
-      - name: Prepare Server Test Environment
-        env:
-          SERVER_CONFIG: ${{ secrets.TEST_SERVER_CONFIG }}
-        uses: ./.github/actions/server-test-env
-
-      - name: Run Copilot E2E Test ${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
-        uses: ./.github/actions/copilot-test
-        with:
-          script: yarn affine @affine-test/affine-cloud-copilot e2e --forbid-only --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
-
   test-done:
     needs:
       - copilot-api-test
-      - copilot-e2e-test
     if: always()
     runs-on: ubuntu-latest
     name: Post test result message

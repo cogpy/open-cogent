@@ -8,14 +8,14 @@
 
 ```bash
 # the root ca file will be located at `./.docker/dev/certs/ca`
-yarn affine cert --install
+yarn oa cert --install
 ```
 
 ### 2. Generate domain certs
 
 ```bash
 # certificates will be located at `./.docker/dev/certs/${domain}`
-yarn affine cert --domain open-agent.localhost
+yarn oa cert --domain open-agent.localhost
 ```
 
 ### 3. Enable nginx service in compose.yml

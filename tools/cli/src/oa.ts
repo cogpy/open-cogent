@@ -1,4 +1,4 @@
-import { Workspace } from '@affine-tools/utils/workspace';
+import { Workspace } from '@afk-tools/utils/workspace';
 import { Cli } from 'clipanion';
 
 import { BuildCommand } from './build';
@@ -11,9 +11,9 @@ import { InitCommand } from './init';
 import { RunCommand } from './run';
 
 const cli = new Cli<CliContext>({
-  binaryName: 'affine',
+  binaryName: 'oa',
   binaryVersion: '0.0.0',
-  binaryLabel: 'AFFiNE Monorepo Tools',
+  binaryLabel: 'Open-Agent Monorepo Tools',
   enableColors: true,
   enableCapture: true,
 });

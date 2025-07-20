@@ -69,7 +69,7 @@ export const TurboRendererConfigFactory =
  *   b.  In `turbo-painter.worker.ts` (the painter worker entry point):
  *     - Import and add the new Painter Worker extension to the `ViewportLayoutPainter` constructor's extension array. See how `ParagraphLayoutPainterExtension` is added as a reference.
  *
- * 3.  **Run `yarn affine init`** from the workspace root to update generated configuration files (`workspace.gen.ts`) and the lockfile (`yarn.lock`).
+ * 3.  **Run `yarn oa init`** from the workspace root to update generated configuration files (`workspace.gen.ts`) and the lockfile (`yarn.lock`).
  *
  * **Note:** Always ensure the directory structure and export patterns match the `paragraph` block (`blocksuite/affine/blocks/block-paragraph`) for consistency.
  */

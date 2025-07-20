@@ -1,6 +1,6 @@
-import { Path } from '@affine-tools/utils/path';
-import { execAsync } from '@affine-tools/utils/process';
-import type { Package, PackageName } from '@affine-tools/utils/workspace';
+import { Path } from '@afk-tools/utils/path';
+import { execAsync } from '@afk-tools/utils/process';
+import type { Package, PackageName } from '@afk-tools/utils/workspace';
 
 import { Option, PackageCommand } from './command';
 

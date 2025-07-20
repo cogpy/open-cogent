@@ -70,7 +70,7 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
-    "@affine-tools/utils": "workspace:*",
+    "@afk-tools/utils": "workspace:*",
     "@blocksuite/affine": "workspace:*",
     "@chromatic-com/storybook": "^4.0.0",
     "@storybook/react": "^9.0.0",

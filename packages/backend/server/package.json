@@ -120,8 +120,8 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
-    "@affine-tools/cli": "workspace:*",
-    "@affine-tools/utils": "workspace:*",
+    "@afk-tools/cli": "workspace:*",
+    "@afk-tools/utils": "workspace:*",
     "@afk/graphql": "workspace:*",
     "@faker-js/faker": "^9.6.0",
     "@nestjs/testing": "patch:@nestjs/testing@npm%3A10.4.15#~/.yarn/patches/@nestjs-testing-npm-10.4.15-d591a1705a.patch",

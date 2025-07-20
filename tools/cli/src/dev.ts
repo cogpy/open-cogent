@@ -1,4 +1,4 @@
-import type { PackageName } from '@affine-tools/utils/workspace';
+import type { PackageName } from '@afk-tools/utils/workspace';
 
 import { Option, PackageSelectorCommand } from './command';
 

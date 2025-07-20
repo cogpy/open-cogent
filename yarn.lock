@@ -12,11 +12,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@affine-tools/cli@workspace:*, @affine-tools/cli@workspace:tools/cli":
+"@afk-tools/cli@workspace:*, @afk-tools/cli@workspace:tools/cli":
   version: 0.0.0-use.local
-  resolution: "@affine-tools/cli@workspace:tools/cli"
+  resolution: "@afk-tools/cli@workspace:tools/cli"
   dependencies:
-    "@affine-tools/utils": "workspace:*"
+    "@afk-tools/utils": "workspace:*"
     "@aws-sdk/client-s3": "npm:^3.709.0"
     "@clack/core": "npm:^0.4.0"
     "@clack/prompts": "npm:^0.10.0"
@@ -63,9 +63,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@affine-tools/utils@workspace:*, @affine-tools/utils@workspace:tools/utils":
+"@afk-tools/utils@workspace:*, @afk-tools/utils@workspace:tools/utils":
   version: 0.0.0-use.local
-  resolution: "@affine-tools/utils@workspace:tools/utils"
+  resolution: "@afk-tools/utils@workspace:tools/utils"
   dependencies:
     "@types/lodash-es": "npm:^4.17.12"
     "@types/node": "npm:^22.0.0"
@@ -132,7 +132,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@afk/component@workspace:packages/frontend/component"
   dependencies:
-    "@affine-tools/utils": "workspace:*"
+    "@afk-tools/utils": "workspace:*"
     "@afk/debug": "workspace:*"
     "@afk/error": "workspace:*"
     "@afk/graphql": "workspace:*"
@@ -272,7 +272,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@afk/monorepo@workspace:."
   dependencies:
-    "@affine-tools/cli": "workspace:*"
+    "@afk-tools/cli": "workspace:*"
     "@capacitor/cli": "npm:^7.0.0"
     "@eslint/js": "npm:^9.16.0"
     "@faker-js/faker": "npm:^9.3.0"
@@ -340,8 +340,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@afk/server@workspace:packages/backend/server"
   dependencies:
-    "@affine-tools/cli": "workspace:*"
-    "@affine-tools/utils": "workspace:*"
+    "@afk-tools/cli": "workspace:*"
+    "@afk-tools/utils": "workspace:*"
     "@afk/graphql": "workspace:*"
     "@afk/reader": "workspace:*"
     "@afk/server-native": "workspace:*"

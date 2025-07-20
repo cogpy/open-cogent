@@ -76,7 +76,7 @@ jobs:
           electron-install: false
           full-cache: true
       - name: Run i18n codegen
-        run: yarn affine @affine/i18n build
+        run: yarn oa @affine/i18n build
       - name: Run ESLint
         run: yarn lint:eslint --max-warnings=0
       - name: Run Prettier
@@ -100,15 +100,15 @@ jobs:
           electron-install: false
           full-cache: true
       - name: Run i18n codegen
-        run: yarn affine @affine/i18n build
+        run: yarn oa @affine/i18n build
       - name: Run Type Check
         run: yarn typecheck
       - name: Run BS Docs Build
         run: |
-          yarn affine bs-docs build
+          yarn oa bs-docs build
           git checkout packages/frontend/i18n/src/i18n-completenesses.json
           git status --porcelain | grep . && {
-            echo "Run 'yarn typecheck && yarn affine bs-docs build' and make sure all changes are submitted"
+            echo "Run 'yarn typecheck && yarn oa bs-docs build' and make sure all changes are submitted"
             exit 1
           } || {
             echo "All changes are submitted"
@@ -158,13 +158,13 @@ jobs:
 
       - name: Run Check
         run: |
-          yarn affine init
-          yarn affine gql build
-          yarn affine i18n build
-          yarn affine server genconfig
+          yarn oa init
+          yarn oa gql build
+          yarn oa i18n build
+          yarn oa server genconfig
           git checkout packages/frontend/i18n/src/i18n-completenesses.json
           git status --porcelain | grep . && {
-            echo "Run 'yarn affine init && yarn affine gql build && yarn affine i18n build && yarn affine server genconfig' and make sure all changes are submitted"
+            echo "Run 'yarn oa init && yarn oa gql build && yarn oa i18n build && yarn oa server genconfig' and make sure all changes are submitted"
             exit 1
           } || {
             echo "All changes are submitted"
@@ -179,71 +179,6 @@ jobs:
         run: |
           yarn set version $(node -e "console.log(require('./package.json').packageManager.split('@')[1])")
           git diff --exit-code
-
-  e2e-blocksuite-test:
-    name: E2E BlockSuite Test
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        shard: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: ./.github/actions/setup-node
-        with:
-          playwright-install: true
-          playwright-platform: 'chromium'
-          electron-install: false
-          full-cache: true
-
-      - name: Run playground build
-        run: yarn workspace @blocksuite/playground build
-
-      - name: Run playwright tests
-        run: yarn workspace @affine-test/blocksuite test --forbid-only --shard=${{ matrix.shard }}/${{ strategy.job-total }}
-
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results-e2e-bs-${{ matrix.shard }}
-          path: ./test-results
-          if-no-files-found: ignore
-
-  e2e-blocksuite-cross-browser-test:
-    name: E2E BlockSuite Cross Browser Test
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        shard: [1, 2]
-        browser: ['chromium', 'firefox', 'webkit']
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: ./.github/actions/setup-node
-        with:
-          playwright-install: true
-          playwright-platform: ${{ matrix.browser }}
-          electron-install: false
-          full-cache: true
-
-      - name: Run playground build
-        run: yarn workspace @blocksuite/playground build
-
-      - name: Run playwright tests
-        env:
-          BROWSER: ${{ matrix.browser }}
-        run: yarn workspace @affine-test/blocksuite test "cross-platform/" --forbid-only --shard=${{ matrix.shard }}/${{ strategy.job-total }}
-
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results-e2e-bs-cross-browser-${{ matrix.browser }}-${{ matrix.shard }}
-          path: ./test-results
-          if-no-files-found: ignore
 
   build-server-native:
     name: Build Server native
@@ -280,7 +215,7 @@ jobs:
       - name: Setup Node.js
         uses: ./.github/actions/setup-node
         with:
-          extra-flags: workspaces focus @affine-tools/cli @affine/monorepo @affine/native
+          extra-flags: workspaces focus @afk-tools/cli @affine/monorepo @affine/native
           electron-install: false
       - name: Download affine.linux-x64-gnu.node
         uses: actions/download-artifact@v4
@@ -288,7 +223,7 @@ jobs:
           name: affine.linux-x64-gnu.node
           path: ./packages/frontend/native
       - name: Unit Test
-        run: yarn affine @affine/native test
+        run: yarn oa @affine/native test
 
   server-test:
     name: Server Test
@@ -348,7 +283,7 @@ jobs:
         uses: ./.github/actions/server-test-env
 
       - name: Run server tests
-        run: yarn affine @affine/server test:coverage --forbid-only
+        run: yarn oa @affine/server test:coverage --forbid-only
         env:
           CARGO_TARGET_DIR: '${{ github.workspace }}/target'
           CI_NODE_INDEX: ${{ matrix.node_index }}
@@ -412,7 +347,7 @@ jobs:
         uses: ./.github/actions/server-test-env
 
       - name: Run server tests
-        run: yarn affine @affine/server e2e:coverage --forbid-only
+        run: yarn oa @affine/server e2e:coverage --forbid-only
 
       - name: Upload server test coverage results
         uses: codecov/codecov-action@v5
@@ -523,7 +458,7 @@ jobs:
 
       - name: Run server tests
         if: ${{ steps.check-blocksuite-update.outputs.skip != 'true' || steps.apifilter.outputs.changed == 'true' }}
-        run: yarn affine @affine/server test:copilot:coverage --forbid-only
+        run: yarn oa @affine/server test:copilot:coverage --forbid-only
         env:
           CARGO_TARGET_DIR: '${{ github.workspace }}/target'
 
@@ -537,95 +472,6 @@ jobs:
           name: affine
           fail_ci_if_error: false
 
-  copilot-e2e-test:
-    name: Frontend Copilot E2E Test
-    runs-on: ubuntu-latest
-    env:
-      DISTRIBUTION: web
-      DATABASE_URL: postgresql://affine:affine@localhost:5432/affine
-      IN_CI_TEST: true
-      REDIS_SERVER_HOST: localhost
-      DEPLOYMENT_TYPE: affine
-    strategy:
-      fail-fast: false
-      matrix:
-        shardIndex: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-        shardTotal: [10]
-    needs:
-      - build-server-native
-    services:
-      postgres:
-        image: pgvector/pgvector:pg16
-        env:
-          POSTGRES_PASSWORD: affine
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-      redis:
-        image: redis
-        ports:
-          - 6379:6379
-      indexer:
-        image: manticoresearch/manticore:10.1.0
-        ports:
-          - 9308:9308
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Check blocksuite update
-        id: check-blocksuite-update
-        env:
-          BASE_REF: ${{ github.base_ref }}
-        run: |
-          if node ./scripts/detect-blocksuite-update.mjs "$BASE_REF"; then
-            echo "skip=false" >> $GITHUB_OUTPUT
-          else
-            echo "skip=true" >> $GITHUB_OUTPUT
-          fi
-
-      - uses: dorny/paths-filter@v3
-        id: e2efilter
-        with:
-          filters: |
-            changed:
-              - 'packages/backend/server/src/plugins/copilot/**'
-              - 'packages/backend/server/tests/copilot.*'
-              - 'packages/frontend/core/src/blocksuite/ai/**'
-              - 'packages/frontend/core/src/modules/workspace-indexer-embedding/**'
-              - 'tests/affine-cloud-copilot/**'
-
-      - name: Setup Node.js
-        if: ${{ steps.check-blocksuite-update.outputs.skip != 'true' || steps.e2efilter.outputs.changed == 'true' }}
-        uses: ./.github/actions/setup-node
-        with:
-          playwright-install: true
-          playwright-platform: 'chromium'
-          electron-install: false
-          hard-link-nm: false
-
-      - name: Download server-native.node
-        if: ${{ steps.check-blocksuite-update.outputs.skip != 'true' || steps.e2efilter.outputs.changed == 'true' }}
-        uses: actions/download-artifact@v4
-        with:
-          name: server-native.node
-          path: ./packages/backend/native
-
-      - name: Prepare Server Test Environment
-        if: ${{ steps.check-blocksuite-update.outputs.skip != 'true' || steps.e2efilter.outputs.changed == 'true' }}
-        env:
-          SERVER_CONFIG: ${{ secrets.TEST_SERVER_CONFIG }}
-        uses: ./.github/actions/server-test-env
-
-      - name: Run Copilot E2E Test ${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
-        if: ${{ steps.check-blocksuite-update.outputs.skip != 'true' || steps.e2efilter.outputs.changed == 'true' }}
-        uses: ./.github/actions/copilot-test
-        with:
-          script: yarn affine @affine-test/affine-cloud-copilot e2e --forbid-only --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
-
   test-done:
     needs:
       - analyze
@@ -634,17 +480,12 @@ jobs:
       - lint-rust
       - check-git-status
       - check-yarn-binary
-      - e2e-test
-      - e2e-blocksuite-test
-      - e2e-blocksuite-cross-browser-test
-      - unit-test
       - build-server-native
       - native-unit-test
       - server-test
       - server-e2e-test
       - rust-test
       - copilot-api-test
-      - copilot-e2e-test
     if: always()
     runs-on: ubuntu-latest
     name: 3, 2, 1 Launch

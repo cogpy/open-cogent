@@ -11,7 +11,7 @@ yarn
 ### Build Native binding
 
 ```bash
-yarn affine @afk/server-native build
+yarn oa @afk/server-native build
 ```
 
 ### Run server

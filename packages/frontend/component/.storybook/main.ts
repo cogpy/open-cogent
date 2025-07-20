@@ -21,8 +21,8 @@ export default {
   docs: {},
 
   async viteFinal(config, _options) {
-    const { getBuildConfig } = await import('@affine-tools/utils/build-config');
-    const { Package } = await import('@affine-tools/utils/workspace');
+    const { getBuildConfig } = await import('@afk-tools/utils/build-config');
+    const { Package } = await import('@afk-tools/utils/workspace');
 
     return mergeConfig(config, {
       plugins: [

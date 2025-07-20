@@ -1,11 +1,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 
-import type { Path } from '@affine-tools/utils/path';
-import {
-  type Package,
-  Workspace,
-  yarnList,
-} from '@affine-tools/utils/workspace';
+import type { Path } from '@afk-tools/utils/path';
+import { type Package, Workspace, yarnList } from '@afk-tools/utils/workspace';
 import { applyEdits, modify } from 'jsonc-parser';
 import { type BuiltInParserName, format } from 'prettier';
 
@@ -30,7 +26,7 @@ export class InitCommand extends Command {
       [this.workspace.join('tsconfig.json'), this.genProjectTsConfig, 'json'],
       [
         this.workspace
-          .getPackage('@affine-tools/utils')
+          .getPackage('@afk-tools/utils')
           .join('src/workspace.gen.ts'),
         this.genWorkspaceInfo,
         'typescript',

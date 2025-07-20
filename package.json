@@ -17,11 +17,12 @@
     "node": "<23.0.0"
   },
   "scripts": {
-    "affine": "r affine.ts",
-    "af": "r affine.ts",
+    "affine": "yarn oa",
+    "af": "yarn oa",
+    "oa": "r oa.ts",
     "dev:web": "yarn workspace @afk/app dev",
-    "dev": "yarn affine dev",
-    "build": "yarn affine build",
+    "dev": "yarn oa dev",
+    "build": "yarn oa build",
     "lint:eslint": "cross-env NODE_OPTIONS=\"--max-old-space-size=8192\" eslint --report-unused-disable-directives-severity=off . --cache",
     "lint:eslint:fix": "yarn lint:eslint --fix --fix-type problem,suggestion,layout",
     "lint:prettier": "prettier --ignore-unknown --cache --check .",
@@ -33,7 +34,7 @@
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
     "typecheck": "tsc -b tsconfig.json --verbose",
-    "postinstall": "yarn affine init && yarn husky"
+    "postinstall": "yarn oa init && yarn husky"
   },
   "lint-staged": {
     "*": "prettier --write --ignore-unknown --cache",
@@ -49,7 +50,7 @@
     ]
   },
   "devDependencies": {
-    "@affine-tools/cli": "workspace:*",
+    "@afk-tools/cli": "workspace:*",
     "@capacitor/cli": "^7.0.0",
     "@eslint/js": "^9.16.0",
     "@faker-js/faker": "^9.3.0",

@@ -1251,7 +1251,7 @@ export const PackageList = [
   },
   {
     location: 'tools/cli',
-    name: '@affine-tools/cli',
+    name: '@afk-tools/cli',
     workspaceDependencies: ['tools/utils'],
   },
   {
@@ -1266,7 +1266,7 @@ export const PackageList = [
   },
   {
     location: 'tools/utils',
-    name: '@affine-tools/utils',
+    name: '@afk-tools/utils',
     workspaceDependencies: [],
   },
 ];
@@ -1358,7 +1358,7 @@ export type PackageName =
   | '@types/build-config'
   | '@types/affine__env'
   | '@afk/changelog'
-  | '@affine-tools/cli'
+  | '@afk-tools/cli'
   | '@afk/commitlint-config'
   | '@afk/copilot-result'
-  | '@affine-tools/utils';
+  | '@afk-tools/utils';

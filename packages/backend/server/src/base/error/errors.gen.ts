@@ -824,7 +824,7 @@ export class CopilotFailedToMatchContext extends UserFriendlyError {
 }
 @ObjectType()
 class CopilotFailedToMatchGlobalContextDataType {
-  @Field() workspaceId!: string
+  @Field() userId!: string
   @Field() content!: string
   @Field() message!: string
 }

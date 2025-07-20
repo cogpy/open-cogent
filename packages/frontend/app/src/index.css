@@ -1,4 +1,4 @@
-@import './helper.css';
+@import 'tailwindcss';
 
 * {
   margin: 0;

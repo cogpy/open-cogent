@@ -76,9 +76,32 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@affine/changelog@workspace:tools/changelog":
+"@afk/app@workspace:packages/frontend/app":
   version: 0.0.0-use.local
-  resolution: "@affine/changelog@workspace:tools/changelog"
+  resolution: "@afk/app@workspace:packages/frontend/app"
+  dependencies:
+    "@tailwindcss/vite": "npm:^4.1.11"
+    "@types/react": "npm:^19.1.8"
+    "@types/react-dom": "npm:^19.1.6"
+    "@vitejs/plugin-react": "npm:^4.6.0"
+    "@vitejs/plugin-react-swc": "npm:^3.11.0"
+    globals: "npm:^16.3.0"
+    react: "npm:^19.1.0"
+    react-dom: "npm:^19.1.0"
+    react-resizable-panels: "npm:^3.0.3"
+    react-router: "npm:^7.7.0"
+    react-router-dom: "npm:^7.7.0"
+    tailwind-merge: "npm:^3.3.1"
+    tailwindcss: "npm:^4.1.11"
+    vite: "npm:^7.0.4"
+    vite-tsconfig-paths: "npm:^5.1.4"
+    zustand: "npm:^5.0.6"
+  languageName: unknown
+  linkType: soft
+
+"@afk/changelog@workspace:tools/changelog":
+  version: 0.0.0-use.local
+  resolution: "@afk/changelog@workspace:tools/changelog"
   dependencies:
     "@napi-rs/simple-git": "npm:^0.1.19"
     "@slack/web-api": "npm:^7.8.0"
@@ -89,9 +112,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@affine/commitlint-config@workspace:tools/commitlint":
+"@afk/commitlint-config@workspace:tools/commitlint":
   version: 0.0.0-use.local
-  resolution: "@affine/commitlint-config@workspace:tools/commitlint"
+  resolution: "@afk/commitlint-config@workspace:tools/commitlint"
   dependencies:
     "@commitlint/cli": "npm:^19.6.0"
     "@commitlint/config-conventional": "npm:^19.6.0"
@@ -99,14 +122,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@affine/component@workspace:packages/frontend/component":
+"@afk/component@workspace:packages/frontend/component":
   version: 0.0.0-use.local
-  resolution: "@affine/component@workspace:packages/frontend/component"
+  resolution: "@afk/component@workspace:packages/frontend/component"
   dependencies:
     "@affine-tools/utils": "workspace:*"
-    "@affine/debug": "workspace:*"
-    "@affine/error": "workspace:*"
-    "@affine/graphql": "workspace:*"
+    "@afk/debug": "workspace:*"
+    "@afk/error": "workspace:*"
+    "@afk/graphql": "workspace:*"
     "@atlaskit/pragmatic-drag-and-drop": "npm:^1.4.0"
     "@atlaskit/pragmatic-drag-and-drop-hitbox": "npm:^1.0.3"
     "@blocksuite/affine": "workspace:*"
@@ -175,9 +198,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@affine/copilot-result@workspace:tools/copilot-result":
+"@afk/copilot-result@workspace:tools/copilot-result":
   version: 0.0.0-use.local
-  resolution: "@affine/copilot-result@workspace:tools/copilot-result"
+  resolution: "@afk/copilot-result@workspace:tools/copilot-result"
   dependencies:
     "@slack/web-api": "npm:^7.8.0"
     "@types/node": "npm:^22.0.0"
@@ -186,9 +209,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@affine/debug@workspace:*, @affine/debug@workspace:packages/common/debug":
+"@afk/debug@workspace:*, @afk/debug@workspace:packages/common/debug":
   version: 0.0.0-use.local
-  resolution: "@affine/debug@workspace:packages/common/debug"
+  resolution: "@afk/debug@workspace:packages/common/debug"
   dependencies:
     "@types/debug": "npm:^4.1.12"
     debug: "npm:^4.4.0"
@@ -196,36 +219,36 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@affine/env@workspace:*, @affine/env@workspace:packages/common/env":
+"@afk/env@workspace:*, @afk/env@workspace:packages/common/env":
   version: 0.0.0-use.local
-  resolution: "@affine/env@workspace:packages/common/env"
+  resolution: "@afk/env@workspace:packages/common/env"
   dependencies:
     vitest: "npm:3.1.3"
     zod: "npm:^3.24.1"
   peerDependencies:
-    "@affine/templates": "workspace:*"
+    "@afk/templates": "workspace:*"
     "@blocksuite/affine": "workspace:*"
   languageName: unknown
   linkType: soft
 
-"@affine/error@workspace:*, @affine/error@workspace:packages/common/error":
+"@afk/error@workspace:*, @afk/error@workspace:packages/common/error":
   version: 0.0.0-use.local
-  resolution: "@affine/error@workspace:packages/common/error"
+  resolution: "@afk/error@workspace:packages/common/error"
   dependencies:
     vitest: "npm:3.1.3"
   peerDependencies:
-    "@affine/graphql": "workspace:*"
+    "@afk/graphql": "workspace:*"
     graphql: ^16.9.0
   languageName: unknown
   linkType: soft
 
-"@affine/graphql@workspace:*, @affine/graphql@workspace:packages/common/graphql":
+"@afk/graphql@workspace:*, @afk/graphql@workspace:packages/common/graphql":
   version: 0.0.0-use.local
-  resolution: "@affine/graphql@workspace:packages/common/graphql"
+  resolution: "@afk/graphql@workspace:packages/common/graphql"
   dependencies:
-    "@affine/debug": "workspace:*"
-    "@affine/env": "workspace:*"
-    "@affine/error": "workspace:*"
+    "@afk/debug": "workspace:*"
+    "@afk/env": "workspace:*"
+    "@afk/error": "workspace:*"
     "@graphql-codegen/add": "npm:^5.0.3"
     "@graphql-codegen/cli": "npm:5.0.6"
     "@graphql-codegen/typescript": "npm:^4.1.2"
@@ -239,9 +262,54 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@affine/reader@workspace:*, @affine/reader@workspace:packages/common/reader":
+"@afk/monorepo@workspace:.":
   version: 0.0.0-use.local
-  resolution: "@affine/reader@workspace:packages/common/reader"
+  resolution: "@afk/monorepo@workspace:."
+  dependencies:
+    "@affine-tools/cli": "workspace:*"
+    "@capacitor/cli": "npm:^7.0.0"
+    "@eslint/js": "npm:^9.16.0"
+    "@faker-js/faker": "npm:^9.3.0"
+    "@istanbuljs/schema": "npm:^0.1.3"
+    "@playwright/test": "npm:=1.52.0"
+    "@smarttools/eslint-plugin-rxjs": "npm:^1.0.8"
+    "@taplo/cli": "npm:^0.7.0"
+    "@types/eslint": "npm:^9.6.1"
+    "@types/node": "npm:^22.0.0"
+    "@typescript-eslint/parser": "npm:^8.18.0"
+    "@vanilla-extract/vite-plugin": "npm:^5.0.0"
+    "@vitest/browser": "npm:3.1.3"
+    "@vitest/coverage-istanbul": "npm:3.1.3"
+    "@vitest/ui": "npm:3.1.3"
+    cross-env: "npm:^7.0.3"
+    eslint: "npm:^9.16.0"
+    eslint-config-prettier: "npm:^10.0.0"
+    eslint-import-resolver-typescript: "npm:^4.0.0"
+    eslint-plugin-import-x: "npm:^4.5.0"
+    eslint-plugin-react: "npm:^7.37.2"
+    eslint-plugin-react-hooks: "npm:^5.1.0"
+    eslint-plugin-simple-import-sort: "npm:^12.1.1"
+    eslint-plugin-sonarjs: "npm:^3.0.1"
+    eslint-plugin-unicorn: "npm:^59.0.0"
+    happy-dom: "npm:^18.0.0"
+    husky: "npm:^9.1.7"
+    lint-staged: "npm:^16.0.0"
+    msw: "npm:^2.6.8"
+    oxlint: "npm:^1.1.0"
+    prettier: "npm:^3.4.2"
+    semver: "npm:^7.6.3"
+    serve: "npm:^14.2.4"
+    typescript: "npm:^5.7.2"
+    typescript-eslint: "npm:^8.18.0"
+    unplugin-swc: "npm:^1.5.1"
+    vite: "npm:^6.0.3"
+    vitest: "npm:3.1.3"
+  languageName: unknown
+  linkType: soft
+
+"@afk/reader@workspace:*, @afk/reader@workspace:packages/common/reader":
+  version: 0.0.0-use.local
+  resolution: "@afk/reader@workspace:packages/common/reader"
   dependencies:
     "@blocksuite/affine": "workspace:*"
     lodash-es: "npm:^4.17.21"
@@ -252,9 +320,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@affine/server-native@workspace:*, @affine/server-native@workspace:packages/backend/native":
+"@afk/server-native@workspace:*, @afk/server-native@workspace:packages/backend/native":
   version: 0.0.0-use.local
-  resolution: "@affine/server-native@workspace:packages/backend/native"
+  resolution: "@afk/server-native@workspace:packages/backend/native"
   dependencies:
     "@napi-rs/cli": "npm:3.0.0-alpha.89"
     tiktoken: "npm:^1.0.17"
@@ -262,15 +330,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@affine/server@workspace:packages/backend/server":
+"@afk/server@workspace:packages/backend/server":
   version: 0.0.0-use.local
-  resolution: "@affine/server@workspace:packages/backend/server"
+  resolution: "@afk/server@workspace:packages/backend/server"
   dependencies:
     "@affine-tools/cli": "workspace:*"
     "@affine-tools/utils": "workspace:*"
-    "@affine/graphql": "workspace:*"
-    "@affine/reader": "workspace:*"
-    "@affine/server-native": "workspace:*"
+    "@afk/graphql": "workspace:*"
+    "@afk/reader": "workspace:*"
+    "@afk/server-native": "workspace:*"
     "@ai-sdk/anthropic": "npm:^1.2.12"
     "@ai-sdk/google": "npm:^1.2.18"
     "@ai-sdk/google-vertex": "npm:^2.2.23"
@@ -390,74 +458,6 @@ __metadata:
     zod: "npm:^3.24.1"
   bin:
     run-test: ./scripts/run-test.ts
-  languageName: unknown
-  linkType: soft
-
-"@afk/app@workspace:packages/frontend/app":
-  version: 0.0.0-use.local
-  resolution: "@afk/app@workspace:packages/frontend/app"
-  dependencies:
-    "@tailwindcss/vite": "npm:^4.1.11"
-    "@types/react": "npm:^19.1.8"
-    "@types/react-dom": "npm:^19.1.6"
-    "@vitejs/plugin-react": "npm:^4.6.0"
-    "@vitejs/plugin-react-swc": "npm:^3.11.0"
-    globals: "npm:^16.3.0"
-    react: "npm:^19.1.0"
-    react-dom: "npm:^19.1.0"
-    react-resizable-panels: "npm:^3.0.3"
-    react-router: "npm:^7.7.0"
-    react-router-dom: "npm:^7.7.0"
-    tailwind-merge: "npm:^3.3.1"
-    tailwindcss: "npm:^4.1.11"
-    vite: "npm:^7.0.4"
-    vite-tsconfig-paths: "npm:^5.1.4"
-    zustand: "npm:^5.0.6"
-  languageName: unknown
-  linkType: soft
-
-"@afk/monorepo@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "@afk/monorepo@workspace:."
-  dependencies:
-    "@affine-tools/cli": "workspace:*"
-    "@capacitor/cli": "npm:^7.0.0"
-    "@eslint/js": "npm:^9.16.0"
-    "@faker-js/faker": "npm:^9.3.0"
-    "@istanbuljs/schema": "npm:^0.1.3"
-    "@playwright/test": "npm:=1.52.0"
-    "@smarttools/eslint-plugin-rxjs": "npm:^1.0.8"
-    "@taplo/cli": "npm:^0.7.0"
-    "@types/eslint": "npm:^9.6.1"
-    "@types/node": "npm:^22.0.0"
-    "@typescript-eslint/parser": "npm:^8.18.0"
-    "@vanilla-extract/vite-plugin": "npm:^5.0.0"
-    "@vitest/browser": "npm:3.1.3"
-    "@vitest/coverage-istanbul": "npm:3.1.3"
-    "@vitest/ui": "npm:3.1.3"
-    cross-env: "npm:^7.0.3"
-    eslint: "npm:^9.16.0"
-    eslint-config-prettier: "npm:^10.0.0"
-    eslint-import-resolver-typescript: "npm:^4.0.0"
-    eslint-plugin-import-x: "npm:^4.5.0"
-    eslint-plugin-react: "npm:^7.37.2"
-    eslint-plugin-react-hooks: "npm:^5.1.0"
-    eslint-plugin-simple-import-sort: "npm:^12.1.1"
-    eslint-plugin-sonarjs: "npm:^3.0.1"
-    eslint-plugin-unicorn: "npm:^59.0.0"
-    happy-dom: "npm:^18.0.0"
-    husky: "npm:^9.1.7"
-    lint-staged: "npm:^16.0.0"
-    msw: "npm:^2.6.8"
-    oxlint: "npm:^1.1.0"
-    prettier: "npm:^3.4.2"
-    semver: "npm:^7.6.3"
-    serve: "npm:^14.2.4"
-    typescript: "npm:^5.7.2"
-    typescript-eslint: "npm:^8.18.0"
-    unplugin-swc: "npm:^1.5.1"
-    vite: "npm:^6.0.3"
-    vitest: "npm:3.1.3"
   languageName: unknown
   linkType: soft
 
@@ -12250,7 +12250,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@types/affine__env@workspace:tools/@types/env"
   dependencies:
-    "@affine/env": "workspace:*"
+    "@afk/env": "workspace:*"
     "@blocksuite/affine": "workspace:*"
   languageName: unknown
   linkType: soft

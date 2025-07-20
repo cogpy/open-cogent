@@ -5,7 +5,7 @@
 ### read rootYDoc
 
 ```ts
-import { readAllDocsFromRootDoc } from '@affine/reader';
+import { readAllDocsFromRootDoc } from '@afk/reader';
 
 const docs = readAllDocsFromRootDoc(rootDoc);
 console.log(Array.from(docsWithTrash.entries()));
@@ -19,7 +19,7 @@ console.log(Array.from(docsWithTrash.entries()));
 ### read YDoc
 
 ```ts
-import { readAllBlocksFromDoc } from '@affine/reader';
+import { readAllBlocksFromDoc } from '@afk/reader';
 
 const blocks = readAllBlocksFromDoc(doc);
 ```

@@ -14,7 +14,7 @@ import { createNodeTargetConfig } from './webpack';
 
 function getBundleConfigs(pkg: Package) {
   switch (pkg.name) {
-    case '@affine/server': {
+    case '@afk/server': {
       return [createNodeTargetConfig(pkg, pkg.srcPath.join('index.ts').value)];
     }
   }

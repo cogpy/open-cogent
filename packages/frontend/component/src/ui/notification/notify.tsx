@@ -1,4 +1,4 @@
-import { UserFriendlyError } from '@affine/error';
+import { UserFriendlyError } from '@afk/error';
 import {
   InformationFillDuotoneIcon,
   SingleSelectCheckSolidIcon,

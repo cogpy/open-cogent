@@ -254,24 +254,6 @@ export default tseslint.config(
     },
   },
   {
-    files: ['packages/frontend/core/**/*'],
-    rules: {
-      'import-x/no-extraneous-dependencies': [
-        'error',
-        { includeInternal: true, whitelist: ['@affine/core'] },
-      ],
-    },
-  },
-  {
-    files: ['packages/frontend/component/**/*'],
-    rules: {
-      'import-x/no-extraneous-dependencies': [
-        'error',
-        { includeInternal: true, whitelist: ['@affine/component'] },
-      ],
-    },
-  },
-  {
     files: [
       '**/__tests__/**/*',
       '**/*.stories.tsx',

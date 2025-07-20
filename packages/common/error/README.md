@@ -1,3 +1,3 @@
-# @affine/error
+# @afk/error
 
 AFFiNE error handler utilities

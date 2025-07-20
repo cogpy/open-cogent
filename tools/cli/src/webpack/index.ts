@@ -264,7 +264,7 @@ export function createHTMLTargetConfig(
           patterns: [
             {
               // copy the shared public assets into dist
-              from: new Package('@affine/core').join('public').value,
+              from: new Package('@afk/core').join('public').value,
             },
           ],
         }),

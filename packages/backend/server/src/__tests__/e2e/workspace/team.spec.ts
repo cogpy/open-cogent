@@ -2,7 +2,7 @@ import {
   getInviteInfoQuery,
   inviteByEmailsMutation,
   WorkspaceMemberStatus,
-} from '@affine/graphql';
+} from '@afk/graphql';
 
 import { WorkspaceRole } from '../../../models';
 import { Mockers } from '../../mocks';

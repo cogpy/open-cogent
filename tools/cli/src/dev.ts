@@ -6,8 +6,8 @@ export class DevCommand extends PackageSelectorCommand {
   static override paths = [['dev'], ['d']];
 
   protected override availablePackages: PackageName[] = [
-    '@affine/web',
-    '@affine/server',
+    '@afk/web',
+    '@afk/server',
   ];
 
   protected deps = Option.Boolean('--deps', {

@@ -3,7 +3,7 @@ import { Package } from '@affine-tools/utils/workspace';
 
 import { createApp } from './create-app';
 
-globalThis.BUILD_CONFIG = getBuildConfig(new Package('@affine/web'), {
+globalThis.BUILD_CONFIG = getBuildConfig(new Package('@afk/web'), {
   mode: 'development',
   channel: 'canary',
 });

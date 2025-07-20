@@ -1154,12 +1154,12 @@ export const PackageList = [
   },
   {
     location: 'packages/backend/native',
-    name: '@affine/server-native',
+    name: '@afk/server-native',
     workspaceDependencies: [],
   },
   {
     location: 'packages/backend/server',
-    name: '@affine/server',
+    name: '@afk/server',
     workspaceDependencies: [
       'packages/common/reader',
       'packages/backend/native',
@@ -1170,22 +1170,22 @@ export const PackageList = [
   },
   {
     location: 'packages/common/debug',
-    name: '@affine/debug',
+    name: '@afk/debug',
     workspaceDependencies: [],
   },
   {
     location: 'packages/common/env',
-    name: '@affine/env',
+    name: '@afk/env',
     workspaceDependencies: [],
   },
   {
     location: 'packages/common/error',
-    name: '@affine/error',
+    name: '@afk/error',
     workspaceDependencies: [],
   },
   {
     location: 'packages/common/graphql',
-    name: '@affine/graphql',
+    name: '@afk/graphql',
     workspaceDependencies: [
       'packages/common/debug',
       'packages/common/env',
@@ -1194,7 +1194,7 @@ export const PackageList = [
   },
   {
     location: 'packages/common/reader',
-    name: '@affine/reader',
+    name: '@afk/reader',
     workspaceDependencies: ['blocksuite/affine/all'],
   },
   {
@@ -1204,7 +1204,7 @@ export const PackageList = [
   },
   {
     location: 'packages/frontend/component',
-    name: '@affine/component',
+    name: '@afk/component',
     workspaceDependencies: [
       'packages/common/debug',
       'packages/common/error',
@@ -1225,7 +1225,7 @@ export const PackageList = [
   },
   {
     location: 'tools/changelog',
-    name: '@affine/changelog',
+    name: '@afk/changelog',
     workspaceDependencies: [],
   },
   {
@@ -1235,12 +1235,12 @@ export const PackageList = [
   },
   {
     location: 'tools/commitlint',
-    name: '@affine/commitlint-config',
+    name: '@afk/commitlint-config',
     workspaceDependencies: [],
   },
   {
     location: 'tools/copilot-result',
-    name: '@affine/copilot-result',
+    name: '@afk/copilot-result',
     workspaceDependencies: [],
   },
   {
@@ -1324,19 +1324,19 @@ export type PackageName =
   | '@blocksuite/sync'
   | '@blocksuite/integration-test'
   | '@blocksuite/playground'
-  | '@affine/server-native'
-  | '@affine/server'
-  | '@affine/debug'
-  | '@affine/env'
-  | '@affine/error'
-  | '@affine/graphql'
-  | '@affine/reader'
+  | '@afk/server-native'
+  | '@afk/server'
+  | '@afk/debug'
+  | '@afk/env'
+  | '@afk/error'
+  | '@afk/graphql'
+  | '@afk/reader'
   | '@afk/app'
-  | '@affine/component'
+  | '@afk/component'
   | '@types/build-config'
   | '@types/affine__env'
-  | '@affine/changelog'
+  | '@afk/changelog'
   | '@affine-tools/cli'
-  | '@affine/commitlint-config'
-  | '@affine/copilot-result'
+  | '@afk/commitlint-config'
+  | '@afk/copilot-result'
   | '@affine-tools/utils';

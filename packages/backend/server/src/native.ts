@@ -1,4 +1,4 @@
-import serverNativeModule, { type Tokenizer } from '@affine/server-native';
+import serverNativeModule, { type Tokenizer } from '@afk/server-native';
 
 export const verifyChallengeResponse = async (
   response: any,

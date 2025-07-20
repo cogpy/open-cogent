@@ -45,16 +45,16 @@ export class RunCommand extends PackageCommand {
     examples: [
       [`See detail of each command`, '$0 -h'],
       [
-        `Run custom 'xxx' script defined in @affine/web's package.json`,
+        `Run custom 'xxx' script defined in @afk/web's package.json`,
         '$0 web xxx',
       ],
       [`Run 'init' for workspace`, '$0 init'],
       [`Clean dist of each package`, '$0 clean --dist'],
       [`Clean node_modules under each package`, '$0 clean --node-modules'],
       [`Clean everything`, '$0 clean --all'],
-      [`Run 'build' script for @affine/web`, '$0 build -p web'],
+      [`Run 'build' script for @afk/web`, '$0 build -p web'],
       [
-        `Run 'build' script for @affine/web with all deps prebuild before`,
+        `Run 'build' script for @afk/web with all deps prebuild before`,
         '$0 build -p web --deps',
       ],
     ],

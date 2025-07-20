@@ -1,5 +1,5 @@
 {
-  "name": "@affine/server",
+  "name": "@afk/server",
   "private": true,
   "version": "0.22.4",
   "description": "Affine Node.js server",
@@ -8,7 +8,7 @@
     "run-test": "./scripts/run-test.ts"
   },
   "scripts": {
-    "build": "affine bundle -p @affine/server",
+    "build": "affine bundle -p @afk/server",
     "dev": "nodemon ./src/index.ts",
     "dev:mail": "email dev -d src/mails",
     "test": "ava --concurrency 1 --serial",
@@ -25,8 +25,8 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
-    "@affine/reader": "workspace:*",
-    "@affine/server-native": "workspace:*",
+    "@afk/reader": "workspace:*",
+    "@afk/server-native": "workspace:*",
     "@ai-sdk/anthropic": "^1.2.12",
     "@ai-sdk/google": "^1.2.18",
     "@ai-sdk/google-vertex": "^2.2.23",
@@ -122,7 +122,7 @@
   "devDependencies": {
     "@affine-tools/cli": "workspace:*",
     "@affine-tools/utils": "workspace:*",
-    "@affine/graphql": "workspace:*",
+    "@afk/graphql": "workspace:*",
     "@faker-js/faker": "^9.6.0",
     "@nestjs/testing": "patch:@nestjs/testing@npm%3A10.4.15#~/.yarn/patches/@nestjs-testing-npm-10.4.15-d591a1705a.patch",
     "@types/cookie-parser": "^1.4.8",

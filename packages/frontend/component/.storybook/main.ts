@@ -51,7 +51,7 @@ export default {
         }),
       ],
       define: Object.entries(
-        getBuildConfig(new Package('@affine/web'), {
+        getBuildConfig(new Package('@afk/web'), {
           mode: 'development',
           channel: 'canary',
         })

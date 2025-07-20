@@ -46,7 +46,7 @@ yarn affine init
 
 ```json
 {
-  "name": "@affine/demo",
+  "name": "@afk/demo",
   "scripts": {
     "dev": "node ./dev.ts"
   }
@@ -54,14 +54,14 @@ yarn affine init
 ```
 
 ```bash
-affine @affine/demo dev
+affine @afk/demo dev
 ```
 
 or
 
 ```json
 {
-  "name": "@affine/demo",
+  "name": "@afk/demo",
   "scripts": {
     "dev": "r ./src/index.ts"
   },

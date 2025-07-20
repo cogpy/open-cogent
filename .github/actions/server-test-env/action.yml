@@ -4,10 +4,10 @@ description: 'Prepare Server Test Environment'
 runs:
   using: 'composite'
   steps:
-    - name: Bundle @affine/reader
+    - name: Bundle @afk/reader
       shell: bash
       run: |
-        yarn affine @affine/reader build
+        yarn affine @afk/reader build
 
     - name: Initialize database
       shell: bash
@@ -23,9 +23,9 @@ runs:
       env:
         NODE_ENV: test
       run: |
-        yarn affine @affine/server prisma generate
-        yarn affine @affine/server prisma migrate deploy
-        yarn affine @affine/server data-migration run
+        yarn affine @afk/server prisma generate
+        yarn affine @afk/server prisma migrate deploy
+        yarn affine @afk/server data-migration run
 
     - name: Import config
       shell: bash

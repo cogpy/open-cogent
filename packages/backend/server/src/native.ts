@@ -1,7 +1,5 @@
 import serverNativeModule, { type Tokenizer } from '@affine/server-native';
 
-export const mergeUpdatesInApplyWay = serverNativeModule.mergeUpdatesInApplyWay;
-
 export const verifyChallengeResponse = async (
   response: any,
   bits: number,

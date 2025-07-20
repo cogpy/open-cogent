@@ -1,4 +1,3 @@
-import { getOrCreateI18n, I18nextProvider } from '@affine/i18n';
 import { ThemeProvider } from 'next-themes';
 import type { ComponentType } from 'react';
 import '../src/theme';
@@ -48,18 +47,15 @@ const ThemeToggle = ({ context }) => {
   return null;
 };
 
-const i18n = getOrCreateI18n();
 
 export const decorators = [
   (Story: ComponentType, context) => {
     return (
       <ThemeProvider themes={['dark', 'light']} enableSystem={true}>
         <ThemeToggle context={context} />
-        <I18nextProvider i18n={i18n}>
-          <ConfirmModalProvider>
-            <Story {...context} />
-          </ConfirmModalProvider>
-        </I18nextProvider>
+        <ConfirmModalProvider>
+          <Story {...context} />
+        </ConfirmModalProvider>
       </ThemeProvider>
     );
   },

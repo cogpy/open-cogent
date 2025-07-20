@@ -2,7 +2,7 @@ import { rmSync } from 'node:fs';
 import { cpus } from 'node:os';
 
 import { Logger } from '@affine-tools/utils/logger';
-import { Package } from '@affine-tools/utils/workspace';
+import type { Package } from '@affine-tools/utils/workspace';
 import { merge } from 'lodash-es';
 import webpack from 'webpack';
 import WebpackDevServer, {

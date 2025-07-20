@@ -129,15 +129,9 @@
     { "path": "./packages/common/env" },
     { "path": "./packages/common/error" },
     { "path": "./packages/common/graphql" },
-    { "path": "./packages/common/infra" },
-    { "path": "./packages/common/nbstore" },
     { "path": "./packages/common/reader" },
     { "path": "./packages/common/y-octo/node" },
     { "path": "./packages/frontend/component" },
-    { "path": "./packages/frontend/core" },
-    { "path": "./packages/frontend/i18n" },
-    { "path": "./packages/frontend/routes" },
-    { "path": "./packages/frontend/track" },
     { "path": "./tools/cli" },
     { "path": "./tools/utils" }
   ]

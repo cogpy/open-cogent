@@ -1193,27 +1193,6 @@ export const PackageList = [
     ],
   },
   {
-    location: 'packages/common/infra',
-    name: '@toeverything/infra',
-    workspaceDependencies: [
-      'packages/common/debug',
-      'packages/common/env',
-      'packages/common/error',
-      'packages/frontend/templates',
-    ],
-  },
-  {
-    location: 'packages/common/nbstore',
-    name: '@affine/nbstore',
-    workspaceDependencies: [
-      'packages/common/reader',
-      'packages/common/infra',
-      'packages/common/error',
-      'packages/common/graphql',
-      'blocksuite/affine/all',
-    ],
-  },
-  {
     location: 'packages/common/reader',
     name: '@affine/reader',
     workspaceDependencies: ['blocksuite/affine/all'],
@@ -1230,56 +1209,9 @@ export const PackageList = [
       'packages/common/debug',
       'packages/common/error',
       'packages/common/graphql',
-      'packages/frontend/i18n',
       'tools/utils',
       'blocksuite/affine/all',
     ],
-  },
-  {
-    location: 'packages/frontend/core',
-    name: '@affine/core',
-    workspaceDependencies: [
-      'packages/frontend/component',
-      'packages/common/debug',
-      'packages/common/env',
-      'packages/common/error',
-      'packages/common/graphql',
-      'packages/frontend/i18n',
-      'packages/common/nbstore',
-      'packages/frontend/templates',
-      'packages/frontend/track',
-      'blocksuite/affine/all',
-      'blocksuite/affine/components',
-      'blocksuite/affine/shared',
-      'blocksuite/framework/global',
-      'blocksuite/framework/std',
-      'packages/common/infra',
-      'blocksuite/affine/ext-loader',
-    ],
-  },
-  {
-    location: 'packages/frontend/i18n',
-    name: '@affine/i18n',
-    workspaceDependencies: [
-      'packages/common/debug',
-      'tools/cli',
-      'tools/utils',
-    ],
-  },
-  {
-    location: 'packages/frontend/routes',
-    name: '@affine/routes',
-    workspaceDependencies: ['tools/cli', 'tools/utils'],
-  },
-  {
-    location: 'packages/frontend/templates',
-    name: '@affine/templates',
-    workspaceDependencies: [],
-  },
-  {
-    location: 'packages/frontend/track',
-    name: '@affine/track',
-    workspaceDependencies: ['packages/common/debug'],
   },
   {
     location: 'tools/@types/build-config',
@@ -1398,16 +1330,9 @@ export type PackageName =
   | '@affine/env'
   | '@affine/error'
   | '@affine/graphql'
-  | '@toeverything/infra'
-  | '@affine/nbstore'
   | '@affine/reader'
   | '@y-octo/node'
   | '@affine/component'
-  | '@affine/core'
-  | '@affine/i18n'
-  | '@affine/routes'
-  | '@affine/templates'
-  | '@affine/track'
   | '@types/build-config'
   | '@types/affine__env'
   | '@affine/changelog'

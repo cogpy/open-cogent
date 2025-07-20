@@ -22,6 +22,8 @@ import {
   updateCopilotSessionMutation,
 } from '@afk/graphql';
 
+import { gql } from '@/lib/gql';
+
 import {
   GeneralNetworkError,
   PaymentRequiredError,
@@ -406,3 +408,11 @@ export class CopilotClient {
     return queryString.toString();
   }
 }
+
+export const copilotClient = new CopilotClient(
+  gql,
+  window.fetch,
+  (url: string, eventSourceInitDict?: EventSourceInit) => {
+    return new EventSource(url, eventSourceInitDict);
+  }
+);

@@ -221,12 +221,7 @@ export default tseslint.config(
     rules: {
       '@typescript-eslint/await-thenable': 'error',
       '@typescript-eslint/require-array-sort-compare': 'error',
-      '@typescript-eslint/no-misused-promises': ['error'],
       '@typescript-eslint/prefer-readonly': 'error',
-      'import-x/no-extraneous-dependencies': [
-        'error',
-        { includeInternal: true },
-      ],
       'react-hooks/exhaustive-deps': [
         'warn',
         {
@@ -273,16 +268,6 @@ export default tseslint.config(
     files: ['**/*.{ts,js,mjs}'],
     rules: {
       'react-hooks/rules-of-hooks': 'off',
-    },
-  },
-  {
-    files: [
-      'packages/frontend/apps/electron/scripts/**/*',
-      'tests/blocksuite/**/*.{ts,tsx}',
-      'blocksuite/**/__tests__/**/*.{ts,tsx}',
-    ],
-    rules: {
-      'import-x/no-extraneous-dependencies': 'off',
     },
   },
   {

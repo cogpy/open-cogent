@@ -1,51 +1,46 @@
 import { createStore, type StoreApi } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 
+import { createRefCounter } from '@/utils/ref-count';
+
 import type { CopilotClient } from './client';
 import { createChatSessionStore } from './session-store';
+import type { ChatSessionState } from './types';
 
 export interface ChatSessionsState {
-  sessions: Record<string, StoreApi<any>>;
   activeId?: string;
 
   /* ---------- Actions ---------- */
-  create(args: {
+  acquire(args: {
     sessionId: string;
     workspaceId: string;
     client: CopilotClient;
-  }): StoreApi<any>;
-  remove(sessionId: string): void;
+  }): StoreApi<ChatSessionState>;
+  release(sessionId: string): void;
   setActive(sessionId?: string): void;
-  get(sessionId: string): StoreApi<any> | undefined;
+  get(sessionId: string): StoreApi<ChatSessionState> | undefined;
   list(): string[];
 }
 
 export function createChatSessionsStore() {
+  const registry = createRefCounter<string, StoreApi<ChatSessionState>>();
+
   return createStore<ChatSessionsState>()(
-    immer<ChatSessionsState>((set, get) => ({
-      sessions: {},
+    immer<ChatSessionsState>(set => ({
       activeId: undefined,
 
-      create: ({ sessionId, workspaceId, client }) => {
-        const existing = get().sessions[sessionId];
-        if (existing) return existing;
-        const sessionStore = createChatSessionStore({
-          sessionId,
-          workspaceId,
-          client,
-        });
-        set(state => {
-          state.sessions[sessionId] = sessionStore;
-        });
-        return sessionStore;
+      acquire: ({ sessionId, workspaceId, client }) => {
+        return registry.acquire(sessionId, () =>
+          createChatSessionStore({ sessionId, workspaceId, client })
+        );
       },
 
-      remove: (sessionId: string) => {
-        set(state => {
-          delete state.sessions[sessionId];
-          if (state.activeId === sessionId) {
-            state.activeId = undefined;
-          }
+      release: (sessionId: string) => {
+        registry.release(sessionId, () => {
+          // cleanup activeId if needed
+          set(state => {
+            if (state.activeId === sessionId) state.activeId = undefined;
+          });
         });
       },
 
@@ -55,9 +50,9 @@ export function createChatSessionsStore() {
         });
       },
 
-      get: (sessionId: string) => get().sessions[sessionId],
+      get: (sessionId: string) => registry.get(sessionId),
 
-      list: () => Object.keys(get().sessions),
+      list: () => registry.list(),
     }))
   );
 }

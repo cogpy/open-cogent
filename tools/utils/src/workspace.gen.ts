@@ -1221,7 +1221,11 @@ export const PackageList = [
   {
     location: 'packages/frontend/app',
     name: '@afk/app',
-    workspaceDependencies: ['packages/frontend/component'],
+    workspaceDependencies: [
+      'packages/frontend/component',
+      'packages/common/error',
+      'packages/common/graphql',
+    ],
   },
   {
     location: 'packages/frontend/component',

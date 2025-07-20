@@ -10,5 +10,9 @@
       "@/*": ["src/*"]
     }
   },
-  "references": [{ "path": "../component" }]
+  "references": [
+    { "path": "../component" },
+    { "path": "../../common/error" },
+    { "path": "../../common/graphql" }
+  ]
 }

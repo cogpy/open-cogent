@@ -20,9 +20,6 @@ declare global {
 export enum Flavor {
   AllInOne = 'allinone',
   Graphql = 'graphql',
-  Sync = 'sync',
-  Renderer = 'renderer',
-  Doc = 'doc',
   Script = 'script',
 }
 

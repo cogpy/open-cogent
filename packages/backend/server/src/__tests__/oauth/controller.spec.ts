@@ -131,7 +131,7 @@ test('should be able to redirect to oauth provider with client_nonce', async t =
 
   const res = await app
     .POST('/api/oauth/preflight')
-    .send({ provider: 'Google', client: 'affine', client_nonce: '1234567890' })
+    .send({ provider: 'Google', client: 'agent', client_nonce: '1234567890' })
     .expect(HttpStatus.OK);
 
   const { url } = res.body;
@@ -151,7 +151,7 @@ test('should be able to redirect to oauth provider with client_nonce', async t =
   // state should be a json string
   const state = JSON.parse(redirect.searchParams.get('state')!);
   t.is(state.provider, 'Google');
-  t.is(state.client, 'affine');
+  t.is(state.client, 'agent');
   t.falsy(state.clientNonce);
   t.truthy(state.state);
 });

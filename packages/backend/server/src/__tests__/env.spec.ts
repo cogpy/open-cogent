@@ -52,12 +52,12 @@ test('should read NAMESPACE', t => {
 
 test('should read DEPLOYMENT_TYPE', t => {
   t.deepEqual(
-    ['affine', 'selfhosted'].map(envVal => {
+    ['agent'].map(envVal => {
       process.env.DEPLOYMENT_TYPE = envVal;
       const env = new Env();
       return env.DEPLOYMENT_TYPE;
     }),
-    ['affine', 'selfhosted']
+    ['agent']
   );
 
   t.throws(() => {
@@ -68,12 +68,12 @@ test('should read DEPLOYMENT_TYPE', t => {
 
 test('should read FLAVOR', t => {
   t.deepEqual(
-    ['allinone', 'graphql', 'sync', 'renderer', 'doc', 'script'].map(envVal => {
+    ['allinone', 'graphql', 'script'].map(envVal => {
       process.env.SERVER_FLAVOR = envVal;
       const env = new Env();
       return env.FLAVOR;
     }),
-    ['allinone', 'graphql', 'sync', 'renderer', 'doc', 'script']
+    ['allinone', 'graphql', 'script']
   );
 
   t.throws(
@@ -131,14 +131,6 @@ test('should tell flavors correctly', t => {
     doc: false,
     script: true,
   });
-});
-
-test('should tell selfhosted correctly', t => {
-  process.env.DEPLOYMENT_TYPE = 'selfhosted';
-  t.true(new Env().selfhosted);
-
-  process.env.DEPLOYMENT_TYPE = 'affine';
-  t.false(new Env().selfhosted);
 });
 
 test('should tell namespaces correctly', t => {

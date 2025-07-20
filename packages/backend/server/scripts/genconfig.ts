@@ -100,9 +100,6 @@ function generateAdminConfigJson(outputPath: string) {
 }
 
 function main() {
-  generateJsonSchema(
-    ProjectRoot.join('.docker', 'selfhost', 'schema.json').toString()
-  );
   generateAdminConfigJson(
     new Package('@affine/admin').join('src/config.json').toString()
   );

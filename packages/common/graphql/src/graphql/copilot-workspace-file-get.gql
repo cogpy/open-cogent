@@ -1,5 +1,5 @@
-query getWorkspaceEmbeddingFiles($workspaceId: String!, $pagination: PaginationInput!) {
-  workspace(id: $workspaceId) {
+query getUserEmbeddingFiles($pagination: PaginationInput!) {
+  currentUser {
     embedding {
       files(pagination: $pagination) {
         totalCount

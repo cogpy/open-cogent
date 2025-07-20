@@ -762,11 +762,10 @@ export const USER_FRIENDLY_ERRORS = {
     type: 'bad_request',
     message: `Audio not provided.`,
   },
-  copilot_failed_to_add_workspace_file_embedding: {
+  copilot_failed_to_add_user_file_embedding: {
     type: 'internal_server_error',
     args: { message: 'string' },
-    message: ({ message }) =>
-      `Failed to add workspace file embedding: ${message}`,
+    message: ({ message }) => `Failed to add user file embedding: ${message}`,
   },
 
   // Quota & Limit errors

@@ -15,7 +15,7 @@ import GraphQLUpload, {
 
 import {
   BlobQuotaExceeded,
-  CopilotFailedToAddWorkspaceFileEmbedding,
+  CopilotFailedToAddUserFileEmbedding,
   Mutex,
   paginate,
   PaginationInput,
@@ -29,14 +29,14 @@ import { MAX_EMBEDDABLE_SIZE } from '../types';
 import { CopilotUserService } from './service';
 import { CopilotUserFileType, PaginatedCopilotUserFileType } from './types';
 
-@ObjectType('CopilotWorkspaceConfig')
+@ObjectType('CopilotUserConfig')
 export class CopilotUserConfigType {
   @Field(() => String)
   userId!: string;
 }
 
 /**
- * Workspace embedding config resolver
+ * User embedding config resolver
  * Public apis rate limit: 10 req/m
  * Other rate limit: 120 req/m
  */
@@ -75,9 +75,9 @@ export class CopilotUserEmbeddingConfigResolver {
   }
 
   @Mutation(() => CopilotUserFileType, {
-    name: 'addWorkspaceEmbeddingFiles',
+    name: 'addUserEmbeddingFiles',
     complexity: 2,
-    description: 'Update workspace embedding files',
+    description: 'Upload user embedding files',
   })
   async addFiles(
     @Context() ctx: { req: Request },
@@ -112,7 +112,7 @@ export class CopilotUserEmbeddingConfigResolver {
       if (e instanceof UserFriendlyError) {
         throw e;
       }
-      throw new CopilotFailedToAddWorkspaceFileEmbedding({
+      throw new CopilotFailedToAddUserFileEmbedding({
         message: e.message,
       });
     }

@@ -1,11 +1,8 @@
 #import "./fragments/copilot.gql"
 
-query getCopilotSession(
-  $workspaceId: String!
-  $sessionId: String!
-) {
+query getCopilotSession($sessionId: String!) {
   currentUser {
-    copilot(workspaceId: $workspaceId) {
+    copilot {
       chats(
         pagination: { first: 1 }
         options: { sessionId: $sessionId }

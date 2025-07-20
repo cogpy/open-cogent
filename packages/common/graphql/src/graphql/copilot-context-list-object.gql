@@ -4,14 +4,8 @@ query listContextObject(
   $contextId: String!
 ) {
   currentUser {
-    copilot(workspaceId: $workspaceId) {
+    copilot {
       contexts(sessionId: $sessionId, contextId: $contextId) {
-        docs {
-          id
-          status
-          error
-          createdAt
-        }
         files {
           id
           name
@@ -20,26 +14,6 @@ query listContextObject(
           chunkSize
           error
           status
-          createdAt
-        }
-        tags {
-          type
-          id
-          docs {
-            id
-            status
-            createdAt
-          }
-          createdAt
-        }
-        collections {
-          type
-          id
-          docs {
-            id
-            status
-            createdAt
-          }
           createdAt
         }
       }

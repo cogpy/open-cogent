@@ -4,7 +4,7 @@ query getAudioTranscription(
   $blobId: String
 ) {
   currentUser {
-    copilot(workspaceId: $workspaceId) {
+    copilot {
       audioTranscription(jobId: $jobId, blobId: $blobId) {
         id
         status

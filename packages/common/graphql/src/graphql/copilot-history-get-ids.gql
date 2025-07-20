@@ -1,12 +1,11 @@
 query getCopilotHistoryIds(
   $workspaceId: String!
   $pagination: PaginationInput!
-  $docId: String
   $options: QueryChatHistoriesInput
 ) {
   currentUser {
-    copilot(workspaceId: $workspaceId) {
-      chats(pagination: $pagination, docId: $docId, options: $options) {
+    copilot {
+      chats(pagination: $pagination, options: $options) {
         pageInfo {
           hasNextPage
           hasPreviousPage

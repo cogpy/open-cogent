@@ -6,12 +6,11 @@ query getCopilotRecentSessions(
   $offset: Int = 0
 ) {
   currentUser {
-    copilot(workspaceId: $workspaceId) {
+    copilot {
       chats(
         pagination: { first: $limit, offset: $offset }
         options: {
           action: false
-          fork: false
           sessionOrder: desc
           withMessages: false
         }

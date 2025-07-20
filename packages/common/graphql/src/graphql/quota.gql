@@ -5,14 +5,14 @@ query quota {
       name
       blobLimit
       storageQuota
-      historyPeriod
-      memberLimit
+      usedStorageQuota
+      copilotLimit
       humanReadable {
         name
         blobLimit
         storageQuota
-        historyPeriod
-        memberLimit
+        usedStorageQuota
+        copilotLimit
       }
     }
     quotaUsage {

@@ -1,5 +1,5 @@
-mutation retryAudioTranscription($workspaceId: String!, $jobId: String!) {
-  retryAudioTranscription(workspaceId: $workspaceId, jobId: $jobId) {
+mutation retryAudioTranscription($jobId: String!) {
+  retryAudioTranscription(jobId: $jobId) {
     id
     status
   }

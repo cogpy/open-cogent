@@ -1,9 +1,8 @@
-query listContext($workspaceId: String!, $sessionId: String!) {
+query listContext($sessionId: String!) {
   currentUser {
-    copilot(workspaceId: $workspaceId) {
+    copilot {
       contexts(sessionId: $sessionId) {
         id
-        workspaceId
       }
     }
   }

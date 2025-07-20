@@ -16,9 +16,6 @@ fragment CopilotChatMessage on ChatMessage {
 
 fragment CopilotChatHistory on CopilotHistories {
   sessionId
-  workspaceId
-  docId
-  parentSessionId
   promptName
   model
   optionalModels

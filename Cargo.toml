@@ -5,11 +5,6 @@ members = [
   "./packages/common/y-octo/core",
   "./packages/common/y-octo/node",
   "./packages/common/y-octo/utils",
-  "./packages/frontend/mobile-native",
-  "./packages/frontend/native",
-  "./packages/frontend/native/nbstore",
-  "./packages/frontend/native/schema",
-  "./packages/frontend/native/sqlite_v1",
 ]
 resolver = "3"
 

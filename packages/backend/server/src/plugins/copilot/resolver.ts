@@ -21,7 +21,6 @@ import GraphQLUpload from 'graphql-upload/GraphQLUpload.mjs';
 
 import {
   CallMetric,
-  CopilotDocNotFound,
   CopilotFailedToCreateMessage,
   CopilotSessionNotFound,
   type FileUpload,
@@ -34,7 +33,6 @@ import {
 } from '../../base';
 import { CurrentUser } from '../../core/auth';
 import { Admin } from '../../core/common';
-import { AccessController } from '../../core/permission';
 import { UserType } from '../../core/user';
 import type { ListSessionOptions, UpdateChatSession } from '../../models';
 import { CopilotCronJobs } from './cron';
@@ -86,29 +84,7 @@ class UpdateChatSessionInput
 }
 
 @InputType()
-class ForkChatSessionInput {
-  @Field(() => String)
-  workspaceId!: string;
-
-  @Field(() => String)
-  docId!: string;
-
-  @Field(() => String)
-  sessionId!: string;
-
-  @Field(() => String, {
-    description:
-      'Identify a message in the array and keep it with all previous messages into a forked session.',
-    nullable: true,
-  })
-  latestMessageId?: string;
-}
-
-@InputType()
 class DeleteSessionInput {
-  @Field(() => String)
-  workspaceId!: string;
-
   @Field(() => String)
   docId!: string;
 
@@ -148,9 +124,6 @@ registerEnumType(ChatHistoryOrder, { name: 'ChatHistoryOrder' });
 class QueryChatSessionsInput implements Partial<ListSessionOptions> {
   @Field(() => Boolean, { nullable: true })
   action: boolean | undefined;
-
-  @Field(() => Boolean, { nullable: true })
-  fork: boolean | undefined;
 
   @Field(() => Boolean, { nullable: true })
   pinned: boolean | undefined;
@@ -235,9 +208,6 @@ class ChatMessageType implements Partial<ChatMessage> {
 class CopilotHistoriesType implements Omit<ChatHistory, 'userId'> {
   @Field(() => String)
   sessionId!: string;
-
-  @Field(() => String, { nullable: true })
-  parentSessionId!: string | null;
 
   @Field(() => String)
   promptName!: string;
@@ -351,9 +321,6 @@ export class CopilotSessionType {
   @Field(() => String, { nullable: true })
   title!: string | null;
 
-  @Field(() => ID, { nullable: true })
-  parentSessionId!: string | null;
-
   @Field(() => String)
   promptName!: string;
 
@@ -367,13 +334,15 @@ export class CopilotSessionType {
 // ================== Resolver ==================
 
 @ObjectType('Copilot')
-export class CopilotType {}
+export class CopilotType {
+  @Field(() => String)
+  userId!: string;
+}
 
 @Throttle()
 @Resolver(() => CopilotType)
 export class CopilotResolver {
   constructor(
-    private readonly ac: AccessController,
     private readonly mutex: RequestMutex,
     private readonly chatSession: ChatSessionService,
     private readonly storage: CopilotStorage
@@ -527,35 +496,6 @@ export class CopilotResolver {
     });
   }
 
-  @Mutation(() => String, {
-    description: 'Create a chat session',
-  })
-  @CallMetric('ai', 'chat_session_fork')
-  async forkCopilotSession(
-    @CurrentUser() user: CurrentUser,
-    @Args({ name: 'options', type: () => ForkChatSessionInput })
-    options: ForkChatSessionInput
-  ): Promise<string> {
-    await this.ac.user(user.id).doc(options).allowLocal().assert('Doc.Update');
-    const lockFlag = `${COPILOT_LOCKER}:session:${user.id}:${options.workspaceId}`;
-    await using lock = await this.mutex.acquire(lockFlag);
-    if (!lock) {
-      throw new TooManyRequest('Server is busy');
-    }
-
-    if (options.workspaceId === options.docId) {
-      // filter out session create request for root doc
-      throw new CopilotDocNotFound({ docId: options.docId });
-    }
-
-    await this.chatSession.checkQuota(user.id);
-
-    return await this.chatSession.fork({
-      ...options,
-      userId: user.id,
-    });
-  }
-
   @Mutation(() => [String], {
     description: 'Cleanup sessions',
   })
@@ -565,11 +505,10 @@ export class CopilotResolver {
     @Args({ name: 'options', type: () => DeleteSessionInput })
     options: DeleteSessionInput
   ): Promise<string[]> {
-    await this.ac.user(user.id).doc(options).allowLocal().assert('Doc.Update');
     if (!options.sessionIds.length) {
       throw new NotFoundException('Session not found');
     }
-    const lockFlag = `${COPILOT_LOCKER}:session:${user.id}:${options.workspaceId}`;
+    const lockFlag = `${COPILOT_LOCKER}:session:${user.id}`;
     await using lock = await this.mutex.acquire(lockFlag);
     if (!lock) {
       throw new TooManyRequest('Server is busy');
@@ -639,21 +578,9 @@ export class CopilotResolver {
 @Throttle()
 @Resolver(() => UserType)
 export class UserCopilotResolver {
-  constructor(private readonly ac: AccessController) {}
-
   @ResolveField(() => CopilotType)
-  async copilot(
-    @CurrentUser() user: CurrentUser,
-    @Args('workspaceId', { nullable: true }) workspaceId?: string
-  ): Promise<CopilotType> {
-    if (workspaceId) {
-      await this.ac
-        .user(user.id)
-        .workspace(workspaceId)
-        .allowLocal()
-        .assert('Workspace.Copilot');
-    }
-    return { workspaceId: workspaceId || null };
+  async copilot(@CurrentUser() user: CurrentUser): Promise<CopilotType> {
+    return { userId: user.id };
   }
 }
 
@@ -688,14 +615,6 @@ export class PromptsManagementResolver {
   })
   async triggerGenerateTitleCron() {
     await this.cron.triggerGenerateMissingTitles();
-    return true;
-  }
-
-  @Mutation(() => Boolean, {
-    description: 'Trigger cleanup of trashed doc embeddings',
-  })
-  async triggerCleanupTrashedDocEmbeddings() {
-    await this.cron.triggerCleanupTrashedDocEmbeddings();
     return true;
   }
 

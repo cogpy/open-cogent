@@ -51,7 +51,6 @@ type PureChatSession = {
   messages?: ChatMessage[];
   // connect ids
   userId: string;
-  parentSessionId?: string | null;
 };
 
 type ChatSession = PureChatSession & {
@@ -65,14 +64,6 @@ type ChatSessionWithPrompt = PureChatSession & {
 };
 
 type ChatSessionBaseState = Pick<ChatSession, 'userId' | 'sessionId'>;
-
-export type ForkSessionOptions = Omit<
-  ChatSession,
-  'messages' | 'promptName' | 'promptAction'
-> & {
-  prompt: { name: string; action: string | null | undefined; model: string };
-  messages: ChatMessage[];
-};
 
 type UpdateChatSessionMessage = ChatSessionBaseState & {
   prompt: { model: string };
@@ -90,7 +81,6 @@ export type ListSessionOptions = Pick<
 > & {
   userId: string | undefined;
   action?: boolean;
-  fork?: boolean;
   limit?: number;
   skip?: number;
   sessionOrder?: 'asc' | 'desc';
@@ -159,7 +149,6 @@ export class CopilotSessionModel extends BaseModel {
         userId: state.userId,
         promptName: state.promptName,
         promptAction: state.promptAction,
-        parentSessionId: state.parentSessionId,
       },
       select: { id: true },
     });
@@ -179,30 +168,6 @@ export class CopilotSessionModel extends BaseModel {
   }
 
   @Transactional()
-  async fork(options: ForkSessionOptions): Promise<string> {
-    if (options.pinned) {
-      await this.unpin(options.userId);
-    }
-    const { messages, ...forkedState } = options;
-
-    // create session
-    const sessionId = await this.createWithPrompt({
-      ...forkedState,
-      messages: [],
-    });
-    if (options.messages.length) {
-      // save message
-      await this.models.copilotSession.updateMessages({
-        ...forkedState,
-        sessionId,
-        messages,
-      });
-    }
-
-    return sessionId;
-  }
-
-  @Transactional()
   async has(
     sessionId: string,
     userId: string,
@@ -215,19 +180,10 @@ export class CopilotSessionModel extends BaseModel {
 
   @Transactional()
   async find(state: PureChatSession) {
-    const extraCondition: Record<string, any> = {};
-    if (state.parentSessionId) {
-      // also check session id if provided session is forked session
-      extraCondition.id = state.sessionId;
-      extraCondition.parentSessionId = state.parentSessionId;
-    }
-
     const session = await this.db.aiSession.findFirst({
       where: {
         userId: state.userId,
-        parentSessionId: null,
         prompt: { action: { equals: null } },
-        ...extraCondition,
       },
       select: { id: true, deletedAt: true },
     });
@@ -252,7 +208,6 @@ export class CopilotSessionModel extends BaseModel {
     return await this.getExists(sessionId, {
       id: true,
       userId: true,
-      parentSessionId: true,
       pinned: true,
       title: true,
       promptName: true,
@@ -277,7 +232,7 @@ export class CopilotSessionModel extends BaseModel {
   private getListConditions(
     options: ListSessionOptions
   ): Prisma.AiSessionWhereInput {
-    const { userId, sessionId, action, fork } = options;
+    const { userId, sessionId, action } = options;
 
     function getNullCond<T>(
       maybeBool: boolean | undefined,
@@ -301,22 +256,8 @@ export class CopilotSessionModel extends BaseModel {
         deletedAt: null,
         pinned: getEqCond(options.pinned),
         prompt: getNullCond(action, ret => ({ action: ret })),
-        parentSessionId: getNullCond(fork),
       },
     ];
-
-    if (!action && fork) {
-      // query forked sessions from other users
-      // only query forked session if fork == true and action == false
-      conditions.push({
-        userId: { not: userId },
-        id: getEqCond(sessionId),
-        prompt: { action: null },
-        // should only find forked session
-        parentSessionId: { not: null },
-        deletedAt: null,
-      });
-    }
 
     return { OR: conditions };
   }
@@ -333,7 +274,6 @@ export class CopilotSessionModel extends BaseModel {
       select: {
         id: true,
         userId: true,
-        parentSessionId: true,
         pinned: true,
         title: true,
         promptName: true,
@@ -383,7 +323,6 @@ export class CopilotSessionModel extends BaseModel {
       sessionId,
       {
         id: true,
-        parentSessionId: true,
         pinned: true,
         prompt: true,
       },

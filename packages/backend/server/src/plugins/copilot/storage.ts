@@ -56,8 +56,8 @@ export class CopilotStorage {
   }
 
   @CallMetric('ai', 'blob_delete')
-  async delete(userId: string, workspaceId: string, key: string) {
-    await this.provider.delete(`${userId}/${workspaceId}/${key}`);
+  async delete(userId: string, key: string) {
+    await this.provider.delete(`${userId}/${key}`);
   }
 
   @CallMetric('ai', 'blob_upload')

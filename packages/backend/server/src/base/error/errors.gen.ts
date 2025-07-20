@@ -427,7 +427,7 @@ export class DocHistoryNotFound extends UserFriendlyError {
 }
 @ObjectType()
 class BlobNotFoundDataType {
-  @Field() spaceId!: string
+  @Field() userId!: string
   @Field() blobId!: string
 }
 

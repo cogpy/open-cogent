@@ -79,8 +79,6 @@ CREATE TABLE "features" (
     "configs" JSON NOT NULL DEFAULT '{}',
     "created_at" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "version" INTEGER NOT NULL DEFAULT 0,
-    "type" INTEGER NOT NULL DEFAULT 0,
 
     CONSTRAINT "features_pkey" PRIMARY KEY ("id")
 );
@@ -149,7 +147,6 @@ CREATE TABLE "ai_sessions_metadata" (
     "prompt_action" VARCHAR(32) DEFAULT '',
     "pinned" BOOLEAN NOT NULL DEFAULT false,
     "title" VARCHAR,
-    "parent_session_id" VARCHAR,
     "messageCost" INTEGER NOT NULL DEFAULT 0,
     "tokenCost" INTEGER NOT NULL DEFAULT 0,
     "created_at" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -273,7 +270,7 @@ CREATE UNIQUE INDEX "user_sessions_session_id_user_id_key" ON "user_sessions"("s
 CREATE UNIQUE INDEX "verification_tokens_type_token_key" ON "verification_tokens"("type", "token");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "features_feature_version_key" ON "features"("feature", "version");
+CREATE UNIQUE INDEX "features_feature_key" ON "features"("feature");
 
 -- CreateIndex
 CREATE INDEX "user_features_user_id_idx" ON "user_features"("user_id");

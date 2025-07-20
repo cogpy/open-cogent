@@ -1,9 +1,7 @@
 import { tool } from 'ai';
-import { omit } from 'lodash-es';
 import { z } from 'zod';
 
-import type { AccessController } from '../../../core/permission';
-import type { ChunkSimilarity, Models } from '../../../models';
+import type { ChunkSimilarity } from '../../../models';
 import type { CopilotContextService } from '../context';
 import type { ContextSession } from '../context/session';
 import type { CopilotChatOptions } from '../providers';
@@ -36,80 +34,30 @@ function clearEmbeddingChunk(chunk: ChunkSimilarity): ChunkSimilarity {
 }
 
 export const buildDocSearchGetter = (
-  ac: AccessController,
   context: CopilotContextService,
-  docContext: ContextSession | null,
-  models: Models
+  docContext: ContextSession | null
 ) => {
   const searchDocs = async (
     options: CopilotChatOptions,
     query?: string,
     abortSignal?: AbortSignal
   ) => {
-    if (!options || !query?.trim() || !options.user || !options.workspace) {
+    if (!options || !query?.trim() || !options.user) {
       return `Invalid search parameters.`;
     }
-    const canAccess = await ac
-      .user(options.user)
-      .workspace(options.workspace)
-      .can('Workspace.Read');
-    if (!canAccess)
-      return 'You do not have permission to access this workspace.';
+
     const [chunks, contextChunks] = await Promise.all([
-      context.matchFiles(options.workspace, query, 10, abortSignal),
+      context.matchFiles(query, 10, abortSignal),
       docContext?.matchFiles(query, 10, abortSignal) ?? [],
     ]);
 
-    const docChunks = await ac
-      .user(options.user)
-      .workspace(options.workspace)
-      .docs(
-        chunks.filter(c => 'docId' in c),
-        'Doc.Read'
-      );
     const fileChunks = chunks.filter(c => 'fileId' in c);
     if (contextChunks.length) {
       fileChunks.push(...contextChunks);
     }
-    if (!docChunks.length && !fileChunks.length)
-      return `No results found for "${query}".`;
+    if (!fileChunks.length) return `No results found for "${query}".`;
 
-    const docIds = docChunks.map(c => ({
-      // oxlint-disable-next-line no-non-null-assertion
-      workspaceId: options.workspace!,
-      docId: c.docId,
-    }));
-    const docAuthors = await models.doc
-      .findAuthors(docIds)
-      .then(
-        docs =>
-          new Map(
-            docs
-              .filter(d => !!d)
-              .map(doc => [doc.id, omit(doc, ['id', 'workspaceId'])])
-          )
-      );
-    const docMetas = await models.doc
-      .findMetas(docIds, { select: { title: true } })
-      .then(
-        docs =>
-          new Map(
-            docs
-              .filter(d => !!d)
-              .map(doc => [
-                doc.docId,
-                Object.assign({}, doc, docAuthors.get(doc.docId)),
-              ])
-          )
-      );
-
-    return [
-      ...fileChunks.map(clearEmbeddingChunk),
-      ...docChunks.map(c => ({
-        ...c,
-        ...docMetas.get(c.docId),
-      })),
-    ] as ChunkSimilarity[];
+    return fileChunks.map(clearEmbeddingChunk) as ChunkSimilarity[];
   };
   return searchDocs;
 };

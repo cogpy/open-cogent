@@ -40,14 +40,14 @@ export class CopilotUserService implements OnApplicationBootstrap {
   }
 
   async listFiles(
-    workspaceId: string,
+    userId: string,
     pagination?: {
       includeRead?: boolean;
     } & PaginationInput
   ) {
     return await Promise.all([
-      this.models.copilotUser.listFiles(workspaceId, pagination),
-      this.models.copilotUser.countFiles(workspaceId),
+      this.models.copilotUser.listFiles(userId, pagination),
+      this.models.copilotUser.countFiles(userId),
     ]);
   }
 

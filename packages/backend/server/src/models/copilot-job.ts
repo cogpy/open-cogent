@@ -22,7 +22,6 @@ export class CopilotJobModel extends BaseModel {
   async create(job: CreateCopilotJobInput) {
     const row = await this.db.aiJobs.create({
       data: {
-        workspaceId: job.workspaceId,
         blobId: job.blobId,
         createdBy: job.createdBy,
         type: job.type,
@@ -37,11 +36,10 @@ export class CopilotJobModel extends BaseModel {
     return row;
   }
 
-  async has(userId: string, workspaceId: string, blobId: string) {
+  async has(userId: string, blobId: string) {
     const row = await this.db.aiJobs.findFirst({
       where: {
         createdBy: userId,
-        workspaceId,
         blobId,
       },
     });
@@ -50,7 +48,6 @@ export class CopilotJobModel extends BaseModel {
 
   async getWithUser(
     userId: string,
-    workspaceId: string,
     jobId?: string,
     blobId?: string,
     type?: AiJobType
@@ -63,7 +60,6 @@ export class CopilotJobModel extends BaseModel {
       where: {
         id: jobId,
         blobId,
-        workspaceId,
         type,
         OR: [
           { createdBy: userId },
@@ -78,7 +74,6 @@ export class CopilotJobModel extends BaseModel {
 
     return {
       id: row.id,
-      workspaceId: row.workspaceId,
       blobId: row.blobId,
       createdBy: row.createdBy || undefined,
       type: row.type,
@@ -136,7 +131,6 @@ export class CopilotJobModel extends BaseModel {
 
     return {
       id: row.id,
-      workspaceId: row.workspaceId,
       blobId: row.blobId,
       createdBy: row.createdBy || undefined,
       type: row.type,

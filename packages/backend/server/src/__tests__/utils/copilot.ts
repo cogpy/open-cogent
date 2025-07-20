@@ -53,7 +53,6 @@ export async function getCopilotSession(
   sessionId: string
 ): Promise<{
   id: string;
-  parentSessionId: string | null;
   pinned: boolean;
   promptName: string;
 }> {
@@ -66,7 +65,6 @@ export async function getCopilotSession(
           copilot {
             session(sessionId: $sessionId) {
               id
-              parentSessionId
               pinned
               promptName
             }
@@ -637,7 +635,6 @@ type History = {
 
 type HistoryOptions = {
   action?: boolean;
-  fork?: boolean;
   pinned?: boolean;
   limit?: number;
   skip?: number;

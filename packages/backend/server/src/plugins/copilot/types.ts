@@ -48,7 +48,6 @@ export const ChatHistorySchema = z
   .object({
     userId: z.string(),
     sessionId: z.string(),
-    parentSessionId: z.string().nullable(),
     pinned: z.boolean(),
     title: z.string().nullable(),
 
@@ -79,13 +78,6 @@ export type ChatSessionOptions = Pick<
   'userId' | 'promptName' | 'pinned'
 > & {
   reuseLatestChat?: boolean;
-};
-
-export type ChatSessionForkOptions = Pick<
-  ChatHistory,
-  'userId' | 'sessionId'
-> & {
-  latestMessageId?: string;
 };
 
 export type ChatSessionState = Pick<

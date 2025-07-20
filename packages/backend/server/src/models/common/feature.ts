@@ -15,24 +15,28 @@ const UserPlanQuotaConfig = z.object({
 
 export type UserQuota = z.infer<typeof UserPlanQuotaConfig>;
 
+const EMPTY_CONFIG = z.object({});
+
 export enum FeatureType {
   Feature,
   Quota,
 }
 
 export enum Feature {
+  UnlimitedCopilot = 'unlimited_copilot',
   FreePlan = 'free_plan_v1',
   ProPlan = 'pro_plan_v1',
 }
 
 export const FeaturesShapes = {
+  unlimited_copilot: EMPTY_CONFIG,
   free_plan_v1: UserPlanQuotaConfig,
   pro_plan_v1: UserPlanQuotaConfig,
 } satisfies Record<Feature, z.ZodObject<any>>;
 
 export type UserFeatureName = keyof Pick<
   typeof FeaturesShapes,
-  'free_plan_v1' | 'pro_plan_v1'
+  'unlimited_copilot' | 'free_plan_v1' | 'pro_plan_v1'
 >;
 export type FeatureName = UserFeatureName;
 export type FeatureConfig<T extends FeatureName> = z.infer<
@@ -63,5 +67,9 @@ export const FeatureConfigs: {
       storageQuota: 100 * OneGB,
       copilotLimit: undefined,
     },
+  },
+  unlimited_copilot: {
+    type: FeatureType.Feature,
+    configs: {},
   },
 };

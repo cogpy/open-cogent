@@ -250,7 +250,6 @@ export class CopilotController implements BeforeApplicationShutdown {
         signal: getSignal(req).signal,
         user: user.id,
         session: session.config.sessionId,
-        workspace: session.config.workspaceId,
         reasoning,
         webSearch,
       });
@@ -314,7 +313,6 @@ export class CopilotController implements BeforeApplicationShutdown {
           signal,
           user: user.id,
           session: session.config.sessionId,
-          workspace: session.config.workspaceId,
           reasoning,
           webSearch,
         })
@@ -406,7 +404,6 @@ export class CopilotController implements BeforeApplicationShutdown {
           signal,
           user: user.id,
           session: session.config.sessionId,
-          workspace: session.config.workspaceId,
           reasoning,
           webSearch,
         })
@@ -504,7 +501,6 @@ export class CopilotController implements BeforeApplicationShutdown {
           signal,
           user: user.id,
           session: session.config.sessionId,
-          workspace: session.config.workspaceId,
         })
       ).pipe(
         connect(shared$ =>
@@ -648,7 +644,6 @@ export class CopilotController implements BeforeApplicationShutdown {
             signal,
             user: user.id,
             session: session.config.sessionId,
-            workspace: session.config.workspaceId,
           }
         )
       ).pipe(
@@ -735,16 +730,14 @@ export class CopilotController implements BeforeApplicationShutdown {
   }
 
   @Public()
-  @Get('/blob/:userId/:workspaceId/:key')
+  @Get('/blob/:userId/:key')
   async getBlob(
     @Res() res: Response,
     @Param('userId') userId: string,
-    @Param('workspaceId') workspaceId: string,
     @Param('key') key: string
   ) {
     const { body, metadata, redirectUrl } = await this.storage.get(
       userId,
-      workspaceId,
       key,
       true
     );
@@ -755,10 +748,7 @@ export class CopilotController implements BeforeApplicationShutdown {
     }
 
     if (!body) {
-      throw new BlobNotFound({
-        spaceId: workspaceId,
-        blobId: key,
-      });
+      throw new BlobNotFound({ userId, blobId: key });
     }
 
     // metadata should always exists if body is not null
@@ -767,7 +757,7 @@ export class CopilotController implements BeforeApplicationShutdown {
       res.setHeader('last-modified', metadata.lastModified.toUTCString());
       res.setHeader('content-length', metadata.contentLength);
     } else {
-      this.logger.warn(`Blob ${workspaceId}/${key} has no metadata`);
+      this.logger.warn(`Blob ${userId}/${key} has no metadata`);
     }
 
     res.setHeader('cache-control', 'public, max-age=2592000, immutable');

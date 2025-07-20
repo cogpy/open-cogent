@@ -9,8 +9,6 @@ import {
   CopilotProviderNotSupported,
   OnEvent,
 } from '../../../base';
-import { AccessController } from '../../../core/permission';
-import { Models } from '../../../models';
 import { CopilotContextService } from '../context';
 import { PromptService } from '../prompt';
 import {
@@ -131,8 +129,6 @@ export abstract class CopilotProvider<C = any> {
     const tools: ToolSet = {};
     if (options?.tools?.length) {
       this.logger.debug(`getTools: ${JSON.stringify(options.tools)}`);
-      const ac = this.moduleRef.get(AccessController, { strict: false });
-      const models = this.moduleRef.get(Models, { strict: false });
       const prompt = this.moduleRef.get(PromptService, {
         strict: false,
       });
@@ -166,12 +162,7 @@ export abstract class CopilotProvider<C = any> {
             const docContext = options.session
               ? await context.getBySessionId(options.session)
               : null;
-            const searchDocs = buildDocSearchGetter(
-              ac,
-              context,
-              docContext,
-              models
-            );
+            const searchDocs = buildDocSearchGetter(context, docContext);
             tools.doc_semantic_search = createDocSemanticSearchTool(
               searchDocs.bind(null, options)
             );

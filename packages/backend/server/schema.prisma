@@ -93,23 +93,15 @@ model VerificationToken {
 }
 
 model Feature {
-  id                Int      @id @default(autoincrement())
-  name              String   @map("feature") @db.VarChar
-  configs           Json     @default("{}") @db.Json
-  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt         DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
-  /// TODO(@forehalo): remove in the coming version
-  /// @deprecated
-  /// we don't need to record all the historical version of features
-  deprecatedVersion Int      @default(0) @map("version") @db.Integer
-  /// @deprecated
-  /// we don't need to record type of features any more, there are always static,
-  /// but set it in `WorkspaceFeature` and `UserFeature` for fast query with just a little redundant.
-  deprecatedType    Int      @default(0) @map("type") @db.Integer
+  id        Int      @id @default(autoincrement())
+  name      String   @map("feature") @db.VarChar
+  configs   Json     @default("{}") @db.Json
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
 
   userFeatures UserFeature[]
 
-  @@unique([name, deprecatedVersion])
+  @@unique([name])
   @@map("features")
 }
 
@@ -204,8 +196,6 @@ model AiSession {
   promptAction    String?   @default("") @map("prompt_action") @db.VarChar(32)
   pinned          Boolean   @default(false)
   title           String?   @db.VarChar
-  // the session id of the parent session if this session is a forked session
-  parentSessionId String?   @map("parent_session_id") @db.VarChar
   messageCost     Int       @default(0)
   tokenCost       Int       @default(0)
   createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)

@@ -284,7 +284,7 @@ test('should be able to manage chat session', async t => {
   ]);
 
   const params = { word: 'world' };
-  const commonParams = { docId: 'test', workspaceId: 'test', pinned: false };
+  const commonParams = { pinned: false };
 
   const sessionId = await session.create({
     userId,
@@ -325,16 +325,6 @@ test('should be able to manage chat session', async t => {
     cleanObject(s1.finish(params)),
     'should generate different message with another params'
   );
-
-  // should get main session after fork if re-create a chat session for same docId and workspaceId
-  {
-    const newSessionId = await session.create({
-      userId,
-      promptName,
-      ...commonParams,
-    });
-    t.is(newSessionId, sessionId, 'should get same session id');
-  }
 });
 
 test('should be able to update chat session prompt', async t => {
@@ -369,125 +359,6 @@ test('should be able to update chat session prompt', async t => {
     'Search With AFFiNE AI',
     'should have updated prompt name'
   );
-});
-
-test('should be able to fork chat session', async t => {
-  const { auth, prompt, session } = t.context;
-
-  await prompt.set(promptName, 'model', [
-    { role: 'system', content: 'hello {{word}}' },
-  ]);
-
-  const params = { word: 'world' };
-  const commonParams = { docId: 'test', workspaceId: 'test', pinned: false };
-  // create session
-  const sessionId = await session.create({
-    userId,
-    promptName,
-    ...commonParams,
-  });
-  const s = (await session.get(sessionId))!;
-  s.push({ role: 'user', content: 'hello', createdAt: new Date() });
-  s.push({ role: 'assistant', content: 'world', createdAt: new Date() });
-  s.push({ role: 'user', content: 'aaa', createdAt: new Date() });
-  s.push({ role: 'assistant', content: 'bbb', createdAt: new Date() });
-  await s.save();
-
-  // fork session
-  const s1 = (await session.get(sessionId))!;
-  // @ts-expect-error
-  const latestMessageId = s1.finish({}).find(m => m.role === 'assistant')!.id;
-  const forkedSessionId1 = await session.fork({
-    userId,
-    sessionId,
-    latestMessageId,
-    ...commonParams,
-  });
-  t.not(sessionId, forkedSessionId1, 'should fork a new session');
-
-  const newUser = await auth.signUp('darksky.1@affine.pro', '123456');
-  const forkedSessionId2 = await session.fork({
-    userId: newUser.id,
-    sessionId,
-    latestMessageId,
-    ...commonParams,
-  });
-  t.not(
-    forkedSessionId1,
-    forkedSessionId2,
-    'should fork new session with same params'
-  );
-
-  // fork session without latestMessageId
-  const forkedSessionId3 = await session.fork({
-    userId,
-    sessionId,
-    ...commonParams,
-  });
-
-  // fork session with wrong latestMessageId
-  await t.throwsAsync(
-    session.fork({
-      userId,
-      sessionId,
-      latestMessageId: 'wrong-message-id',
-      ...commonParams,
-    }),
-    {
-      instanceOf: Error,
-    },
-    'should not able to fork new session with wrong latestMessageId'
-  );
-
-  const cleanObject = (obj: any[]) =>
-    JSON.parse(
-      JSON.stringify(obj, (k, v) =>
-        ['id', 'createdAt'].includes(k) || v === null ? undefined : v
-      )
-    );
-
-  // check forked session messages
-  {
-    const s2 = (await session.get(forkedSessionId1))!;
-
-    const finalMessages = s2.finish(params);
-    t.snapshot(cleanObject(finalMessages), 'should generate the final message');
-  }
-
-  // check second times forked session
-  {
-    const s2 = (await session.get(forkedSessionId2))!;
-
-    // should overwrite user id
-    t.is(s2.config.userId, newUser.id, 'should have same user id');
-
-    const finalMessages = s2.finish(params);
-    t.snapshot(cleanObject(finalMessages), 'should generate the final message');
-  }
-
-  // check third times forked session
-  {
-    const s3 = (await session.get(forkedSessionId3))!;
-    const finalMessages = s3.finish(params);
-    t.snapshot(cleanObject(finalMessages), 'should generate the final message');
-  }
-
-  // check original session messages
-  {
-    const s4 = (await session.get(sessionId))!;
-    const finalMessages = s4.finish(params);
-    t.snapshot(cleanObject(finalMessages), 'should generate the final message');
-  }
-
-  // should get main session after fork if re-create a chat session for same docId and workspaceId
-  {
-    const newSessionId = await session.create({
-      userId,
-      promptName,
-      ...commonParams,
-    });
-    t.is(newSessionId, sessionId, 'should get same session id');
-  }
 });
 
 test('should be able to process message id', async t => {

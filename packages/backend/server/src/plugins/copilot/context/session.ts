@@ -106,7 +106,7 @@ export class ContextSession implements AsyncDisposable {
     const embedding = await this.client.getEmbedding(content, signal);
     if (!embedding) return [];
 
-    const [context, workspace] = await Promise.all([
+    const [context, user] = await Promise.all([
       this.models.copilotContext.matchFileEmbedding(
         embedding,
         this.id,
@@ -132,7 +132,7 @@ export class ContextSession implements AsyncDisposable {
             ) as Required<ContextFile>;
             return { ...c, blobId, name, mimeType };
           }),
-        ...workspace,
+        ...user,
       ],
       topK,
       signal

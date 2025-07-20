@@ -18,7 +18,6 @@ import {
   type FileUpload,
 } from '../../../base';
 import { CurrentUser } from '../../../core/auth';
-import { AccessController } from '../../../core/permission';
 import { CopilotType } from '../resolver';
 import { CopilotTranscriptionService, TranscriptionJob } from './service';
 import type { TranscriptionItem, TranscriptionPayload } from './types';
@@ -71,10 +70,7 @@ const FinishedStatus: Set<AiJobStatus> = new Set([
 @Injectable()
 @Resolver(() => CopilotType)
 export class CopilotTranscriptionResolver {
-  constructor(
-    private readonly ac: AccessController,
-    private readonly transcript: CopilotTranscriptionService
-  ) {}
+  constructor(private readonly transcript: CopilotTranscriptionService) {}
 
   private handleJobResult(
     job: TranscriptionJob | null
@@ -103,18 +99,12 @@ export class CopilotTranscriptionResolver {
   @Mutation(() => TranscriptionResultType, { nullable: true })
   async submitAudioTranscription(
     @CurrentUser() user: CurrentUser,
-    @Args('workspaceId') workspaceId: string,
     @Args('blobId') blobId: string,
     @Args({ name: 'blob', type: () => GraphQLUpload, nullable: true })
     blob: FileUpload | null,
     @Args({ name: 'blobs', type: () => [GraphQLUpload], nullable: true })
     blobs: FileUpload[] | null
   ): Promise<TranscriptionResultType | null> {
-    await this.ac
-      .user(user.id)
-      .workspace(workspaceId)
-      .allowLocal()
-      .assert('Workspace.Copilot');
     // merge blobs
     const allBlobs = blob ? [blob, ...(blobs || [])].filter(v => !!v) : blobs;
     if (!allBlobs || allBlobs.length === 0) {
@@ -123,7 +113,6 @@ export class CopilotTranscriptionResolver {
 
     const jobResult = await this.transcript.submitJob(
       user.id,
-      workspaceId,
       blobId,
       await Promise.all(allBlobs)
     );
@@ -134,20 +123,9 @@ export class CopilotTranscriptionResolver {
   @Mutation(() => TranscriptionResultType, { nullable: true })
   async retryAudioTranscription(
     @CurrentUser() user: CurrentUser,
-    @Args('workspaceId') workspaceId: string,
     @Args('jobId') jobId: string
   ): Promise<TranscriptionResultType | null> {
-    await this.ac
-      .user(user.id)
-      .workspace(workspaceId)
-      .allowLocal()
-      .assert('Workspace.Copilot');
-
-    const jobResult = await this.transcript.retryJob(
-      user.id,
-      workspaceId,
-      jobId
-    );
+    const jobResult = await this.transcript.retryJob(user.id, jobId);
 
     return this.handleJobResult(jobResult);
   }
@@ -165,28 +143,16 @@ export class CopilotTranscriptionResolver {
     nullable: true,
   })
   async audioTranscription(
-    @Parent() copilot: CopilotType,
+    @Parent() _copilot: CopilotType,
     @CurrentUser() user: CurrentUser,
     @Args('jobId', { nullable: true })
     jobId?: string,
     @Args('blobId', { nullable: true })
     blobId?: string
   ): Promise<TranscriptionResultType | null> {
-    if (!copilot.workspaceId) return null;
     if (!jobId && !blobId) return null;
 
-    await this.ac
-      .user(user.id)
-      .workspace(copilot.workspaceId)
-      .allowLocal()
-      .assert('Workspace.Copilot');
-
-    const job = await this.transcript.queryJob(
-      user.id,
-      copilot.workspaceId,
-      jobId,
-      blobId
-    );
+    const job = await this.transcript.queryJob(user.id, jobId, blobId);
     return this.handleJobResult(job);
   }
 }

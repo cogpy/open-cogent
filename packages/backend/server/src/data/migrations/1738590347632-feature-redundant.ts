@@ -16,7 +16,7 @@ export class FeatureRedundant1738590347632 {
 
     for (const feature of features) {
       const def = FeatureConfigs[feature.name as FeatureName];
-      if (!def || def.deprecatedVersion !== feature.deprecatedVersion) {
+      if (!def) {
         await db.feature.delete({
           where: { id: feature.id },
         });

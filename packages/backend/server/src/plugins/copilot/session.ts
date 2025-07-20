@@ -37,7 +37,6 @@ import {
   type ChatHistory,
   type ChatMessage,
   ChatMessageSchema,
-  type ChatSessionForkOptions,
   type ChatSessionOptions,
   type ChatSessionState,
   type SubmittedMessage,
@@ -275,14 +274,7 @@ export class ChatSessionService {
     if (!prompt) throw new CopilotPromptNotFound({ name: session.promptName });
 
     return {
-      ...pick(session, [
-        'userId',
-        'parentSessionId',
-        'pinned',
-        'title',
-        'createdAt',
-        'updatedAt',
-      ]),
+      ...pick(session, ['userId', 'pinned', 'title', 'createdAt', 'updatedAt']),
       sessionId: session.id,
       tokens: session.tokenCost,
       messages: this.getMessage(session),
@@ -420,8 +412,6 @@ export class ChatSessionService {
         prompt,
         title: null,
         messages: [],
-        // when client create chat session, we always find root session
-        parentSessionId: null,
       },
       options.reuseLatestChat ?? true
     );
@@ -462,36 +452,6 @@ export class ChatSessionService {
     }
 
     return await this.models.copilotSession.update(finalData);
-  }
-
-  @Transactional()
-  async fork(options: ChatSessionForkOptions): Promise<string> {
-    const session = await this.getSessionInfo(options.sessionId);
-    if (!session) {
-      throw new CopilotSessionNotFound();
-    }
-
-    let messages = session.messages.map(m => ({ ...m, id: undefined }));
-    if (options.latestMessageId) {
-      const lastMessageIdx = session.messages.findLastIndex(
-        ({ id, role }) =>
-          role === AiPromptRole.assistant && id === options.latestMessageId
-      );
-      if (lastMessageIdx < 0) {
-        throw new CopilotMessageNotFound({
-          messageId: options.latestMessageId,
-        });
-      }
-      messages = messages.slice(0, lastMessageIdx + 1);
-    }
-
-    return await this.models.copilotSession.fork({
-      ...session,
-      userId: options.userId,
-      sessionId: randomUUID(),
-      parentSessionId: options.sessionId,
-      messages,
-    });
   }
 
   async cleanup(options: CleanupSessionOptions) {

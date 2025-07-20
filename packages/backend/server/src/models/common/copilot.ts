@@ -4,7 +4,6 @@ import { z } from 'zod';
 
 export interface CopilotJob {
   id?: string;
-  workspaceId: string;
   blobId: string;
   createdBy?: string;
   type: AiJobType;

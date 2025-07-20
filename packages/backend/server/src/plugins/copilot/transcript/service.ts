@@ -61,16 +61,14 @@ export class CopilotTranscriptionService {
 
   async submitJob(
     userId: string,
-    workspaceId: string,
     blobId: string,
     blobs: FileUpload[]
   ): Promise<TranscriptionJob> {
-    if (await this.models.copilotJob.has(userId, workspaceId, blobId)) {
+    if (await this.models.copilotJob.has(userId, blobId)) {
       throw new CopilotTranscriptionJobExists();
     }
 
     const { id: jobId } = await this.models.copilotJob.create({
-      workspaceId,
       blobId,
       createdBy: userId,
       type: AiJobType.transcription,
@@ -79,12 +77,7 @@ export class CopilotTranscriptionService {
     const infos: AudioBlobInfos = [];
     for (const [idx, blob] of blobs.entries()) {
       const buffer = await readStream(blob.createReadStream());
-      const url = await this.storage.put(
-        userId,
-        workspaceId,
-        `${blobId}-${idx}`,
-        buffer
-      );
+      const url = await this.storage.put(userId, `${blobId}-${idx}`, buffer);
       infos.push({ url, mimeType: blob.mimetype });
     }
 
@@ -92,8 +85,8 @@ export class CopilotTranscriptionService {
     return await this.executeJob(jobId, infos, model);
   }
 
-  async retryJob(userId: string, workspaceId: string, jobId: string) {
-    const job = await this.queryJob(userId, workspaceId, jobId);
+  async retryJob(userId: string, jobId: string) {
+    const job = await this.queryJob(userId, jobId);
     if (!job || !job.infos) {
       throw new CopilotTranscriptionJobNotFound();
     }
@@ -143,15 +136,9 @@ export class CopilotTranscriptionService {
     return null;
   }
 
-  async queryJob(
-    userId: string,
-    workspaceId: string,
-    jobId?: string,
-    blobId?: string
-  ) {
+  async queryJob(userId: string, jobId?: string, blobId?: string) {
     const job = await this.models.copilotJob.getWithUser(
       userId,
-      workspaceId,
       jobId,
       blobId,
       AiJobType.transcription

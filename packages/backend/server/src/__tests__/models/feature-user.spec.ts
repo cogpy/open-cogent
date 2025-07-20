@@ -33,7 +33,7 @@ test.after(async t => {
 
 test('should get null if user feature not found', async t => {
   const { model, u1 } = t.context;
-  const userFeature = await model.get(u1.id, 'ai_early_access');
+  const userFeature = await model.get(u1.id, 'unlimited_copilot');
   t.is(userFeature, null);
 });
 
@@ -69,7 +69,7 @@ test('should directly test user feature existence', async t => {
   const { model, u1 } = t.context;
 
   t.true(await model.has(u1.id, 'free_plan_v1'));
-  t.false(await model.has(u1.id, 'ai_early_access'));
+  t.false(await model.has(u1.id, 'unlimited_copilot'));
 });
 
 test('should add user feature', async t => {

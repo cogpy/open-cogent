@@ -15,13 +15,11 @@ import { CopilotContextModel } from './copilot-context';
 import { CopilotJobModel } from './copilot-job';
 import { CopilotSessionModel } from './copilot-session';
 import { CopilotUserConfigModel } from './copilot-user';
-import { DocUserModel } from './doc-user';
 import { FeatureModel } from './feature';
 import { HistoryModel } from './history';
 import { MODELS_SYMBOL } from './provider';
 import { SessionModel } from './session';
 import { UserModel } from './user';
-import { UserDocModel } from './user-doc';
 import { UserFeatureModel } from './user-feature';
 import { UserSettingsModel } from './user-settings';
 import { VerificationTokenModel } from './verification-token';
@@ -32,8 +30,6 @@ const MODELS = {
   verificationToken: VerificationTokenModel,
   feature: FeatureModel,
   userFeature: UserFeatureModel,
-  userDoc: UserDocModel,
-  docUser: DocUserModel,
   history: HistoryModel,
   userSettings: UserSettingsModel,
   copilotSession: CopilotSessionModel,
@@ -103,12 +99,10 @@ export * from './copilot-context';
 export * from './copilot-job';
 export * from './copilot-session';
 export * from './copilot-user';
-export * from './doc-user';
 export * from './feature';
 export * from './history';
 export * from './session';
 export * from './user';
-export * from './user-doc';
 export * from './user-feature';
 export * from './user-settings';
 export * from './verification-token';

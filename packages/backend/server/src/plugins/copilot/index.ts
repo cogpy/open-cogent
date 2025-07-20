@@ -4,7 +4,6 @@ import { Module } from '@nestjs/common';
 
 import { ServerConfigModule } from '../../core';
 import { FeatureModule } from '../../core/features';
-import { PermissionModule } from '../../core/permission';
 import { QuotaModule } from '../../core/quota';
 import {
   CopilotContextResolver,
@@ -36,7 +35,7 @@ import {
 } from './workspace';
 
 @Module({
-  imports: [FeatureModule, QuotaModule, PermissionModule, ServerConfigModule],
+  imports: [FeatureModule, QuotaModule, ServerConfigModule],
   providers: [
     // providers
     ...CopilotProviders,

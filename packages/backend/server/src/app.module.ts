@@ -32,7 +32,6 @@ import { AuthModule } from './core/auth';
 import { ServerConfigModule, ServerConfigResolverModule } from './core/config';
 import { FeatureModule } from './core/features';
 import { MailModule } from './core/mail';
-import { PermissionModule } from './core/permission';
 import { QuotaModule } from './core/quota';
 import { StorageModule } from './core/storage';
 import { UserModule } from './core/user';
@@ -140,7 +139,7 @@ export function buildAppModule(env: Env) {
     .use(...FunctionalityModules)
 
     // auth
-    .use(UserModule, AuthModule, PermissionModule)
+    .use(UserModule, AuthModule)
 
     // business modules
     .use(ServerConfigModule, FeatureModule, QuotaModule, MailModule)

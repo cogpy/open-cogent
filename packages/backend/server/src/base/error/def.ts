@@ -502,9 +502,9 @@ export const USER_FRIENDLY_ERRORS = {
   },
   blob_not_found: {
     type: 'resource_not_found',
-    args: { spaceId: 'string', blobId: 'string' },
-    message: ({ spaceId, blobId }) =>
-      `Blob ${blobId} not found in Space ${spaceId}.`,
+    args: { userId: 'string', blobId: 'string' },
+    message: ({ userId, blobId }) =>
+      `Blob ${blobId} not found for user ${userId}.`,
   },
   expect_to_publish_doc: {
     type: 'invalid_input',

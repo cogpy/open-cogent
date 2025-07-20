@@ -28,7 +28,7 @@ type AppConfigValidateResult {
 
 type BlobNotFoundDataType {
   blobId: String!
-  spaceId: String!
+  userId: String!
 }
 
 enum ChatHistoryOrder {
@@ -86,6 +86,7 @@ type Copilot {
 
   """Get the session list in the workspace"""
   sessions(options: QueryChatSessionsInput): [CopilotSessionType!]! @deprecated(reason: "use `chats` instead")
+  userId: String!
 }
 
 type CopilotContext {
@@ -136,7 +137,7 @@ type CopilotFailedToMatchContextDataType {
 type CopilotFailedToMatchGlobalContextDataType {
   content: String!
   message: String!
-  workspaceId: String!
+  userId: String!
 }
 
 type CopilotFailedToModifyContextDataType {
@@ -151,7 +152,6 @@ type CopilotHistories {
   messages: [ChatMessage!]!
   model: String!
   optionalModels: [String!]!
-  parentSessionId: String
   pinned: Boolean!
   promptName: String!
   sessionId: String!
@@ -239,7 +239,6 @@ type CopilotSessionType {
   id: ID!
   model: String!
   optionalModels: [String!]!
-  parentSessionId: ID
   pinned: Boolean!
   promptName: String!
   title: String
@@ -314,7 +313,6 @@ type DeleteAccount {
 input DeleteSessionInput {
   docId: String!
   sessionIds: [String!]!
-  workspaceId: String!
 }
 
 type DocActionDeniedDataType {
@@ -502,17 +500,7 @@ type ExpectToUpdateDocUserRoleDataType {
 enum FeatureType {
   FreePlan
   ProPlan
-}
-
-input ForkChatSessionInput {
-  docId: String!
-
-  """
-  Identify a message in the array and keep it with all previous messages into a forked session.
-  """
-  latestMessageId: String
-  sessionId: String!
-  workspaceId: String!
+  UnlimitedCopilot
 }
 
 type GraphqlBadRequestDataType {
@@ -668,9 +656,6 @@ type Mutation {
   """Reenable an banned user"""
   enableUser(id: String!): UserType!
 
-  """Create a chat session"""
-  forkCopilotSession(options: ForkChatSessionInput!): String!
-
   """import users"""
   importUsers(input: ImportUsersInput!): [UserImportResultType!]!
 
@@ -683,17 +668,14 @@ type Mutation {
   """Remove user embedding files"""
   removeUserEmbeddingFiles(fileId: String!): Boolean!
   removeWorkspaceFeature(feature: FeatureType!, workspaceId: String!): Boolean!
-  retryAudioTranscription(jobId: String!, workspaceId: String!): TranscriptionResultType
+  retryAudioTranscription(jobId: String!): TranscriptionResultType
   sendChangeEmail(callbackUrl: String!, email: String): Boolean!
   sendChangePasswordEmail(callbackUrl: String!, email: String @deprecated(reason: "fetched from signed in user")): Boolean!
   sendSetPasswordEmail(callbackUrl: String!, email: String @deprecated(reason: "fetched from signed in user")): Boolean!
   sendTestEmail(config: JSONObject!): Boolean!
   sendVerifyChangeEmail(callbackUrl: String!, email: String!, token: String!): Boolean!
   sendVerifyEmail(callbackUrl: String!): Boolean!
-  submitAudioTranscription(blob: Upload, blobId: String!, blobs: [Upload!], workspaceId: String!): TranscriptionResultType
-
-  """Trigger cleanup of trashed doc embeddings"""
-  triggerCleanupTrashedDocEmbeddings: Boolean!
+  submitAudioTranscription(blob: Upload, blobId: String!, blobs: [Upload!]): TranscriptionResultType
 
   """Trigger generate missing titles cron job"""
   triggerGenerateTitleCron: Boolean!
@@ -820,7 +802,6 @@ type Query {
 
 input QueryChatHistoriesInput {
   action: Boolean
-  fork: Boolean
   limit: Int
   messageOrder: ChatHistoryOrder
   pinned: Boolean
@@ -833,7 +814,6 @@ input QueryChatHistoriesInput {
 
 input QueryChatSessionsInput {
   action: Boolean
-  fork: Boolean
   limit: Int
   pinned: Boolean
   skip: Int
@@ -1055,7 +1035,7 @@ type UserSettingsType {
 type UserType {
   """User avatar url"""
   avatarUrl: String
-  copilot(workspaceId: String): Copilot!
+  copilot: Copilot!
 
   """User email verified"""
   createdAt: DateTime @deprecated(reason: "useless")

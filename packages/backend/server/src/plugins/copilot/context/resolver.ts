@@ -336,6 +336,7 @@ export class CopilotContextResolver {
       if (!context.id) {
         return await this.context.matchFiles(
           content,
+          context.userId,
           limit,
           getSignal(ctx.req).signal,
           threshold

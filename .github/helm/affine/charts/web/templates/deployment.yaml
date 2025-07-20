@@ -28,7 +28,7 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
-          - name: AFFINE_ENV
+          - name: OPEN_AGENT_ENV
             value: "{{ .Release.Namespace }}"
           ports:
             - name: http

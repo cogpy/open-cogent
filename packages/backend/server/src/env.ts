@@ -77,7 +77,7 @@ globalThis.readEnv = function readEnv<T>(
 export class Env implements AppEnv {
   NODE_ENV = (process.env.NODE_ENV ?? NodeEnv.Production) as NodeEnv;
   NAMESPACE = readEnv(
-    'AFFINE_ENV',
+    'OPEN_AGENT_ENV',
     Namespace.Production,
     Object.values(Namespace)
   );

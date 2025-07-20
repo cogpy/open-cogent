@@ -63,8 +63,6 @@ const createTestSession = async (
   overrides: Partial<{
     sessionId: string;
     userId: string;
-    workspaceId: string;
-    docId: string | null;
     pinned: boolean;
     promptName: string;
     promptAction: string | null;
@@ -145,38 +143,25 @@ test('should list and filter session type', async t => {
 
   await createTestPrompts(copilotSession, db);
 
-  const docId = 'doc-id-1';
   await createTestSession(t, { sessionId: randomUUID() });
   await createTestSession(t, { sessionId: randomUUID(), pinned: true });
-  await createTestSession(t, { sessionId: randomUUID(), docId });
-  await createTestSession(t, {
-    sessionId: randomUUID(),
-    docId,
-    promptName: 'action-prompt',
-    promptAction: 'action',
-  });
 
   // should list sessions
   {
-    const workspaceSessions = await copilotSession.list({
+    const userSessions = await copilotSession.list({
       userId: user.id,
     });
 
     t.snapshot(
-      workspaceSessions.map(s => ({ pinned: s.pinned })),
-      'workspace sessions should include workspace and pinned sessions'
+      userSessions.map(s => ({ pinned: s.pinned })),
+      'user sessions should include user and pinned sessions'
     );
   }
 
   // should identify session types
   {
     // check get session type
-    const testCases = [
-      { docId: null, pinned: false },
-      { docId: undefined, pinned: false },
-      { docId: null, pinned: true },
-      { docId, pinned: false },
-    ];
+    const testCases = [{ pinned: false }, { pinned: true }];
 
     const sessionTypeResults = testCases.map(session => ({
       session,
@@ -192,9 +177,8 @@ test('should validate session prompt compatibility', async t => {
   await createTestPrompts(copilotSession, db);
 
   const sessionTypes = [
-    { name: 'workspace', session: { docId: null, pinned: false } },
-    { name: 'pinned', session: { docId: null, pinned: true } },
-    { name: 'doc', session: { docId: randomUUID(), pinned: false } },
+    { name: 'user', session: { pinned: false } },
+    { name: 'pinned', session: { pinned: true } },
   ];
 
   const result = sessionTypes.flatMap(({ name, session }) => [
@@ -324,7 +308,6 @@ test('should handle session updates and type conversions', async t => {
 
   const sessionId = randomUUID();
   const actionSessionId = randomUUID();
-  const docId = randomUUID();
 
   {
     await createTestSession(t, { sessionId });
@@ -332,7 +315,6 @@ test('should handle session updates and type conversions', async t => {
       sessionId: actionSessionId,
       promptName: TEST_PROMPTS.ACTION,
       promptAction: 'edit',
-      docId,
     });
   }
 
@@ -341,7 +323,6 @@ test('should handle session updates and type conversions', async t => {
     {
       sessionId: actionSessionId,
       updates: [
-        { docId: 'new-doc', expected: 'reject' },
         { pinned: true, expected: 'reject' },
         { promptName: TEST_PROMPTS.NORMAL, expected: 'reject' },
       ],

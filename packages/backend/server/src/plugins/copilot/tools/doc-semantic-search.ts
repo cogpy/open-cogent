@@ -47,7 +47,7 @@ export const buildDocSearchGetter = (
     }
 
     const [chunks, contextChunks] = await Promise.all([
-      context.matchFiles(query, 10, abortSignal),
+      context.matchFiles(query, options.user, 10, abortSignal),
       docContext?.matchFiles(query, 10, abortSignal) ?? [],
     ]);
 

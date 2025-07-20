@@ -37,7 +37,7 @@ test('should read NODE_ENV', t => {
 test('should read NAMESPACE', t => {
   t.deepEqual(
     ['dev', 'beta', 'production'].map(envVal => {
-      process.env.AFFINE_ENV = envVal;
+      process.env.OPEN_AGENT_ENV = envVal;
       const env = new Env();
       return env.NAMESPACE;
     }),
@@ -45,7 +45,7 @@ test('should read NAMESPACE', t => {
   );
 
   t.throws(() => {
-    process.env.AFFINE_ENV = 'unknown';
+    process.env.OPEN_AGENT_ENV = 'unknown';
     new Env();
   });
 });
@@ -134,21 +134,21 @@ test('should tell flavors correctly', t => {
 });
 
 test('should tell namespaces correctly', t => {
-  process.env.AFFINE_ENV = 'dev';
+  process.env.OPEN_AGENT_ENV = 'dev';
   t.deepEqual(new Env().namespaces, {
     canary: true,
     beta: false,
     production: false,
   });
 
-  process.env.AFFINE_ENV = 'beta';
+  process.env.OPEN_AGENT_ENV = 'beta';
   t.deepEqual(new Env().namespaces, {
     canary: false,
     beta: true,
     production: false,
   });
 
-  process.env.AFFINE_ENV = 'production';
+  process.env.OPEN_AGENT_ENV = 'production';
   t.deepEqual(new Env().namespaces, {
     canary: false,
     beta: false,

@@ -17,11 +17,10 @@ env:
   DEBUG: napi:*
   BUILD_TYPE: canary
   APP_NAME: open-agent
-  AFFINE_ENV: dev
+  OPEN_AGENT_ENV: dev
   COVERAGE: true
   MACOSX_DEPLOYMENT_TARGET: '10.13'
   DEPLOYMENT_TYPE: agent
-  AFFINE_INDEXER_ENABLED: true
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

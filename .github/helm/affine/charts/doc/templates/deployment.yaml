@@ -28,7 +28,7 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
-          - name: AFFINE_PRIVATE_KEY
+          - name: OPEN_AGENT_PRIVATE_KEY
             valueFrom:
               secretKeyRef:
                 name: "{{ .Values.global.secret.secretName }}"
@@ -45,7 +45,7 @@ spec:
             value: "{{ .Values.global.deployment.platform }}"
           - name: SERVER_FLAVOR
             value: "doc"
-          - name: AFFINE_ENV
+          - name: OPEN_AGENT_ENV
             value: "{{ .Release.Namespace }}"
           - name: DATABASE_PASSWORD
             valueFrom:
@@ -69,22 +69,13 @@ spec:
                 key: redis-password
           - name: REDIS_SERVER_DATABASE
             value: "{{ .Values.global.redis.database }}"
-          - name: AFFINE_INDEXER_SEARCH_PROVIDER
-            value: "{{ .Values.global.indexer.provider }}"
-          - name: AFFINE_INDEXER_SEARCH_ENDPOINT
-            value: "{{ .Values.global.indexer.endpoint }}"
-          - name: AFFINE_INDEXER_SEARCH_API_KEY
-            valueFrom:
-              secretKeyRef:
-                name: indexer
-                key: indexer-apiKey
-          - name: AFFINE_SERVER_PORT
+          - name: OPEN_AGENT_SERVER_PORT
             value: "{{ .Values.global.docService.port }}"
-          - name: AFFINE_SERVER_SUB_PATH
+          - name: OPEN_AGENT_SERVER_SUB_PATH
             value: "{{ .Values.app.path }}"
-          - name: AFFINE_SERVER_HOST
+          - name: OPEN_AGENT_SERVER_HOST
             value: "{{ .Values.app.host }}"
-          - name: AFFINE_SERVER_HTTPS
+          - name: OPEN_AGENT_SERVER_HTTPS
             value: "{{ .Values.app.https }}"
           ports:
             - name: http

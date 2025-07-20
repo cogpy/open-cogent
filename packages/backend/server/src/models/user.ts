@@ -4,7 +4,6 @@ import { type ConnectedAccount, Prisma, type User } from '@prisma/client';
 import { omit } from 'lodash-es';
 
 import {
-  CannotDeleteAccountWithOwnedTeamWorkspace,
   CryptoHelper,
   EmailAlreadyUsed,
   EventBus,
@@ -13,8 +12,7 @@ import {
   WrongSignInMethod,
 } from '../base';
 import { BaseModel } from './base';
-import { publicUserSelect, WorkspaceRole, workspaceUserSelect } from './common';
-import type { Workspace } from './workspace';
+import { publicUserSelect, workspaceUserSelect } from './common';
 
 type CreateUserInput = Omit<Prisma.UserCreateInput, 'name'> & { name?: string };
 type UpdateUserInput = Omit<Partial<Prisma.UserCreateInput>, 'id'>;
@@ -32,11 +30,7 @@ declare global {
   interface Events {
     'user.created': User;
     'user.updated': User;
-    'user.deleted': User & {
-      // TODO(@forehalo): unlink foreign key constraint on [WorkspaceUserPermission] to delegate
-      // dealing of owned workspaces of deleted users to workspace model
-      ownedWorkspaces: Workspace['id'][];
-    };
+    'user.deleted': User;
     'user.postCreated': User;
   }
 }
@@ -260,31 +254,9 @@ export class UserModel extends BaseModel {
     return user;
   }
 
-  async ownedWorkspaces(id: string) {
-    return await this.models.workspaceUser.getUserActiveRoles(id, {
-      role: WorkspaceRole.Owner,
-    });
-  }
-
   async delete(id: string) {
-    const ownedWorkspaces = await this.ownedWorkspaces(id);
-
-    for (const ws of ownedWorkspaces) {
-      const isTeamWorkspace = await this.models.workspace.isTeamWorkspace(
-        ws.workspaceId
-      );
-
-      if (isTeamWorkspace) {
-        throw new CannotDeleteAccountWithOwnedTeamWorkspace();
-      }
-    }
-
     const user = await this.db.user.delete({ where: { id } });
-
-    this.event.emit('user.deleted', {
-      ...user,
-      ownedWorkspaces: ownedWorkspaces.map(r => r.workspaceId),
-    });
+    this.event.emit('user.deleted', user);
 
     return user;
   }

@@ -94,16 +94,16 @@ export class CopilotContextModel extends BaseModel {
   // ================ embeddings ================
 
   private processEmbeddings(
-    contextOrWorkspaceId: string,
-    fileOrDocId: string,
+    contextId: string,
+    fileId: string,
     embeddings: Embedding[],
     withId = true
   ) {
     const groups = embeddings.map(e =>
       [
         withId ? randomUUID() : undefined,
-        contextOrWorkspaceId,
-        fileOrDocId,
+        contextId,
+        fileId,
         e.index,
         e.content,
         Prisma.raw(`'[${e.embedding.join(',')}]'`),

@@ -61,6 +61,7 @@ test('should insert and search embedding', async t => {
     {
       const ret = await t.context.copilotUser.matchFileEmbedding(
         Array.from({ length: 1024 }, () => 0.9),
+        user.id,
         1,
         1
       );

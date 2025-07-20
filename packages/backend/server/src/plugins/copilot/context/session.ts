@@ -115,6 +115,7 @@ export class ContextSession implements AsyncDisposable {
       ),
       this.models.copilotUser.matchFileEmbedding(
         embedding,
+        this.userId,
         topK * 2,
         threshold
       ),

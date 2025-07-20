@@ -113,6 +113,7 @@ export class CopilotUserConfigModel extends BaseModel {
 
   async matchFileEmbedding(
     embedding: number[],
+    userId: string,
     topK: number,
     threshold: number
   ): Promise<FileChunkSimilarity[]> {
@@ -131,6 +132,7 @@ export class CopilotUserConfigModel extends BaseModel {
       JOIN "ai_user_files" f
         ON e."user_id" = f."user_id"
         AND e."file_id" = f."file_id"
+      WHERE e."user_id" = ${userId}
       ORDER BY "distance" ASC
       LIMIT ${topK};
     `;

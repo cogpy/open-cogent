@@ -62,7 +62,7 @@ test('should throw if feature config in invalid', async t => {
   });
 });
 
-// NOTE(@forehalo): backward compatibility
+// NOTE: backward compatibility
 //   new version of feature config may introduce new field
 //   this test means to ensure that the older version of AFFiNE Server can still read it
 test('should get feature if extra fields exist in feature config', async t => {

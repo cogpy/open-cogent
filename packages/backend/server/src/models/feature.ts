@@ -86,22 +86,12 @@ export class FeatureModel extends BaseModel {
   @Transactional()
   private async upsert<T extends FeatureName>(
     name: T,
-    configs: FeatureConfig<T>,
-    deprecatedType: FeatureType,
-    deprecatedVersion: number
+    configs: FeatureConfig<T>
   ) {
     const parsedConfigs = this.check(name, configs);
 
-    // TODO(@forehalo):
-    //   could be a simple upsert operation, but we got useless `version` column in the database
-    //   will be fixed when `version` column gets deprecated
     const latest = await this.db.feature.findFirst({
-      where: {
-        name,
-      },
-      orderBy: {
-        deprecatedVersion: 'desc',
-      },
+      where: { name },
     });
 
     let feature: Feature;
@@ -109,8 +99,6 @@ export class FeatureModel extends BaseModel {
       feature = await this.db.feature.create({
         data: {
           name,
-          deprecatedType,
-          deprecatedVersion,
           configs: parsedConfigs,
         },
       });
@@ -132,17 +120,7 @@ export class FeatureModel extends BaseModel {
     for (const key in FeatureConfigs) {
       const name = key as FeatureName;
       const def = FeatureConfigs[name];
-      // self-hosted instance will use pro plan as free plan
-      if (name === 'free_plan_v1' && env.selfhosted) {
-        await this.upsert(
-          name,
-          FeatureConfigs['pro_plan_v1'].configs,
-          def.type,
-          def.deprecatedVersion
-        );
-      } else {
-        await this.upsert(name, def.configs, def.type, def.deprecatedVersion);
-      }
+      await this.upsert(name, def.configs);
     }
   }
 }

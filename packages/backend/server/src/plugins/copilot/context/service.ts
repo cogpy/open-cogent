@@ -135,6 +135,7 @@ export class CopilotContextService {
 
   async matchFiles(
     content: string,
+    userId: string,
     topK: number = 5,
     signal?: AbortSignal,
     threshold: number = 0.8
@@ -145,6 +146,7 @@ export class CopilotContextService {
 
     const fileChunks = await this.models.copilotUser.matchFileEmbedding(
       embedding,
+      userId,
       topK * 2,
       threshold
     );

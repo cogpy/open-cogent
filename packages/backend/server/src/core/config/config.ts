@@ -29,11 +29,11 @@ defineModuleConfig('server', {
     shape: z.string().optional(),
   },
   externalUrl: {
-    desc: `Base url of AFFiNE server, used for generating external urls.
+    desc: `Base url of Open-Agent server, used for generating external urls.
 Default to be \`[server.protocol]://[server.host][:server.port]\` if not specified.
     `,
     default: '',
-    env: 'AFFINE_SERVER_EXTERNAL_URL',
+    env: 'OPEN_AGENT_SERVER_EXTERNAL_URL',
     validate: val => {
       // allow to be nullable and empty string
       if (!val) {
@@ -46,13 +46,13 @@ Default to be \`[server.protocol]://[server.host][:server.port]\` if not specifi
   https: {
     desc: 'Whether the server is hosted on a ssl enabled domain (https://).',
     default: false,
-    env: ['AFFINE_SERVER_HTTPS', 'boolean'],
+    env: ['OPEN_AGENT_SERVER_HTTPS', 'boolean'],
     shape: z.boolean(),
   },
   host: {
     desc: 'Where the server get deployed(FQDN).',
     default: 'localhost',
-    env: 'AFFINE_SERVER_HOST',
+    env: 'OPEN_AGENT_SERVER_HOST',
   },
   hosts: {
     desc: 'Multiple hosts the server will accept requests from.',
@@ -62,12 +62,12 @@ Default to be \`[server.protocol]://[server.host][:server.port]\` if not specifi
   port: {
     desc: 'Which port the server will listen on.',
     default: 3010,
-    env: ['AFFINE_SERVER_PORT', 'integer'],
+    env: ['OPEN_AGENT_SERVER_PORT', 'integer'],
   },
   path: {
     desc: 'Subpath where the server get deployed if there is one.(e.g. /affine)',
     default: '',
-    env: 'AFFINE_SERVER_SUB_PATH',
+    env: 'OPEN_AGENT_SERVER_SUB_PATH',
   },
 });
 

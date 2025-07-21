@@ -25,7 +25,6 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
-    "@afk/reader": "workspace:*",
     "@afk/server-native": "workspace:*",
     "@ai-sdk/anthropic": "^1.2.12",
     "@ai-sdk/google": "^1.2.18",

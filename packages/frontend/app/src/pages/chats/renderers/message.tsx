@@ -29,7 +29,7 @@ export function MessageRenderer({
         <MarkdownText
           className="inline-block bg-gray-100 rounded p-3 max-w-full prose rounded-lg"
           text={message.content}
-          showCursor={isAssistant && isStreaming}
+          loading={isAssistant && isStreaming}
         />
       )}
     </div>

@@ -22,30 +22,34 @@ const MemoizedMarkdownBlock = memo(
 
 MemoizedMarkdownBlock.displayName = 'MemoizedMarkdownBlock';
 
-const MemoizedMarkdown = memo(({ content }: { content: string }) => {
-  const blocks = useMemo(() => parseMarkdownIntoBlocks(content), [content]);
+const MemoizedMarkdown = memo(
+  ({ content, split }: { content: string; split?: boolean }) => {
+    const blocks = useMemo(
+      () => (split ? parseMarkdownIntoBlocks(content) : [content]),
+      [content, split]
+    );
 
-  return blocks.map((block, index) => (
-    <MemoizedMarkdownBlock content={block} key={`block_${index}`} />
-  ));
-});
+    return blocks.map((block, index) => (
+      <MemoizedMarkdownBlock content={block} key={`block_${index}`} />
+    ));
+  }
+);
 
 MemoizedMarkdown.displayName = 'MemoizedMarkdown';
 
 // Typewriter text with markdown support
 export function MarkdownText({
   text,
-  showCursor = false,
+  loading = false,
   className,
 }: {
   text: string;
-  speed?: number;
-  showCursor?: boolean;
+  loading?: boolean;
   className?: string;
 }) {
   return (
-    <span className={cn(className, 'prose', showCursor && 'with-cursor')}>
-      <MemoizedMarkdown content={text} />
+    <span className={cn(className, 'prose', loading && 'with-cursor')}>
+      <MemoizedMarkdown content={text} split={loading} />
     </span>
   );
 }

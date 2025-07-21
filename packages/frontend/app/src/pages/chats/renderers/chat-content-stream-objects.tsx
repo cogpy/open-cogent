@@ -1,13 +1,16 @@
 // oxlint-disable no-array-index-key
 import type { StreamObject } from '@afk/graphql';
 
-import { MarkdownText } from '@/components/ui/markdown';
 import { DocCard } from '@/components/doc-panel/doc-card';
+import { MessageCard } from '@/components/ui/card/message-card';
+import { MarkdownText } from '@/components/ui/markdown';
+
 import { MakeItRealResult } from './make-it-real-result';
 import { WebSearchResult } from './web-search-result';
 
 interface ChatContentStreamObjectsProps {
   streamObjects: StreamObject[];
+  isStreaming?: boolean;
 }
 
 /**
@@ -20,6 +23,7 @@ interface ChatContentStreamObjectsProps {
  */
 export function ChatContentStreamObjects({
   streamObjects,
+  isStreaming = false,
 }: ChatContentStreamObjectsProps) {
   if (!streamObjects?.length) return null;
 
@@ -28,29 +32,35 @@ export function ChatContentStreamObjects({
       {streamObjects.map((obj, idx) => {
         switch (obj.type) {
           case 'text-delta':
-            return <MarkdownText key={idx} text={obj.textDelta ?? ''} />;
+            return (
+              <MarkdownText
+                key={idx}
+                text={obj.textDelta ?? ''}
+                loading={isStreaming}
+              />
+            );
 
           case 'reasoning':
             return (
               <div key={idx} className="rounded-md bg-black/[0.05] p-4">
-                <MarkdownText text={obj.textDelta ?? ''} />
+                <MarkdownText
+                  text={obj.textDelta ?? ''}
+                  loading={isStreaming}
+                />
               </div>
             );
 
           case 'tool-call':
             return (
-              <div
+              <MessageCard
                 key={idx}
-                className="rounded-md border border-dashed border-gray-400 p-3 text-sm text-gray-600"
-              >
-                <span role="img" aria-label="tool call">
-                  🔧
-                </span>{' '}
-                Calling {obj.toolName ?? 'tool'} …
-              </div>
+                status="loading"
+                className="my-5"
+                title={`Calling ${obj.toolName ?? 'tool'} …`}
+              />
             );
 
-          case 'tool-result':
+          case 'tool-result': {
             // Special handling for make_it_real tool
             if (obj.toolName === 'make_it_real' && obj.result?.content) {
               return (
@@ -100,7 +110,7 @@ export function ChatContentStreamObjects({
             return (
               <div
                 key={idx}
-                className="rounded-md border border-gray-300 p-3 text-sm text-gray-600 dark:text-gray-300"
+                className="rounded-md border border-gray-300 p-3 text-sm text-gray-600"
               >
                 <div className="font-medium mb-1">
                   ✅ {obj.toolName ?? 'Tool'} result
@@ -114,7 +124,7 @@ export function ChatContentStreamObjects({
                 )}
               </div>
             );
-
+          }
           default:
             return null;
         }

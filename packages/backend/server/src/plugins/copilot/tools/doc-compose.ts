@@ -2,15 +2,58 @@ import { Logger } from '@nestjs/common';
 import { tool } from 'ai';
 import { z } from 'zod';
 
+import { Models } from '../../../models';
 import type { PromptService } from '../prompt';
-import type { CopilotProviderFactory } from '../providers';
+import type { CopilotChatOptions, CopilotProviderFactory } from '../providers';
 import { toolError } from './error';
 
 const logger = new Logger('DocComposeTool');
 
-export const createDocComposeTool = (
+export const buildSaveDocGetter = (
+  models: Models,
   promptService: PromptService,
   factory: CopilotProviderFactory
+) => {
+  const saveDoc = async (
+    options: CopilotChatOptions,
+    content: string,
+    title?: string
+  ) => {
+    if (!options || !content.trim() || !options.user || !options.session) {
+      return `Invalid save doc parameters.`;
+    }
+
+    const titlePrompt = await promptService.get('Summary as title');
+    const titleProvider = await factory.getProviderByModel(
+      titlePrompt?.model || ''
+    );
+    const finalTitle =
+      title ||
+      (titlePrompt && titleProvider
+        ? await titleProvider.text(
+            { modelId: titlePrompt.model },
+            titlePrompt.finish({ content })
+          )
+        : 'Untitled Document');
+    const { docId } = await models.copilotUser.addDoc(
+      options.user,
+      options.session,
+      { title: finalTitle, content }
+    );
+    return { docId, title, content };
+  };
+  return saveDoc;
+};
+
+type Shift<Fn> = Fn extends (arg0: any, ...rest: infer Rest) => infer R
+  ? (...args: Rest) => R
+  : never;
+export type SaveDocFunc = Shift<Awaited<ReturnType<typeof buildSaveDocGetter>>>;
+
+export const createDocComposeTool = (
+  promptService: PromptService,
+  factory: CopilotProviderFactory,
+  saveDoc: SaveDocFunc
 ) => {
   return tool({
     description:
@@ -43,8 +86,12 @@ export const createDocComposeTool = (
           [...prompt.finish({}), { role: 'user', content: userPrompt }]
         );
 
+        const ret = await saveDoc(content);
+        if (typeof ret === 'string') return ret;
+
         return {
-          title,
+          docId: ret.docId,
+          title: ret.title,
           markdown: content,
           wordCount: content.split(/\s+/).length,
         };

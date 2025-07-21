@@ -4,12 +4,14 @@ import { z } from 'zod';
 
 import { PromptService } from '../prompt';
 import { CopilotProviderFactory } from '../providers';
+import { SaveDocFunc } from './doc-compose';
 import { toolError } from './error';
 const logger = new Logger('MakeItRealTool');
 
 export const createMakeItRealTool = (
   promptService: PromptService,
-  factory: CopilotProviderFactory
+  factory: CopilotProviderFactory,
+  saveDoc: SaveDocFunc
 ) => {
   return tool({
     description:
@@ -40,9 +42,12 @@ export const createMakeItRealTool = (
           );
         }
 
-        return {
-          content,
-        };
+        if (content) {
+          const ret = await saveDoc(content);
+          if (ret) return ret;
+        }
+
+        return 'Failed to make it real';
       } catch (err: any) {
         logger.error(`Failed to make it real`, err);
         return toolError('Make It Real Failed', err.message ?? String(err));

@@ -10,10 +10,12 @@ import {
   CopilotProviderNotSupported,
   OnEvent,
 } from '../../../base';
+import { Models } from '../../../models';
 import { CopilotContextService } from '../context';
 import { PromptService } from '../prompt';
 import {
   buildDocSearchGetter,
+  buildSaveDocGetter,
   createCodeArtifactTool,
   createConversationSummaryTool,
   createDocComposeTool,
@@ -143,6 +145,13 @@ export abstract class CopilotProvider<C = any> {
       const prompt = this.moduleRef.get(PromptService, {
         strict: false,
       });
+      const models = this.moduleRef.get(Models, {
+        strict: false,
+      });
+      const saveDoc = buildSaveDocGetter(models, prompt, this.factory).bind(
+        null,
+        options
+      );
 
       for (const tool of options.tools) {
         const toolDef = this.getProviderSpecificTools(tool, model);
@@ -193,11 +202,19 @@ export abstract class CopilotProvider<C = any> {
             break;
           }
           case 'docCompose': {
-            tools.doc_compose = createDocComposeTool(prompt, this.factory);
+            tools.doc_compose = createDocComposeTool(
+              prompt,
+              this.factory,
+              saveDoc
+            );
             break;
           }
           case 'makeItReal': {
-            tools.make_it_real = createMakeItRealTool(prompt, this.factory);
+            tools.make_it_real = createMakeItRealTool(
+              prompt,
+              this.factory,
+              saveDoc
+            );
             break;
           }
         }

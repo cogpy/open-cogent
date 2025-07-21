@@ -1,56 +1,49 @@
-import { type CopilotHistories, getCopilotHistoriesQuery } from '@afk/graphql';
+import {
+  type GetCopilotHistoriesQuery,
+  getCopilotHistoriesQuery,
+  type GetUserDocsQuery,
+  getUserDocsQuery,
+  type GetUserFilesQuery,
+  getUserFilesQuery,
+} from '@afk/graphql';
 import { create } from 'zustand';
 
 import { gql } from '@/lib/gql';
 
-// mock data
-const chats = Array.from({ length: 100 }, (_, i) => ({
-  id: `chat-${i}`,
-  title: `Test Chat ${i}`,
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
-  metadata: {
-    collected: Math.random() > 0.8,
-  },
-}));
-const docs = Array.from({ length: 100 }, (_, i) => ({
-  id: `doc-${i}`,
-  title: `Test Doc ${i}`,
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
-  metadata: {
-    collected: Math.random() > 0.8,
-  },
-}));
-const files = Array.from({ length: 100 }, (_, i) => ({
-  id: `file-${i}`,
-  title: `Test File ${i}`,
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
-  mineType: [
-    'application/pdf',
-    'application/docx',
-    'application/doc',
-    'application/txt',
-  ][Math.floor(Math.random() * 4)],
-  metadata: {
-    collected: Math.random() > 0.8,
-  },
-}));
+export type Chat = NonNullable<
+  GetCopilotHistoriesQuery['currentUser']
+>['copilot']['chats']['edges'][number]['node'];
+export type Doc = NonNullable<
+  GetUserDocsQuery['currentUser']
+>['embedding']['docs']['edges'][number]['node'];
+export type File = NonNullable<
+  GetUserFilesQuery['currentUser']
+>['embedding']['files']['edges'][number]['node'];
 
+export type AllItem = Array<
+  | ({
+      type: 'chat';
+    } & Chat)
+  | ({
+      type: 'doc';
+    } & Doc)
+  | ({
+      type: 'file';
+    } & File)
+>;
 export interface LibraryState {
-  chats: any[];
-  docs: any[];
-  files: any[];
-  allItems: any[];
+  chats: Chat[];
+  docs: Doc[];
+  files: File[];
+  allItems: AllItem[];
   loading: boolean;
+  chatsMap: Record<string, Chat>;
+  docsMap: Record<string, Doc>;
+  filesMap: Record<string, File>;
   refresh: () => Promise<void>;
-  chatsMap: Record<string, any>;
-  docsMap: Record<string, any>;
-  filesMap: Record<string, any>;
 }
 
-export const useLibraryStore = create<LibraryState>()(set => ({
+export const useLibraryStore = create<LibraryState>()((set, get) => ({
   loading: false,
   chats: [],
   docs: [],
@@ -60,24 +53,70 @@ export const useLibraryStore = create<LibraryState>()(set => ({
   docsMap: {},
   filesMap: {},
   refresh: async () => {
+    if (get().loading) return;
+
     set({ loading: true });
     try {
-      // const res = await gql({
-      //   query: getCopilotHistoriesQuery,
-      //   variables: {},
-      // });
+      const [chatsRes, docsRes, filesRes] = await Promise.allSettled([
+        gql({
+          query: getCopilotHistoriesQuery,
+          variables: {
+            pagination: {
+              first: 2 ** 10,
+            },
+          },
+        }),
+        gql({
+          query: getUserDocsQuery,
+          variables: {
+            pagination: {
+              first: 2 ** 10,
+            },
+          },
+        }),
+        gql({
+          query: getUserFilesQuery,
+          variables: {
+            pagination: {
+              first: 2 ** 10,
+            },
+          },
+        }),
+      ]);
+      let docs: Doc[] = [],
+        chats: Chat[] = [],
+        files: File[] = [];
+      if (chatsRes.status === 'fulfilled') {
+        chats =
+          chatsRes.value.currentUser?.copilot.chats.edges.map(
+            edge => edge.node
+          ) ?? [];
+      }
+      if (docsRes.status === 'fulfilled') {
+        docs =
+          docsRes.value.currentUser?.embedding.docs.edges.map(
+            edge => edge.node
+          ) ?? [];
+      }
+      if (filesRes.status === 'fulfilled') {
+        files =
+          filesRes.value.currentUser?.embedding.files.edges.map(
+            edge => edge.node
+          ) ?? [];
+      }
+
       set({ docs, chats, files });
       set({
         chatsMap: chats.reduce((acc, chat) => {
-          acc[chat.id] = chat;
+          acc[chat.sessionId] = chat;
           return acc;
         }, {} as any),
         docsMap: docs.reduce((acc, doc) => {
-          acc[doc.id] = doc;
+          acc[doc.docId] = doc;
           return acc;
         }, {} as any),
         filesMap: files.reduce((acc, file) => {
-          acc[file.id] = file;
+          acc[file.fileId] = file;
           return acc;
         }, {} as any),
       });
@@ -88,10 +127,10 @@ export const useLibraryStore = create<LibraryState>()(set => ({
           ...files.map(file => ({ type: 'file', ...file })),
         ].sort((a, b) => {
           return (
-            new Date(b.updatedAt ?? b.createdAt).getTime() -
-            new Date(a.updatedAt ?? a.createdAt).getTime()
+            new Date((b as any).updatedAt ?? b.createdAt).getTime() -
+            new Date((a as any).updatedAt ?? a.createdAt).getTime()
           );
-        }),
+        }) as unknown as AllItem[],
       });
     } catch (error) {
       console.error(error);

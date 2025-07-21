@@ -6,7 +6,7 @@ import { text } from '@/lib/utils';
 export const hoverableItem = style({
   display: 'flex',
   alignItems: 'center',
-  gap: 8,
+  gap: 12,
   height: 30,
   padding: '0px 8px',
   color: cssVarV2('text/primary'),
@@ -21,6 +21,7 @@ export const hoverableIcon = style({
   height: 16,
   flexShrink: 0,
   fontSize: 16,
+  color: cssVarV2('icon/primary'),
 });
 
 export const hoverableLabel = style({
@@ -40,11 +41,10 @@ export const sectionTitle = style({
   display: 'flex',
   alignItems: 'center',
   gap: 2,
-  paddingLeft: 8,
-  cursor: 'pointer',
-  ':hover': {
-    backgroundColor: cssVarV2('layer/background/hoverOverlay'),
-  },
+  // cursor: 'pointer',
+  // ':hover': {
+  //   backgroundColor: cssVarV2('layer/background/hoverOverlay'),
+  // },
 });
 
 export const listItem = style({

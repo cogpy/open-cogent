@@ -3,6 +3,8 @@ import { SidebarIcon } from '@blocksuite/icons/rc';
 
 import AppSidebar from '@/components/ui/sidebar/sidebar';
 import { useSidebarStore } from '@/store/sidebar';
+import { DocPanel } from '@/components/doc-panel/doc-panel';
+import { useDocPanelStore } from '@/store/doc-panel';
 
 export const SidebarLayout = ({
   sidebar,
@@ -12,6 +14,8 @@ export const SidebarLayout = ({
   children: React.ReactNode;
 }) => {
   const { toggleSidebar } = useSidebarStore();
+  const { isOpen: isDocPanelOpen } = useDocPanelStore();
+
   return (
     <div className="relative flex size-full justify-end">
       {/* sidebar */}
@@ -21,9 +25,23 @@ export const SidebarLayout = ({
         <div className="flex-1 h-0">{sidebar}</div>
       </AppSidebar>
 
-      {/* main */}
-      <main className="w-0 flex-1 bg-white rounded-[8px] overflow-hidden">
-        {children}
+      {/* main content area */}
+      <main className="w-0 flex-1 flex gap-2 p-2">
+        {/* chat panel */}
+        <div
+          className={`bg-white rounded-[8px] overflow-hidden transition-all duration-300 ${
+            isDocPanelOpen ? 'flex-1' : 'w-full'
+          }`}
+        >
+          {children}
+        </div>
+
+        {/* doc panel */}
+        {isDocPanelOpen && (
+          <div className="flex-1 bg-white rounded-[8px] overflow-hidden">
+            <DocPanel />
+          </div>
+        )}
       </main>
 
       {/* actions */}

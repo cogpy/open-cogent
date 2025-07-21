@@ -1,16 +1,18 @@
-import { nanoid } from 'nanoid';
-import { Doc as YDoc } from 'yjs';
-import { WorkspaceImpl } from './workspace';
+import { AffineSchemas } from '@blocksuite/affine/schemas';
 import {
+  nanoid,
   Schema,
   type Store,
   Text,
   Transformer,
 } from '@blocksuite/affine/store';
-import { AffineSchemas } from '@blocksuite/affine/schemas';
 import { MarkdownAdapter } from '@blocksuite/affine-shared/adapters';
-import { getStoreManager } from './store';
+import { SimpleLayoutConverter } from '@blocksuite/affine-shared/adapters';
 import { Container } from '@blocksuite/global/di';
+import { Doc as YDoc } from 'yjs';
+
+import { getStoreManager } from './store';
+import { WorkspaceImpl } from './workspace';
 
 const getTempWorkspace = () => {
   const collection = new WorkspaceImpl({
@@ -81,16 +83,49 @@ const getMarkdownAdapter = (transformer = getTransformer()) => {
 };
 
 const markDownToDoc = async (markdown: string): Promise<Store | undefined> => {
-  const transformer = getTransformer();
-  const mdAdapter = getMarkdownAdapter(transformer);
-  const doc = await mdAdapter.toDoc({
-    file: markdown,
-    assets: transformer.assetsManager,
-  });
-  if (!doc) {
-    console.error('Failed to convert markdown to doc');
+  try {
+    // 使用 SimpleLayoutConverter 将 markdown 转换为 snapshot
+    const noteSnapshot =
+      await SimpleLayoutConverter.markdownToSnapshot(markdown);
+
+    // 创建正确的页面结构，将 note 作为 page 的子块
+    const pageSnapshot = {
+      type: 'block' as const,
+      id: nanoid(),
+      flavour: 'affine:page',
+      props: {
+        title: {
+          '$blocksuite:internal:text$': true,
+          delta: [],
+        },
+      },
+      children: [noteSnapshot],
+    };
+
+    // 创建 DocSnapshot 结构
+    const docSnapshot = {
+      type: 'page' as const,
+      meta: {
+        id: 'temp-doc-' + Date.now(),
+        title: '',
+        createDate: Date.now(),
+        tags: [],
+      },
+      blocks: pageSnapshot,
+    };
+
+    // 使用 transformer 将 snapshot 转换为 Store
+    const transformer = getTransformer();
+    const doc = await transformer.snapshotToDoc(docSnapshot);
+
+    if (!doc) {
+      console.error('Failed to convert snapshot to doc');
+    }
+    return doc;
+  } catch (error) {
+    console.error('Failed to convert markdown to doc:', error);
+    return undefined;
   }
-  return doc;
 };
 
 const docToMarkdown = async (doc: Store) => {

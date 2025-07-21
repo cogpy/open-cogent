@@ -1,3 +1,4 @@
+import { CodeBlockPreviewExtension } from '@blocksuite/affine/blocks/code';
 import { RefNodeSlotsProvider } from '@blocksuite/affine/inlines/reference';
 import {
   CommunityCanvasTextFonts,
@@ -8,7 +9,6 @@ import {
   ParseDocUrlExtension,
 } from '@blocksuite/affine/shared/services';
 import type { ExtensionType, Store, Workspace } from '@blocksuite/affine/store';
-import { CodeBlockPreviewExtension } from '@blocksuite/affine/blocks/code';
 import { type TestAffineEditorContainer } from '@blocksuite/integration-test';
 import { getTestViewManager } from '@blocksuite/integration-test/view';
 import { html } from 'lit';

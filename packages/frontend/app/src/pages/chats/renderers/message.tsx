@@ -1,5 +1,6 @@
 import { MarkdownText } from '@/components/ui/markdown';
 import type { ChatMessage } from '@/store/copilot/types';
+
 import { ChatContentStreamObjects } from './chat-content-stream-objects';
 
 interface MessageRendererProps {

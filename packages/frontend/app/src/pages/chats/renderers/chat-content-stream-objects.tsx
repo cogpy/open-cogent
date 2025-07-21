@@ -2,6 +2,8 @@
 import type { StreamObject } from '@afk/graphql';
 
 import { MarkdownText } from '@/components/ui/markdown';
+import { DocCard } from '@/components/doc-panel/doc-card';
+import { MakeItRealResult } from './make-it-real-result';
 
 interface ChatContentStreamObjectsProps {
   streamObjects: StreamObject[];
@@ -48,6 +50,39 @@ export function ChatContentStreamObjects({
             );
 
           case 'tool-result':
+            // Special handling for make_it_real tool
+            if (obj.toolName === 'make_it_real' && obj.result?.content) {
+              return (
+                <MakeItRealResult
+                  key={idx}
+                  content={obj.result.content}
+                  originalContent={obj.result.originalContent}
+                />
+              );
+            }
+
+            // Check if result contains document content (markdown-like text)
+            const resultContent =
+              obj.result?.content || obj.result?.text || obj.result?.markdown;
+            const isDocumentContent =
+              typeof resultContent === 'string' &&
+              resultContent.length > 100 &&
+              (resultContent.includes('#') ||
+                resultContent.includes('```') ||
+                resultContent.includes('\n\n'));
+
+            if (isDocumentContent) {
+              return (
+                <DocCard
+                  key={idx}
+                  content={resultContent}
+                  title={obj.toolName ? `${obj.toolName} Result` : 'Document'}
+                  description="Generated document content"
+                />
+              );
+            }
+
+            // Default tool result display
             return (
               <div
                 key={idx}

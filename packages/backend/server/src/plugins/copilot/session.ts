@@ -274,7 +274,14 @@ export class ChatSessionService {
     if (!prompt) throw new CopilotPromptNotFound({ name: session.promptName });
 
     return {
-      ...pick(session, ['userId', 'pinned', 'title', 'createdAt', 'updatedAt']),
+      ...pick(session, [
+        'userId',
+        'pinned',
+        'title',
+        'metadata',
+        'createdAt',
+        'updatedAt',
+      ]),
       sessionId: session.id,
       tokens: session.tokenCost,
       messages: this.getMessage(session),

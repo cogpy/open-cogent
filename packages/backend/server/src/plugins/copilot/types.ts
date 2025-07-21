@@ -50,6 +50,7 @@ export const ChatHistorySchema = z
     sessionId: z.string(),
     pinned: z.boolean(),
     title: z.string().nullable(),
+    metadata: z.string(),
 
     action: z.string().nullable(),
     model: z.string(),

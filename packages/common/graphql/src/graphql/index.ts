@@ -29,6 +29,7 @@ export const copilotChatHistoryFragment = `fragment CopilotChatHistory on Copilo
   action
   pinned
   title
+  metadata
   tokens
   messages {
     ...CopilotChatMessage

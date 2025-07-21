@@ -215,6 +215,7 @@ export interface CopilotHistories {
   action: Maybe<Scalars['String']['output']>;
   createdAt: Scalars['DateTime']['output'];
   messages: Array<ChatMessage>;
+  metadata: Scalars['String']['output'];
   model: Scalars['String']['output'];
   optionalModels: Array<Scalars['String']['output']>;
   pinned: Scalars['Boolean']['output'];
@@ -1652,6 +1653,7 @@ export type GetCopilotPinnedSessionsQuery = {
             action: string | null;
             pinned: boolean;
             title: string | null;
+            metadata: string;
             tokens: number;
             createdAt: string;
             updatedAt: string;
@@ -1712,6 +1714,7 @@ export type GetCopilotUserSessionsQuery = {
             action: string | null;
             pinned: boolean;
             title: string | null;
+            metadata: string;
             tokens: number;
             createdAt: string;
             updatedAt: string;
@@ -1771,6 +1774,7 @@ export type GetCopilotHistoriesQuery = {
             action: string | null;
             pinned: boolean;
             title: string | null;
+            metadata: string;
             tokens: number;
             createdAt: string;
             updatedAt: string;
@@ -1956,6 +1960,7 @@ export type GetCopilotLatestDocSessionQuery = {
             action: string | null;
             pinned: boolean;
             title: string | null;
+            metadata: string;
             tokens: number;
             createdAt: string;
             updatedAt: string;
@@ -2014,6 +2019,7 @@ export type GetCopilotSessionQuery = {
             action: string | null;
             pinned: boolean;
             title: string | null;
+            metadata: string;
             tokens: number;
             createdAt: string;
             updatedAt: string;
@@ -2074,6 +2080,7 @@ export type GetCopilotRecentSessionsQuery = {
             action: string | null;
             pinned: boolean;
             title: string | null;
+            metadata: string;
             tokens: number;
             createdAt: string;
             updatedAt: string;
@@ -2142,6 +2149,7 @@ export type GetCopilotSessionsQuery = {
             action: string | null;
             pinned: boolean;
             title: string | null;
+            metadata: string;
             tokens: number;
             createdAt: string;
             updatedAt: string;
@@ -2372,6 +2380,7 @@ export type CopilotChatHistoryFragment = {
   action: string | null;
   pinned: boolean;
   title: string | null;
+  metadata: string;
   tokens: number;
   createdAt: string;
   updatedAt: string;
@@ -2415,6 +2424,7 @@ export type PaginatedCopilotChatsFragment = {
       action: string | null;
       pinned: boolean;
       title: string | null;
+      metadata: string;
       tokens: number;
       createdAt: string;
       updatedAt: string;

@@ -233,6 +233,9 @@ class CopilotHistoriesType implements Omit<ChatHistory, 'userId'> {
   @Field(() => String, { nullable: true })
   title!: string | null;
 
+  @Field(() => String)
+  metadata!: string;
+
   @Field(() => Number, {
     description: 'The number of tokens used in the session',
   })

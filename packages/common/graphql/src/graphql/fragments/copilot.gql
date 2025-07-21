@@ -22,6 +22,7 @@ fragment CopilotChatHistory on CopilotHistories {
   action
   pinned
   title
+  metadata
   tokens
   messages {
     ...CopilotChatMessage

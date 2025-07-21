@@ -143,6 +143,7 @@ type CopilotHistories {
   action: String
   createdAt: DateTime!
   messages: [ChatMessage!]!
+  metadata: String!
   model: String!
   optionalModels: [String!]!
   pinned: Boolean!

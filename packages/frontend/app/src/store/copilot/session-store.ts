@@ -83,7 +83,7 @@ export function createChatSessionStore(params: {
             : undefined;
 
           const initialMessages =
-            (historyEntry?.messages as any[]) ?? meta?.messages ?? [];
+            historyEntry?.messages ?? meta?.messages ?? [];
 
           set(state => {
             state.meta = meta ?? state.meta ?? null;

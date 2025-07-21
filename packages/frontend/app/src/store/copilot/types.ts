@@ -1,3 +1,5 @@
+import type { StreamObject } from '@afk/graphql';
+
 import type { CopilotClient } from './client';
 
 export interface ChatMessage {
@@ -5,6 +7,7 @@ export interface ChatMessage {
   content: string;
   role: 'user' | 'assistant' | 'system' | string;
   createdAt?: string;
+  streamObjects?: StreamObject[] | null;
   // Other server-returned fields are allowed
   [key: string]: unknown;
 }

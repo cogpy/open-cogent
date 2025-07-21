@@ -70,7 +70,10 @@ export function mergeStreamObjects(chunks: StreamObject[] = []) {
             if (item.type !== 'tool-result') return false;
             if (!['todo_list', 'mark_todo'].includes((item as any).toolName))
               return false;
-            const id = (item as any).result?.todoListId;
+            // Previous todo_list result stores list id in `id` field, while subsequent
+            // mark_todo results use `todoListId`. Support both for matching.
+            const id =
+              (item as any).result?.todoListId ?? (item as any).result?.id;
             return id && id === todoListId;
           });
 
@@ -97,6 +100,17 @@ export function mergeStreamObjects(chunks: StreamObject[] = []) {
                 list: newList,
               },
             } as StreamObject;
+
+            // Remove the original tool-call placeholder for this mark_todo call
+            const callIdx = acc.findIndex(
+              item =>
+                item.type === 'tool-call' &&
+                (item as any).toolCallId === curr.toolCallId &&
+                (item as any).toolName === 'mark_todo'
+            );
+            if (callIdx !== -1) {
+              acc.splice(callIdx, 1);
+            }
 
             break; // Merged; do not push current chunk
           }

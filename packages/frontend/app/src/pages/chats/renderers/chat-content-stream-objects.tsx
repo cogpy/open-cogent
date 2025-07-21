@@ -5,9 +5,10 @@ import { MessageCard } from '@/components/ui/card/message-card';
 import { MarkdownText } from '@/components/ui/markdown';
 
 import { DocComposeResult } from './doc-compose-result';
+
 import { MakeItRealResult } from './make-it-real-result';
-import { WebSearchResult } from './web-search-result';
 import { TodoListResult } from './todo-list-result';
+import { WebSearchResult } from './web-search-result';
 
 interface ChatContentStreamObjectsProps {
   streamObjects: StreamObject[];

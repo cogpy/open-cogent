@@ -1,5 +1,6 @@
 import { MessageCard } from '@/components/ui/card/message-card';
 import { cn } from '@/lib/utils';
+import { CheckBoxCheckSolidIcon } from '@blocksuite/icons/rc';
 
 interface TodoItem {
   id: string;
@@ -41,6 +42,27 @@ const statusToCardStatus = (
   }
 };
 
+const getIcon = (status: string) => {
+  switch (status) {
+    case 'done':
+      return <CheckBoxCheckSolidIcon />;
+    case 'pending':
+      return (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+        >
+          <circle cx="12" cy="12" r="9.25" stroke="#B3B3B3" strokeWidth="1.5" />
+        </svg>
+      );
+    default:
+      return undefined;
+  }
+};
+
 const statusCategory = (status: string): keyof typeof COLUMN_LABELS => {
   switch (status) {
     case 'completed':
@@ -69,16 +91,11 @@ export function TodoListResult({ result, className }: TodoListResultProps) {
   }
 
   return (
-    <div
-      className={cn(
-        'rounded-lg border border-gray-200 p-4 bg-white',
-        className
-      )}
-    >
+    <div className={cn('', className)}>
       {/* Horizontal scroll wrapper */}
       <div className="overflow-x-auto">
         {/* Track: flex on mobile, grid on medium+ */}
-        <div className="flex md:grid md:grid-cols-3 gap-4 min-w-max pb-2">
+        <div className="flex md:grid md:grid-cols-3 gap-4 min-w-max pb-2 max-h-[300px]">
           {/** Render each column */}
           {(
             Object.keys(COLUMN_LABELS) as Array<keyof typeof COLUMN_LABELS>
@@ -87,13 +104,13 @@ export function TodoListResult({ result, className }: TodoListResultProps) {
             return (
               <div
                 key={key}
-                className="flex-shrink-0 md:flex-shrink md:gap-2 flex flex-col gap-2 w-60"
+                className="flex-shrink-0 md:flex-shrink md:gap-2 flex flex-col gap-2 w-72"
               >
                 <h3 className="text-sm font-medium text-gray-500">
                   {COLUMN_LABELS[key]}
                 </h3>
                 {items.length === 0 ? (
-                  <span className="text-xs text-gray-400">No items</span>
+                  <span className="text-xs text-gray-400">-</span>
                 ) : (
                   items.map(item => (
                     <MessageCard
@@ -101,11 +118,7 @@ export function TodoListResult({ result, className }: TodoListResultProps) {
                       status={statusToCardStatus(item.status)}
                       title={item.title}
                       subTitle={item.description}
-                      icon={
-                        statusToCardStatus(item.status) === 'done'
-                          ? '✅'
-                          : undefined
-                      }
+                      icon={getIcon(statusToCardStatus(item.status))}
                     />
                   ))
                 )}

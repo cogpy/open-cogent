@@ -1,5 +1,6 @@
-import { MemoizedMarkdown, MarkdownText } from '@/components/ui/markdown';
+import { MarkdownText } from '@/components/ui/markdown';
 import type { ChatMessage } from '@/store/copilot/types';
+import { ChatContentStreamObjects } from './chat-content-stream-objects';
 
 interface MessageRendererProps {
   /** Chat message to render */
@@ -20,15 +21,18 @@ export function MessageRenderer({
 }: MessageRendererProps) {
   const isAssistant = message.role !== 'user';
 
+  console.log('message', message);
   return (
     <div className={isAssistant ? 'text-left' : 'text-right'}>
-      <span className="inline-block bg-gray-100 dark:bg-gray-700 rounded px-2 py-1 max-w-full prose dark:prose-invert">
-        {isAssistant && isStreaming ? (
-          <MarkdownText text={message.content} showCursor />
-        ) : (
-          <MemoizedMarkdown content={message.content} />
-        )}
-      </span>
+      {message.streamObjects?.length ? (
+        <ChatContentStreamObjects streamObjects={message.streamObjects} />
+      ) : (
+        <MarkdownText
+          className="inline-block bg-gray-100 rounded px-2 py-1 max-w-full prose"
+          text={message.content}
+          showCursor={isAssistant && isStreaming}
+        />
+      )}
     </div>
   );
 }

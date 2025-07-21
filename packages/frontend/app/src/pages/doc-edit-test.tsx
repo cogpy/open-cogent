@@ -1,9 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
-import { snapshotHelper } from '../components/doc-composer/snapshot-helper';
 import type { Store } from '@blocksuite/affine/store';
-import { DocEditor } from '@/components/doc-composer/doc-editor';
 import { debounce } from 'lodash';
+import { useEffect, useMemo, useState } from 'react';
+
+import { DocEditor } from '@/components/doc-composer/doc-editor';
 import { MarkdownText } from '@/components/ui/markdown';
+
+import { snapshotHelper } from '../components/doc-composer/snapshot-helper';
 
 const useTempDoc = (defaultMarkdown: string) => {
   const [doc, setDoc] = useState<Store | null>(null);

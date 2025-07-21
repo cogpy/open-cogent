@@ -357,7 +357,7 @@ export class CopilotClient {
       webSearch?: boolean;
       modelId?: string;
     },
-    endpoint = Endpoint.Stream
+    endpoint = Endpoint.StreamObject
   ) {
     let url = `/api/copilot/chat/${sessionId}/${endpoint}`;
     const queryString = this.paramsToQueryString({

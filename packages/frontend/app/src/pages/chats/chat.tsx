@@ -27,15 +27,15 @@ const ChatPageImpl = ({ store }: { store: StoreApi<ChatSessionState> }) => {
   return (
     <div className="flex flex-col h-full p-4 gap-4">
       <div className="flex-1 overflow-auto border rounded p-2 flex flex-col gap-2">
-        {messages.map((m, idx) => (
-          <MessageRenderer
-            key={m.id ?? idx}
-            message={m}
-            isStreaming={
-              isStreaming && idx === messages.length - 1 && m.role !== 'user'
-            }
-          />
-        ))}
+        {messages.map((m, idx) => {
+          return (
+            <MessageRenderer
+              key={m.id ?? idx}
+              message={m}
+              isStreaming={isStreaming && idx === messages.length - 1}
+            />
+          );
+        })}
       </div>
       <div className="flex gap-2">
         <textarea

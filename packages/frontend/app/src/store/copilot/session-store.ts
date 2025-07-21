@@ -2,6 +2,8 @@ import { produce } from 'immer';
 import { createStore, type StoreApi } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 
+import { z } from 'zod';
+
 import type { CopilotClient } from './client';
 import { toTextStream } from './event-source';
 import type {
@@ -10,6 +12,70 @@ import type {
   SendMessageOptions,
   SessionFlags,
 } from './types';
+import type { StreamObject } from '@afk/graphql';
+
+export const StreamObjectSchema = z.discriminatedUnion('type', [
+  z.object({
+    type: z.literal('text-delta'),
+    textDelta: z.string(),
+  }),
+  z.object({
+    type: z.literal('reasoning'),
+    textDelta: z.string(),
+  }),
+  z.object({
+    type: z.literal('tool-call'),
+    toolCallId: z.string(),
+    toolName: z.string(),
+    args: z.record(z.any()),
+  }),
+  z.object({
+    type: z.literal('tool-result'),
+    toolCallId: z.string(),
+    toolName: z.string(),
+    args: z.record(z.any()),
+    result: z.any(),
+  }),
+]);
+
+export function mergeStreamObjects(chunks: StreamObject[] = []) {
+  return chunks.reduce((acc, curr) => {
+    const prev = acc.at(-1);
+    switch (curr.type) {
+      case 'reasoning':
+      case 'text-delta': {
+        if (prev && prev.type === curr.type) {
+          acc[acc.length - 1] = {
+            ...prev,
+            textDelta: (prev.textDelta ?? '') + (curr.textDelta ?? ''),
+          };
+        } else {
+          acc.push(curr);
+        }
+        break;
+      }
+      case 'tool-result': {
+        const index = acc.findIndex(
+          item =>
+            item.type === 'tool-call' &&
+            item.toolCallId === curr.toolCallId &&
+            item.toolName === curr.toolName
+        );
+        if (index !== -1) {
+          acc[index] = curr;
+        } else {
+          acc.push(curr);
+        }
+        break;
+      }
+      default: {
+        acc.push(curr);
+        break;
+      }
+    }
+    return acc;
+  }, [] as StreamObject[]);
+}
 
 // Helper to apply immer mutation inside async flow
 const withFlag = <K extends keyof SessionFlags>(
@@ -149,12 +215,30 @@ export function createChatSessionStore(params: {
 
               for await (const ev of toTextStream(es)) {
                 if (ev.type === 'message') {
-                  const chunk = ev.data as string;
+                  const chunk = ev.data;
                   store.setState(
                     produce((draft: ChatSessionState) => {
                       const last = draft.messages[draft.messages.length - 1];
+
                       if (last && last.role === 'assistant') {
-                        last.content += chunk;
+                        try {
+                          const parsed = StreamObjectSchema.parse(
+                            JSON.parse(chunk)
+                          ) as StreamObject;
+                          const streamObjects = mergeStreamObjects([
+                            ...(last.streamObjects ?? []),
+                            parsed,
+                          ]);
+                          draft.messages[draft.messages.length - 1] = {
+                            ...last,
+                            streamObjects,
+                          };
+                        } catch {
+                          draft.messages[draft.messages.length - 1] = {
+                            ...last,
+                            content: last.content + chunk,
+                          };
+                        }
                       }
                     })
                   );

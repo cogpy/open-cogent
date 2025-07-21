@@ -34,3 +34,30 @@ body {
 body.sidebar-open {
   padding-left: 0px !important;
 }
+
+.with-cursor::after {
+  content: '';
+  display: inline-block;
+  width: 0.5em;
+  height: 1em;
+  background: currentColor;
+  margin-left: 0.25em;
+  vertical-align: middle;
+  animation: blink-cursor 1s steps(1) infinite;
+  transform: translateY(-2px);
+}
+
+.with-cursor p {
+  display: inline-block;
+}
+
+@keyframes blink-cursor {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  51%,
+  100% {
+    opacity: 0;
+  }
+}

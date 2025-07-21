@@ -1,6 +1,7 @@
 import { ViewportElementExtension } from '@blocksuite/affine/shared/services';
 import type { Store } from '@blocksuite/affine/store';
 import { useEffect, useMemo, useRef } from 'react';
+
 import { editorEffects, LitDocEditor } from './adapters';
 import type { PageEditor } from './page-editor';
 import { getComposerViewManager } from './specs';

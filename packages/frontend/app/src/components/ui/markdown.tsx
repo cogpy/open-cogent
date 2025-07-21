@@ -1,8 +1,9 @@
-import { cn } from '@/lib/utils';
 import { marked } from 'marked';
 import { memo, useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+
+import { cn } from '@/lib/utils';
 
 function parseMarkdownIntoBlocks(markdown: string): string[] {
   const tokens = marked.lexer(markdown);
@@ -21,7 +22,7 @@ const MemoizedMarkdownBlock = memo(
 
 MemoizedMarkdownBlock.displayName = 'MemoizedMarkdownBlock';
 
-export const MemoizedMarkdown = memo(({ content }: { content: string }) => {
+const MemoizedMarkdown = memo(({ content }: { content: string }) => {
   const blocks = useMemo(() => parseMarkdownIntoBlocks(content), [content]);
 
   return blocks.map((block, index) => (
@@ -43,11 +44,8 @@ export function MarkdownText({
   className?: string;
 }) {
   return (
-    <span className={cn(className, 'prose')}>
+    <span className={cn(className, 'prose', showCursor && 'with-cursor')}>
       <MemoizedMarkdown content={text} />
-      {showCursor && (
-        <span className="inline-block w-2 h-4 bg-current ml-1 animate-pulse" />
-      )}
     </span>
   );
 }

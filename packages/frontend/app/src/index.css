@@ -1,5 +1,19 @@
 @import 'tailwindcss';
 
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--affine-v2-layer-insideBorder-border, currentColor);
+  }
+}
+
+@theme {
+  --text-secondary: var(--affine-v2-text-secondary);
+}
+
 html,
 body,
 #root {

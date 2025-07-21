@@ -98,6 +98,7 @@ __metadata:
     "@vanilla-extract/webpack-plugin": "npm:^2.3.22"
     autoprefixer: "npm:^10.4.21"
     css-loader: "npm:^6.10.0"
+    dayjs: "npm:^1.11.13"
     globals: "npm:^16.3.0"
     immer: "npm:^10.1.1"
     lodash-es: "npm:^4.17.21"

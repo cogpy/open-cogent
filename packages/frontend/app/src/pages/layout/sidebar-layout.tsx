@@ -17,7 +17,7 @@ export const SidebarLayout = ({
       {/* sidebar */}
       <AppSidebar className="flex flex-col">
         {/* Head spacer */}
-        <header style={{ height: 48 }} className="w-full"></header>
+        <header className="w-full h-15"></header>
         <div className="flex-1 h-0">{sidebar}</div>
       </AppSidebar>
 
@@ -28,9 +28,10 @@ export const SidebarLayout = ({
 
       {/* actions */}
       <IconButton
+        size="24"
         className="absolute"
         icon={<SidebarIcon />}
-        style={{ position: 'absolute', left: 10, top: 10 }}
+        style={{ position: 'absolute', left: 14, top: 14 }}
         onClick={toggleSidebar}
       />
     </div>

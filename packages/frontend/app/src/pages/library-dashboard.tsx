@@ -23,6 +23,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
 
 import { ChatIcon } from '@/icons/chat';
+import { EmptyLibrary } from '@/icons/empty-library';
 import { gql } from '@/lib/gql';
 import { cn } from '@/lib/utils';
 import { useLibraryStore } from '@/store/library';
@@ -67,6 +68,33 @@ const groupDate = (items: any[], dateField = 'updatedAt') => {
       thisMonth: [],
       older: [],
     }
+  );
+};
+
+const Empty = ({ active }: { active: 'chats' | 'docs' | 'files' | 'all' }) => {
+  return (
+    <div className="size-full flex flex-col justify-center items-center">
+      <EmptyLibrary
+        active={active}
+        className="text-[97px]"
+        style={{ color: cssVarV2.text.secondary }}
+      />
+      <span className="text-[15px] leading-[24px] color-black font-medium">
+        There are no contents here
+      </span>
+      <span
+        style={{
+          color: cssVarV2.text.secondary,
+        }}
+        className="text-sm leading-[22px]"
+      >
+        You can generate content by creating new chats
+      </span>
+
+      <Link to="/chats" className="mt-4">
+        <Button>New Chat</Button>
+      </Link>
+    </div>
   );
 };
 
@@ -336,7 +364,7 @@ export const LibraryDashboard = () => {
         </ul>
       </header>
       <main className="h-0 flex-1 pt-4">
-        {isEmpty ? 'Empty' : ''}
+        {isEmpty ? <Empty active={type as any} /> : ''}
         <Masonry
           items={masonryItems}
           virtualScroll

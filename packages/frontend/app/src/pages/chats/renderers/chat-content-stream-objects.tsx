@@ -62,6 +62,7 @@ export function ChatContentStreamObjects({
             );
 
           case 'tool-result': {
+            console.log(obj);
             // Special handling for make_it_real tool
             if (obj.toolName === 'make_it_real' && obj.result?.content) {
               console.log(obj);

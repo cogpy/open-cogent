@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { type StoreApi, useStore } from 'zustand';
 
-import { ChatInput } from '@/components/chat-input';
+import { type ChatContext, ChatInput } from '@/components/chat-input';
 import { useRefCounted } from '@/lib/hooks/use-ref-counted';
 import { copilotClient } from '@/store/copilot/client';
 import { chatSessionsStore } from '@/store/copilot/sessions-instance';
@@ -21,6 +21,7 @@ const ChatPageImpl = ({
   const isStreaming = useStore(store, s => s.isStreaming);
 
   const [input, setInput] = useState('');
+  const [contexts, setContexts] = useState<ChatContext[]>([]);
 
   const onSend = async () => {
     if (!input.trim()) return;
@@ -47,6 +48,8 @@ const ChatPageImpl = ({
         setInput={setInput}
         onSend={onSend}
         sending={isSubmitting}
+        contexts={contexts}
+        setContexts={setContexts}
       />
     </div>
   );
@@ -55,6 +58,8 @@ const ChatPageImpl = ({
 export const ChatPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+
+  const [contexts, setContexts] = useState<ChatContext[]>([]);
 
   // Input state shared between modes
   const [input, setInput] = useState('');
@@ -102,7 +107,12 @@ export const ChatPage = () => {
           client: copilotClient,
         });
 
-      await newStore.getState().sendMessage({ content: input.trim() });
+      await newStore.getState().sendMessage({
+        content: input.trim(),
+        blobs: contexts
+          .filter(ctx => ctx.type === 'attachment')
+          .map(ctx => ctx.blob),
+      });
 
       // Navigate to URL with new session id
       navigate('/chats/' + newSessionId, { replace: true });
@@ -123,7 +133,13 @@ export const ChatPage = () => {
       <div className="text-[26px] font-medium text-center mb-9">
         What can I help you with?
       </div>
-      <ChatInput input={input} setInput={setInput} onSend={onSendPlaceholder} />
+      <ChatInput
+        input={input}
+        setInput={setInput}
+        onSend={onSendPlaceholder}
+        contexts={contexts}
+        setContexts={setContexts}
+      />
     </div>
   );
 };

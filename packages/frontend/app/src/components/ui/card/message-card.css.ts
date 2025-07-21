@@ -24,16 +24,23 @@ export const icon = style({
 
 export const content = style({
   flex: 1,
+  overflow: 'hidden',
 });
 
 export const title = style({
   fontWeight: 500,
   lineHeight: '24px',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
 });
 
 export const subTitle = style({
   fontSize: 12,
   lineHeight: '24px',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
   color: cssVarV2('text/tertiary'),
 });
 

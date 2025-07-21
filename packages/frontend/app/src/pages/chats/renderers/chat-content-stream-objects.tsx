@@ -7,6 +7,7 @@ import { MarkdownText } from '@/components/ui/markdown';
 import { DocComposeResult } from './doc-compose-result';
 import { MakeItRealResult } from './make-it-real-result';
 import { WebSearchResult } from './web-search-result';
+import { TodoListResult } from './todo-list-result';
 
 interface ChatContentStreamObjectsProps {
   streamObjects: StreamObject[];
@@ -97,6 +98,15 @@ export function ChatContentStreamObjects({
                 />
               );
             }
+
+            // Specialized handling for todo list
+            if (
+              ['todo_list', 'mark_todo'].includes(obj.toolName ?? '') &&
+              obj.result?.list
+            ) {
+              return <TodoListResult key={idx} result={obj.result} />;
+            }
+
             // Default tool result display
             return (
               <div

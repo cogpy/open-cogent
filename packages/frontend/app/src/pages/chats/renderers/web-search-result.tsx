@@ -12,6 +12,7 @@ interface SearchResult {
   url: string;
   snippet?: string;
   favicon?: string;
+  content?: string;
 }
 
 /**
@@ -31,6 +32,7 @@ export function WebSearchResult({ results, query }: WebSearchResultProps) {
         title: result.title || result.name || 'Untitled',
         url: result.url || result.link || '#',
         snippet: result.snippet || result.description || result.text || '',
+        content: result.content || result.body || result.fullText || '',
         favicon:
           result.favicon ||
           `https://www.google.com/s2/favicons?domain=${new URL(result.url || 'https://example.com').hostname}&sz=16`,
@@ -95,12 +97,9 @@ export function WebSearchResult({ results, query }: WebSearchResultProps) {
           {searchResults.length > 0 ? (
             <div className="p-3 space-y-3">
               {searchResults.map((result, index) => (
-                <div
-                  key={index}
-                  className="flex items-start gap-3 p-2 hover:bg-gray-50 rounded"
-                >
+                <div key={index} className="flex items-start gap-3 rounded">
                   {/* Favicon */}
-                  <div className="flex-shrink-0 mt-1">
+                  <div className="flex-shrink-0 mt-0.5 h-4 flex items-center">
                     {result.favicon ? (
                       <img
                         src={result.favicon}
@@ -127,7 +126,7 @@ export function WebSearchResult({ results, query }: WebSearchResultProps) {
 
                   {/* Content */}
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-medium text-gray-900 truncate">
+                    <div className="text-sm font-medium text-gray-900 truncate">
                       <a
                         href={result.url}
                         target="_blank"
@@ -136,11 +135,20 @@ export function WebSearchResult({ results, query }: WebSearchResultProps) {
                       >
                         {result.title}
                       </a>
-                    </h3>
+                    </div>
                     {result.snippet && (
                       <p className="text-xs text-gray-600 mt-1 line-clamp-2">
                         {result.snippet}
                       </p>
+                    )}
+                    {result.content && (
+                      <div className="p-2 bg-gray-50 rounded text-xs text-gray-700 max-h-32 overflow-y-auto">
+                        <div className="whitespace-pre-wrap line-clamp-6">
+                          {result.content.length > 500
+                            ? result.content.substring(0, 500) + '...'
+                            : result.content}
+                        </div>
+                      </div>
                     )}
                     <p className="text-xs text-gray-400 mt-1 truncate">
                       {result.url}

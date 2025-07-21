@@ -15,6 +15,20 @@ export class CopilotUserService {
     private readonly storage: CopilotStorage
   ) {}
 
+  async addDoc(
+    userId: string,
+    sessionId: string,
+    title: string,
+    content: string
+  ) {
+    return await this.models.copilotUser.addDoc(
+      userId,
+      sessionId,
+      title,
+      content
+    );
+  }
+
   async addFile(userId: string, content: FileUpload) {
     const fileName = content.filename;
     const buffer = await readStream(content.createReadStream());
@@ -29,8 +43,32 @@ export class CopilotUserService {
     return { blobId, file };
   }
 
+  async updateDoc(
+    userId: string,
+    docId: string,
+    update: { title?: string; content?: string }
+  ) {
+    return await this.models.copilotUser.updateDoc(userId, docId, update);
+  }
+
+  async getDoc(userId: string, docId: string) {
+    return await this.models.copilotUser.getDoc(userId, docId);
+  }
+
   async getFile(userId: string, fileId: string) {
     return await this.models.copilotUser.getFile(userId, fileId);
+  }
+
+  async listDocs(
+    userId: string,
+    pagination?: {
+      includeRead?: boolean;
+    } & PaginationInput
+  ) {
+    return await Promise.all([
+      this.models.copilotUser.listDocs(userId, pagination),
+      this.models.copilotUser.countDocs(userId),
+    ]);
   }
 
   async listFiles(
@@ -45,6 +83,11 @@ export class CopilotUserService {
     ]);
   }
 
+  async queueDocEmbedding(doc: Jobs['copilot.embedding.doc']) {
+    const { userId, docId } = doc;
+    await this.queue.add('copilot.embedding.doc', { userId, docId });
+  }
+
   async queueFileEmbedding(file: Jobs['copilot.embedding.files']) {
     const { userId, blobId, fileId, fileName } = file;
     await this.queue.add('copilot.embedding.files', {
@@ -53,6 +96,10 @@ export class CopilotUserService {
       fileId,
       fileName,
     });
+  }
+
+  async removeDoc(userId: string, docId: string) {
+    return await this.models.copilotUser.removeDoc(userId, docId);
   }
 
   async removeFile(userId: string, fileId: string) {

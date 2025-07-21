@@ -15,7 +15,7 @@ import GraphQLUpload, {
 
 import {
   BlobQuotaExceeded,
-  CopilotFailedToAddUserFileEmbedding,
+  CopilotFailedToAddUserArtifact,
   Mutex,
   paginate,
   PaginationInput,
@@ -27,7 +27,12 @@ import { UserType } from '../../../core/user';
 import { COPILOT_LOCKER } from '../resolver';
 import { MAX_EMBEDDABLE_SIZE } from '../types';
 import { CopilotUserService } from './service';
-import { CopilotUserFileType, PaginatedCopilotUserFileType } from './types';
+import {
+  CopilotUserDocType,
+  CopilotUserFileType,
+  PaginatedCopilotUserDocType,
+  PaginatedCopilotUserFileType,
+} from './types';
 
 @ObjectType('CopilotUserConfig')
 export class CopilotUserConfigType {
@@ -59,6 +64,21 @@ export class CopilotUserEmbeddingConfigResolver {
     private readonly copilotUser: CopilotUserService
   ) {}
 
+  @ResolveField(() => PaginatedCopilotUserDocType, {
+    description: 'list user docs in context',
+  })
+  async docs(
+    @CurrentUser() user: CurrentUser,
+    @Args('pagination', PaginationInput.decode) pagination: PaginationInput
+  ): Promise<PaginatedCopilotUserDocType> {
+    const [docs, totalCount] = await this.copilotUser.listDocs(
+      user.id,
+      pagination
+    );
+
+    return paginate(docs, 'createdAt', pagination, totalCount);
+  }
+
   @ResolveField(() => PaginatedCopilotUserFileType, {
     complexity: 2,
   })
@@ -74,15 +94,76 @@ export class CopilotUserEmbeddingConfigResolver {
     return paginate(files, 'createdAt', pagination, totalCount);
   }
 
+  @Mutation(() => CopilotUserDocType, {
+    complexity: 2,
+    description: 'Add user embedding doc',
+  })
+  async addUserDocs(
+    @CurrentUser() user: CurrentUser,
+    @Args('sessionId', { type: () => String }) sessionId: string,
+    @Args('title', { type: () => String }) title: string,
+    @Args('content', { type: () => String }) content: string,
+    @Args('docId', { type: () => String, nullable: true })
+    docId?: string
+  ): Promise<CopilotUserDocType> {
+    const lockFlag = `${COPILOT_LOCKER}:user:${user.id}`;
+    await using lock = await this.mutex.acquire(lockFlag);
+    if (!lock) {
+      throw new TooManyRequest('Server is busy');
+    }
+
+    if (!title || !content) {
+      throw new CopilotFailedToAddUserArtifact({
+        type: 'doc',
+        message: 'Title and content are required',
+      });
+    }
+
+    try {
+      if (docId) {
+        const doc = await this.copilotUser.updateDoc(user.id, docId, {
+          title,
+          content,
+        });
+        await this.copilotUser.queueDocEmbedding({
+          userId: user.id,
+          docId: doc.docId,
+        });
+
+        return doc;
+      } else {
+        const doc = await this.copilotUser.addDoc(
+          user.id,
+          sessionId,
+          title,
+          content
+        );
+        await this.copilotUser.queueDocEmbedding({
+          userId: user.id,
+          docId: doc.docId,
+        });
+
+        return doc;
+      }
+    } catch (e: any) {
+      // passthrough user friendly error
+      if (e instanceof UserFriendlyError) {
+        throw e;
+      }
+      throw new CopilotFailedToAddUserArtifact({
+        type: 'doc',
+        message: e.message,
+      });
+    }
+  }
+
   @Mutation(() => CopilotUserFileType, {
-    name: 'addUserEmbeddingFiles',
     complexity: 2,
     description: 'Upload user embedding files',
   })
-  async addFiles(
+  async addUserFiles(
     @Context() ctx: { req: Request },
     @CurrentUser() user: CurrentUser,
-
     @Args({ name: 'blob', type: () => GraphQLUpload })
     content: FileUpload
   ): Promise<CopilotUserFileType> {
@@ -112,18 +193,29 @@ export class CopilotUserEmbeddingConfigResolver {
       if (e instanceof UserFriendlyError) {
         throw e;
       }
-      throw new CopilotFailedToAddUserFileEmbedding({
+      throw new CopilotFailedToAddUserArtifact({
+        type: 'file',
         message: e.message,
       });
     }
   }
 
   @Mutation(() => Boolean, {
-    name: 'removeUserEmbeddingFiles',
+    complexity: 2,
+    description: 'Remove user embedding doc',
+  })
+  async removeUserDocs(
+    @CurrentUser() user: CurrentUser,
+    @Args('docId', { type: () => String }) docId: string
+  ): Promise<boolean> {
+    return await this.copilotUser.removeDoc(user.id, docId);
+  }
+
+  @Mutation(() => Boolean, {
     complexity: 2,
     description: 'Remove user embedding files',
   })
-  async removeFiles(
+  async removeUserFiles(
     @CurrentUser() user: CurrentUser,
     @Args('fileId', { type: () => String })
     fileId: string

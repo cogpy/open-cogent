@@ -177,9 +177,10 @@ export interface CopilotDocNotFoundDataType {
   docId: Scalars['String']['output'];
 }
 
-export interface CopilotFailedToAddUserFileEmbeddingDataType {
-  __typename?: 'CopilotFailedToAddUserFileEmbeddingDataType';
+export interface CopilotFailedToAddUserArtifactDataType {
+  __typename?: 'CopilotFailedToAddUserArtifactDataType';
   message: Scalars['String']['output'];
+  type: Scalars['String']['output'];
 }
 
 export interface CopilotFailedToGenerateEmbeddingDataType {
@@ -320,12 +321,34 @@ export interface CopilotSessionType {
 
 export interface CopilotUserConfig {
   __typename?: 'CopilotUserConfig';
+  /** list user docs in context */
+  docs: PaginatedCopilotUserDoc;
   files: PaginatedCopilotUserFile;
   userId: Scalars['String']['output'];
 }
 
+export interface CopilotUserConfigDocsArgs {
+  pagination: PaginationInput;
+}
+
 export interface CopilotUserConfigFilesArgs {
   pagination: PaginationInput;
+}
+
+export interface CopilotUserDoc {
+  __typename?: 'CopilotUserDoc';
+  content: Scalars['String']['output'];
+  createdAt: Scalars['DateTime']['output'];
+  docId: Scalars['String']['output'];
+  sessionId: Scalars['String']['output'];
+  title: Scalars['String']['output'];
+  updatedAt: Scalars['DateTime']['output'];
+}
+
+export interface CopilotUserDocTypeEdge {
+  __typename?: 'CopilotUserDocTypeEdge';
+  cursor: Scalars['String']['output'];
+  node: CopilotUserDoc;
 }
 
 export interface CopilotUserFile {
@@ -394,7 +417,7 @@ export type ErrorDataUnion =
   | BlobNotFoundDataType
   | CopilotContextFileNotSupportedDataType
   | CopilotDocNotFoundDataType
-  | CopilotFailedToAddUserFileEmbeddingDataType
+  | CopilotFailedToAddUserArtifactDataType
   | CopilotFailedToGenerateEmbeddingDataType
   | CopilotFailedToMatchContextDataType
   | CopilotFailedToMatchGlobalContextDataType
@@ -437,7 +460,7 @@ export enum ErrorNames {
   COPILOT_DOCS_NOT_FOUND = 'COPILOT_DOCS_NOT_FOUND',
   COPILOT_DOC_NOT_FOUND = 'COPILOT_DOC_NOT_FOUND',
   COPILOT_EMBEDDING_UNAVAILABLE = 'COPILOT_EMBEDDING_UNAVAILABLE',
-  COPILOT_FAILED_TO_ADD_USER_FILE_EMBEDDING = 'COPILOT_FAILED_TO_ADD_USER_FILE_EMBEDDING',
+  COPILOT_FAILED_TO_ADD_USER_ARTIFACT = 'COPILOT_FAILED_TO_ADD_USER_ARTIFACT',
   COPILOT_FAILED_TO_CREATE_MESSAGE = 'COPILOT_FAILED_TO_CREATE_MESSAGE',
   COPILOT_FAILED_TO_GENERATE_EMBEDDING = 'COPILOT_FAILED_TO_GENERATE_EMBEDDING',
   COPILOT_FAILED_TO_GENERATE_TEXT = 'COPILOT_FAILED_TO_GENERATE_TEXT',
@@ -591,8 +614,10 @@ export interface Mutation {
   __typename?: 'Mutation';
   /** add a file to context */
   addContextFile: CopilotContextFile;
+  /** Add user embedding doc */
+  addUserDocs: CopilotUserDoc;
   /** Upload user embedding files */
-  addUserEmbeddingFiles: CopilotUserFile;
+  addUserFiles: CopilotUserFile;
   /** Ban an user */
   banUser: UserType;
   changeEmail: UserType;
@@ -623,8 +648,10 @@ export interface Mutation {
   removeAvatar: RemoveAvatar;
   /** remove a file from context */
   removeContextFile: Scalars['Boolean']['output'];
+  /** Remove user embedding doc */
+  removeUserDocs: Scalars['Boolean']['output'];
   /** Remove user embedding files */
-  removeUserEmbeddingFiles: Scalars['Boolean']['output'];
+  removeUserFiles: Scalars['Boolean']['output'];
   retryAudioTranscription: Maybe<TranscriptionResultType>;
   sendChangeEmail: Scalars['Boolean']['output'];
   sendChangePasswordEmail: Scalars['Boolean']['output'];
@@ -660,7 +687,14 @@ export interface MutationAddContextFileArgs {
   options: AddContextFileInput;
 }
 
-export interface MutationAddUserEmbeddingFilesArgs {
+export interface MutationAddUserDocsArgs {
+  content: Scalars['String']['input'];
+  docId?: InputMaybe<Scalars['String']['input']>;
+  sessionId: Scalars['String']['input'];
+  title: Scalars['String']['input'];
+}
+
+export interface MutationAddUserFilesArgs {
   blob: Scalars['Upload']['input'];
 }
 
@@ -728,7 +762,11 @@ export interface MutationRemoveContextFileArgs {
   options: RemoveContextFileInput;
 }
 
-export interface MutationRemoveUserEmbeddingFilesArgs {
+export interface MutationRemoveUserDocsArgs {
+  docId: Scalars['String']['input'];
+}
+
+export interface MutationRemoveUserFilesArgs {
   fileId: Scalars['String']['input'];
 }
 
@@ -834,6 +872,13 @@ export interface PageInfo {
 export interface PaginatedCopilotHistoriesType {
   __typename?: 'PaginatedCopilotHistoriesType';
   edges: Array<CopilotHistoriesTypeEdge>;
+  pageInfo: PageInfo;
+  totalCount: Scalars['Int']['output'];
+}
+
+export interface PaginatedCopilotUserDoc {
+  __typename?: 'PaginatedCopilotUserDoc';
+  edges: Array<CopilotUserDocTypeEdge>;
   pageInfo: PageInfo;
   totalCount: Scalars['Int']['output'];
 }
@@ -2103,13 +2148,77 @@ export type GetCopilotSessionsQuery = {
   } | null;
 };
 
-export type AddUserEmbeddingFilesMutationVariables = Exact<{
+export type AddUserDocsMutationVariables = Exact<{
+  sessionId: Scalars['String']['input'];
+  title: Scalars['String']['input'];
+  content: Scalars['String']['input'];
+  docId?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+export type AddUserDocsMutation = {
+  __typename?: 'Mutation';
+  addUserDocs: {
+    __typename?: 'CopilotUserDoc';
+    sessionId: string;
+    docId: string;
+    title: string;
+    content: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+};
+
+export type GetUserDocsQueryVariables = Exact<{
+  pagination: PaginationInput;
+}>;
+
+export type GetUserDocsQuery = {
+  __typename?: 'Query';
+  currentUser: {
+    __typename?: 'UserType';
+    embedding: {
+      __typename?: 'CopilotUserConfig';
+      docs: {
+        __typename?: 'PaginatedCopilotUserDoc';
+        totalCount: number;
+        pageInfo: {
+          __typename?: 'PageInfo';
+          endCursor: string | null;
+          hasNextPage: boolean;
+        };
+        edges: Array<{
+          __typename?: 'CopilotUserDocTypeEdge';
+          node: {
+            __typename?: 'CopilotUserDoc';
+            sessionId: string;
+            docId: string;
+            title: string;
+            content: string;
+            createdAt: string;
+            updatedAt: string;
+          };
+        }>;
+      };
+    };
+  } | null;
+};
+
+export type RemoveUserDocsMutationVariables = Exact<{
+  docId: Scalars['String']['input'];
+}>;
+
+export type RemoveUserDocsMutation = {
+  __typename?: 'Mutation';
+  removeUserDocs: boolean;
+};
+
+export type AddUserFilesMutationVariables = Exact<{
   blob: Scalars['Upload']['input'];
 }>;
 
-export type AddUserEmbeddingFilesMutation = {
+export type AddUserFilesMutation = {
   __typename?: 'Mutation';
-  addUserEmbeddingFiles: {
+  addUserFiles: {
     __typename?: 'CopilotUserFile';
     fileId: string;
     fileName: string;
@@ -2120,11 +2229,11 @@ export type AddUserEmbeddingFilesMutation = {
   };
 };
 
-export type GetUserEmbeddingFilesQueryVariables = Exact<{
+export type GetUserFilesQueryVariables = Exact<{
   pagination: PaginationInput;
 }>;
 
-export type GetUserEmbeddingFilesQuery = {
+export type GetUserFilesQuery = {
   __typename?: 'Query';
   currentUser: {
     __typename?: 'UserType';
@@ -2155,13 +2264,13 @@ export type GetUserEmbeddingFilesQuery = {
   } | null;
 };
 
-export type RemoveUserEmbeddingFilesMutationVariables = Exact<{
+export type RemoveUserFilesMutationVariables = Exact<{
   fileId: Scalars['String']['input'];
 }>;
 
-export type RemoveUserEmbeddingFilesMutation = {
+export type RemoveUserFilesMutation = {
   __typename?: 'Mutation';
-  removeUserEmbeddingFiles: boolean;
+  removeUserFiles: boolean;
 };
 
 export type DeleteAccountMutationVariables = Exact<{ [key: string]: never }>;
@@ -2627,9 +2736,14 @@ export type Queries =
       response: GetCopilotSessionsQuery;
     }
   | {
-      name: 'getUserEmbeddingFilesQuery';
-      variables: GetUserEmbeddingFilesQueryVariables;
-      response: GetUserEmbeddingFilesQuery;
+      name: 'getUserDocsQuery';
+      variables: GetUserDocsQueryVariables;
+      response: GetUserDocsQuery;
+    }
+  | {
+      name: 'getUserFilesQuery';
+      variables: GetUserFilesQueryVariables;
+      response: GetUserFilesQuery;
     }
   | {
       name: 'getCurrentUserFeaturesQuery';
@@ -2799,14 +2913,24 @@ export type Mutations =
       response: UpdateCopilotSessionMutation;
     }
   | {
-      name: 'addUserEmbeddingFilesMutation';
-      variables: AddUserEmbeddingFilesMutationVariables;
-      response: AddUserEmbeddingFilesMutation;
+      name: 'addUserDocsMutation';
+      variables: AddUserDocsMutationVariables;
+      response: AddUserDocsMutation;
     }
   | {
-      name: 'removeUserEmbeddingFilesMutation';
-      variables: RemoveUserEmbeddingFilesMutationVariables;
-      response: RemoveUserEmbeddingFilesMutation;
+      name: 'removeUserDocsMutation';
+      variables: RemoveUserDocsMutationVariables;
+      response: RemoveUserDocsMutation;
+    }
+  | {
+      name: 'addUserFilesMutation';
+      variables: AddUserFilesMutationVariables;
+      response: AddUserFilesMutation;
+    }
+  | {
+      name: 'removeUserFilesMutation';
+      variables: RemoveUserFilesMutationVariables;
+      response: RemoveUserFilesMutation;
     }
   | {
       name: 'deleteAccountMutation';

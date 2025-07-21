@@ -23,7 +23,7 @@ import {
 import { TestingApp } from './testing-app';
 
 export const cleanObject = (
-  obj: any[] | undefined,
+  obj: any[] | null | undefined,
   condition = [
     'id',
     'status',

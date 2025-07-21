@@ -475,13 +475,14 @@ export class CopilotTranscriptionAudioNotProvided extends UserFriendlyError {
   }
 }
 @ObjectType()
-class CopilotFailedToAddUserFileEmbeddingDataType {
+class CopilotFailedToAddUserArtifactDataType {
   @Field() message!: string
+  @Field() type!: string
 }
 
-export class CopilotFailedToAddUserFileEmbedding extends UserFriendlyError {
-  constructor(args: CopilotFailedToAddUserFileEmbeddingDataType, message?: string | ((args: CopilotFailedToAddUserFileEmbeddingDataType) => string)) {
-    super('internal_server_error', 'copilot_failed_to_add_user_file_embedding', message, args);
+export class CopilotFailedToAddUserArtifact extends UserFriendlyError {
+  constructor(args: CopilotFailedToAddUserArtifactDataType, message?: string | ((args: CopilotFailedToAddUserArtifactDataType) => string)) {
+    super('internal_server_error', 'copilot_failed_to_add_user_artifact', message, args);
   }
 }
 @ObjectType()
@@ -654,7 +655,7 @@ export enum ErrorNames {
   COPILOT_TRANSCRIPTION_JOB_EXISTS,
   COPILOT_TRANSCRIPTION_JOB_NOT_FOUND,
   COPILOT_TRANSCRIPTION_AUDIO_NOT_PROVIDED,
-  COPILOT_FAILED_TO_ADD_USER_FILE_EMBEDDING,
+  COPILOT_FAILED_TO_ADD_USER_ARTIFACT,
   BLOB_NOT_FOUND,
   BLOB_QUOTA_EXCEEDED,
   STORAGE_QUOTA_EXCEEDED,
@@ -676,5 +677,5 @@ registerEnumType(ErrorNames, {
 export const ErrorDataUnionType = createUnionType({
   name: 'ErrorDataUnion',
   types: () =>
-    [GraphqlBadRequestDataType, HttpRequestErrorDataType, QueryTooLongDataType, ValidationErrorDataType, WrongSignInCredentialsDataType, UnknownOauthProviderDataType, InvalidOauthCallbackCodeDataType, MissingOauthQueryParameterDataType, InvalidOauthResponseDataType, InvalidEmailDataType, InvalidPasswordLengthDataType, NoCopilotProviderAvailableDataType, CopilotFailedToGenerateEmbeddingDataType, CopilotDocNotFoundDataType, CopilotMessageNotFoundDataType, CopilotPromptNotFoundDataType, CopilotProviderNotSupportedDataType, CopilotProviderSideErrorDataType, CopilotInvalidContextDataType, CopilotContextFileNotSupportedDataType, CopilotFailedToModifyContextDataType, CopilotFailedToMatchContextDataType, CopilotFailedToMatchGlobalContextDataType, CopilotFailedToAddUserFileEmbeddingDataType, BlobNotFoundDataType, RuntimeConfigNotFoundDataType, InvalidRuntimeConfigTypeDataType, UnsupportedClientVersionDataType, InvalidAppConfigDataType, InvalidAppConfigInputDataType] as const,
+    [GraphqlBadRequestDataType, HttpRequestErrorDataType, QueryTooLongDataType, ValidationErrorDataType, WrongSignInCredentialsDataType, UnknownOauthProviderDataType, InvalidOauthCallbackCodeDataType, MissingOauthQueryParameterDataType, InvalidOauthResponseDataType, InvalidEmailDataType, InvalidPasswordLengthDataType, NoCopilotProviderAvailableDataType, CopilotFailedToGenerateEmbeddingDataType, CopilotDocNotFoundDataType, CopilotMessageNotFoundDataType, CopilotPromptNotFoundDataType, CopilotProviderNotSupportedDataType, CopilotProviderSideErrorDataType, CopilotInvalidContextDataType, CopilotContextFileNotSupportedDataType, CopilotFailedToModifyContextDataType, CopilotFailedToMatchContextDataType, CopilotFailedToMatchGlobalContextDataType, CopilotFailedToAddUserArtifactDataType, BlobNotFoundDataType, RuntimeConfigNotFoundDataType, InvalidRuntimeConfigTypeDataType, UnsupportedClientVersionDataType, InvalidAppConfigDataType, InvalidAppConfigInputDataType] as const,
 });

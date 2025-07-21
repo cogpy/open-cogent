@@ -189,6 +189,7 @@ CREATE TABLE "ai_user_docs" (
     "title" VARCHAR NOT NULL,
     "content" VARCHAR NOT NULL,
     "created_at" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ(3) NOT NULL,
 
     CONSTRAINT "ai_user_docs_pkey" PRIMARY KEY ("user_id","doc_id")
 );

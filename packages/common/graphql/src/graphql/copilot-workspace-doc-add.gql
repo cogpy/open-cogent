@@ -1,0 +1,10 @@
+mutation addUserDocs($sessionId: String!, $title: String!, $content: String!, $docId: String) {
+  addUserDocs(content: $content, docId: $docId, sessionId: $sessionId, title: $title) {
+    sessionId
+    docId
+    title
+    content
+    createdAt
+    updatedAt
+  }
+}

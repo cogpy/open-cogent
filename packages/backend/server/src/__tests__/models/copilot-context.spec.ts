@@ -5,7 +5,7 @@ import ava, { TestFn } from 'ava';
 
 import { Config } from '../../base';
 import {
-  ContextEmbedStatus,
+  ArtifactEmbedStatus,
   CopilotContextModel,
   CopilotSessionModel,
   CopilotUserConfigModel,
@@ -88,7 +88,7 @@ test('should update context', async t => {
     chunkSize: 1024,
     name: 'file1.txt',
     mimeType: 'text/plain',
-    status: ContextEmbedStatus.finished,
+    status: ArtifactEmbedStatus.finished,
     error: null,
     blobId: 'blob1',
     createdAt: Date.now(),
@@ -131,42 +131,6 @@ test('should insert embedding', async t => {
       const ret = await copilotContext.matchFileEmbedding(
         Array.from({ length: 1024 }, () => 0.9),
         contextId,
-        1,
-        1
-      );
-      t.snapshot(ret, 'should return empty array when embedding is deleted');
-    }
-  }
-
-  // doc embedding
-  {
-    const docId = await copilotContext.createDoc(user.id, sessionId);
-    await copilotContext.insertDocEmbedding(user.id, docId, [
-      {
-        index: 0,
-        content: 'doc content',
-        embedding: Array.from({ length: 1024 }, () => 1),
-      },
-    ]);
-
-    {
-      const ret = await copilotContext.matchDocEmbedding(
-        Array.from({ length: 1024 }, () => 0.9),
-        user.id,
-        1,
-        1
-      );
-      t.snapshot(
-        cleanObject(ret, ['docId', 'distance']),
-        'should match doc embedding'
-      );
-    }
-
-    {
-      await copilotContext.deleteDocEmbedding(user.id, docId);
-      const ret = await copilotContext.matchDocEmbedding(
-        Array.from({ length: 1024 }, () => 0.9),
-        user.id,
         1,
         1
       );

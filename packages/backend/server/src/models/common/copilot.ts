@@ -19,16 +19,16 @@ export interface CopilotContext {
   updatedAt: Date;
 }
 
-export enum ContextEmbedStatus {
+export enum ArtifactEmbedStatus {
   processing = 'processing',
   finished = 'finished',
   failed = 'failed',
 }
 
-const ContextEmbedStatusSchema = z.enum([
-  ContextEmbedStatus.processing,
-  ContextEmbedStatus.finished,
-  ContextEmbedStatus.failed,
+const ArtifactEmbedStatusSchema = z.enum([
+  ArtifactEmbedStatus.processing,
+  ArtifactEmbedStatus.finished,
+  ArtifactEmbedStatus.failed,
 ]);
 
 export const ContextFileSchema = z.object({
@@ -36,7 +36,7 @@ export const ContextFileSchema = z.object({
   chunkSize: z.number(),
   name: z.string(),
   mimeType: z.string().optional(),
-  status: ContextEmbedStatusSchema,
+  status: ArtifactEmbedStatusSchema,
   error: z.string().nullable(),
   blobId: z.string(),
   createdAt: z.number(),
@@ -84,16 +84,26 @@ export type DocChunkSimilarity = ChunkSimilarity & {
   title: string;
 };
 
-export const CopilotWorkspaceFileSchema = z.object({
+export const CopilotUserDocSchema = z.object({
+  title: z.string(),
+  content: z.string(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+});
+export type CopilotUserDocMetadata = z.infer<typeof CopilotUserDocSchema>;
+export type CopilotUserDoc = CopilotUserDocMetadata & {
+  docId: string;
+  sessionId: string;
+};
+
+export const CopilotUserFileSchema = z.object({
   fileName: z.string(),
   blobId: z.string(),
   mimeType: z.string(),
   size: z.number(),
 });
 
-export type CopilotUserFileMetadata = z.infer<
-  typeof CopilotWorkspaceFileSchema
->;
+export type CopilotUserFileMetadata = z.infer<typeof CopilotUserFileSchema>;
 export type CopilotUserFile = CopilotUserFileMetadata & {
   userId: string;
   fileId: string;

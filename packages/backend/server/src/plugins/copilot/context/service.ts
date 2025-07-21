@@ -8,9 +8,9 @@ import {
   OnEvent,
 } from '../../../base';
 import {
+  ArtifactEmbedStatus,
   ContextConfig,
   ContextConfigSchema,
-  ContextEmbedStatus,
   ContextFile,
   Models,
 } from '../../../models';
@@ -165,7 +165,7 @@ export class CopilotContextService {
     await context.saveFileRecord(fileId, file => ({
       ...(file as ContextFile),
       chunkSize,
-      status: ContextEmbedStatus.finished,
+      status: ArtifactEmbedStatus.finished,
     }));
   }
 
@@ -179,7 +179,7 @@ export class CopilotContextService {
     await context.saveFileRecord(fileId, file => ({
       ...(file as ContextFile),
       error,
-      status: ContextEmbedStatus.failed,
+      status: ArtifactEmbedStatus.failed,
     }));
   }
 }

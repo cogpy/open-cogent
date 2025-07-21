@@ -111,8 +111,9 @@ type CopilotDocNotFoundDataType {
   docId: String!
 }
 
-type CopilotFailedToAddUserFileEmbeddingDataType {
+type CopilotFailedToAddUserArtifactDataType {
   message: String!
+  type: String!
 }
 
 type CopilotFailedToGenerateEmbeddingDataType {
@@ -237,8 +238,24 @@ type CopilotSessionType {
 }
 
 type CopilotUserConfig {
+  """list user docs in context"""
+  docs(pagination: PaginationInput!): PaginatedCopilotUserDoc!
   files(pagination: PaginationInput!): PaginatedCopilotUserFile!
   userId: String!
+}
+
+type CopilotUserDoc {
+  content: String!
+  createdAt: DateTime!
+  docId: String!
+  sessionId: String!
+  title: String!
+  updatedAt: DateTime!
+}
+
+type CopilotUserDocTypeEdge {
+  cursor: String!
+  node: CopilotUserDoc!
 }
 
 type CopilotUserFile {
@@ -306,7 +323,7 @@ input DeleteSessionInput {
   sessionIds: [String!]!
 }
 
-union ErrorDataUnion = BlobNotFoundDataType | CopilotContextFileNotSupportedDataType | CopilotDocNotFoundDataType | CopilotFailedToAddUserFileEmbeddingDataType | CopilotFailedToGenerateEmbeddingDataType | CopilotFailedToMatchContextDataType | CopilotFailedToMatchGlobalContextDataType | CopilotFailedToModifyContextDataType | CopilotInvalidContextDataType | CopilotMessageNotFoundDataType | CopilotPromptNotFoundDataType | CopilotProviderNotSupportedDataType | CopilotProviderSideErrorDataType | GraphqlBadRequestDataType | HttpRequestErrorDataType | InvalidAppConfigDataType | InvalidAppConfigInputDataType | InvalidEmailDataType | InvalidOauthCallbackCodeDataType | InvalidOauthResponseDataType | InvalidPasswordLengthDataType | InvalidRuntimeConfigTypeDataType | MissingOauthQueryParameterDataType | NoCopilotProviderAvailableDataType | QueryTooLongDataType | RuntimeConfigNotFoundDataType | UnknownOauthProviderDataType | UnsupportedClientVersionDataType | ValidationErrorDataType | WrongSignInCredentialsDataType
+union ErrorDataUnion = BlobNotFoundDataType | CopilotContextFileNotSupportedDataType | CopilotDocNotFoundDataType | CopilotFailedToAddUserArtifactDataType | CopilotFailedToGenerateEmbeddingDataType | CopilotFailedToMatchContextDataType | CopilotFailedToMatchGlobalContextDataType | CopilotFailedToModifyContextDataType | CopilotInvalidContextDataType | CopilotMessageNotFoundDataType | CopilotPromptNotFoundDataType | CopilotProviderNotSupportedDataType | CopilotProviderSideErrorDataType | GraphqlBadRequestDataType | HttpRequestErrorDataType | InvalidAppConfigDataType | InvalidAppConfigInputDataType | InvalidEmailDataType | InvalidOauthCallbackCodeDataType | InvalidOauthResponseDataType | InvalidPasswordLengthDataType | InvalidRuntimeConfigTypeDataType | MissingOauthQueryParameterDataType | NoCopilotProviderAvailableDataType | QueryTooLongDataType | RuntimeConfigNotFoundDataType | UnknownOauthProviderDataType | UnsupportedClientVersionDataType | ValidationErrorDataType | WrongSignInCredentialsDataType
 
 enum ErrorNames {
   ACCESS_DENIED
@@ -323,7 +340,7 @@ enum ErrorNames {
   COPILOT_DOCS_NOT_FOUND
   COPILOT_DOC_NOT_FOUND
   COPILOT_EMBEDDING_UNAVAILABLE
-  COPILOT_FAILED_TO_ADD_USER_FILE_EMBEDDING
+  COPILOT_FAILED_TO_ADD_USER_ARTIFACT
   COPILOT_FAILED_TO_CREATE_MESSAGE
   COPILOT_FAILED_TO_GENERATE_EMBEDDING
   COPILOT_FAILED_TO_GENERATE_TEXT
@@ -478,8 +495,11 @@ type Mutation {
   """add a file to context"""
   addContextFile(content: Upload!, options: AddContextFileInput!): CopilotContextFile!
 
+  """Add user embedding doc"""
+  addUserDocs(content: String!, docId: String, sessionId: String!, title: String!): CopilotUserDoc!
+
   """Upload user embedding files"""
-  addUserEmbeddingFiles(blob: Upload!): CopilotUserFile!
+  addUserFiles(blob: Upload!): CopilotUserFile!
 
   """Ban an user"""
   banUser(id: String!): UserType!
@@ -524,8 +544,11 @@ type Mutation {
   """remove a file from context"""
   removeContextFile(options: RemoveContextFileInput!): Boolean!
 
+  """Remove user embedding doc"""
+  removeUserDocs(docId: String!): Boolean!
+
   """Remove user embedding files"""
-  removeUserEmbeddingFiles(fileId: String!): Boolean!
+  removeUserFiles(fileId: String!): Boolean!
   retryAudioTranscription(jobId: String!): TranscriptionResultType
   sendChangeEmail(callbackUrl: String!): Boolean!
   sendChangePasswordEmail(callbackUrl: String!): Boolean!
@@ -585,6 +608,12 @@ type PageInfo {
 
 type PaginatedCopilotHistoriesType {
   edges: [CopilotHistoriesTypeEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type PaginatedCopilotUserDoc {
+  edges: [CopilotUserDocTypeEdge!]!
   pageInfo: PageInfo!
   totalCount: Int!
 }

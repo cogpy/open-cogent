@@ -1,7 +1,7 @@
-query getUserFiles($pagination: PaginationInput!) {
+query getUserDocs($pagination: PaginationInput!) {
   currentUser {
     embedding {
-      files(pagination: $pagination) {
+      docs(pagination: $pagination) {
         totalCount
         pageInfo {
           endCursor
@@ -9,12 +9,12 @@ query getUserFiles($pagination: PaginationInput!) {
         }
         edges {
           node {
-            fileId
-            fileName
-            blobId
-            mimeType
-            size
+            sessionId
+            docId
+            title
+            content
             createdAt
+            updatedAt
           }
         }
       }

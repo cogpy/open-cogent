@@ -33,7 +33,7 @@ import {
 } from '../../../base';
 import { CurrentUser } from '../../../core/auth';
 import {
-  ContextEmbedStatus,
+  ArtifactEmbedStatus,
   ContextFile,
   FileChunkSimilarity,
   Models,
@@ -70,7 +70,7 @@ export class CopilotContextType {
   id!: string | undefined;
 }
 
-registerEnumType(ContextEmbedStatus, { name: 'ContextEmbedStatus' });
+registerEnumType(ArtifactEmbedStatus, { name: 'ContextEmbedStatus' });
 
 @ObjectType()
 class CopilotContextFile implements ContextFile {
@@ -86,8 +86,8 @@ class CopilotContextFile implements ContextFile {
   @Field(() => SafeIntResolver)
   chunkSize!: number;
 
-  @Field(() => ContextEmbedStatus)
-  status!: ContextEmbedStatus;
+  @Field(() => ArtifactEmbedStatus)
+  status!: ArtifactEmbedStatus;
 
   @Field(() => String, { nullable: true })
   error!: string | null;

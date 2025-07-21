@@ -21,6 +21,10 @@ declare global {
     };
   }
   interface Jobs {
+    'copilot.embedding.doc': {
+      userId: string;
+      docId: string;
+    };
     'copilot.embedding.files': {
       contextId?: string;
       userId: string;

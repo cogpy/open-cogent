@@ -642,7 +642,10 @@ export const getCopilotSessionQuery = {
   query: `query getCopilotSession($sessionId: String!) {
   currentUser {
     copilot {
-      chats(pagination: {first: 1}, options: {sessionId: $sessionId}) {
+      chats(
+        pagination: {first: 1}
+        options: {withMessages: true, sessionId: $sessionId}
+      ) {
         ...PaginatedCopilotChats
       }
     }
@@ -698,11 +701,67 @@ ${copilotChatHistoryFragment}
 ${paginatedCopilotChatsFragment}`,
 };
 
-export const addUserEmbeddingFilesMutation = {
-  id: 'addUserEmbeddingFilesMutation' as const,
-  op: 'addUserEmbeddingFiles',
-  query: `mutation addUserEmbeddingFiles($blob: Upload!) {
-  addUserEmbeddingFiles(blob: $blob) {
+export const addUserDocsMutation = {
+  id: 'addUserDocsMutation' as const,
+  op: 'addUserDocs',
+  query: `mutation addUserDocs($sessionId: String!, $title: String!, $content: String!, $docId: String) {
+  addUserDocs(
+    content: $content
+    docId: $docId
+    sessionId: $sessionId
+    title: $title
+  ) {
+    sessionId
+    docId
+    title
+    content
+    createdAt
+    updatedAt
+  }
+}`,
+};
+
+export const getUserDocsQuery = {
+  id: 'getUserDocsQuery' as const,
+  op: 'getUserDocs',
+  query: `query getUserDocs($pagination: PaginationInput!) {
+  currentUser {
+    embedding {
+      docs(pagination: $pagination) {
+        totalCount
+        pageInfo {
+          endCursor
+          hasNextPage
+        }
+        edges {
+          node {
+            sessionId
+            docId
+            title
+            content
+            createdAt
+            updatedAt
+          }
+        }
+      }
+    }
+  }
+}`,
+};
+
+export const removeUserDocsMutation = {
+  id: 'removeUserDocsMutation' as const,
+  op: 'removeUserDocs',
+  query: `mutation removeUserDocs($docId: String!) {
+  removeUserDocs(docId: $docId)
+}`,
+};
+
+export const addUserFilesMutation = {
+  id: 'addUserFilesMutation' as const,
+  op: 'addUserFiles',
+  query: `mutation addUserFiles($blob: Upload!) {
+  addUserFiles(blob: $blob) {
     fileId
     fileName
     blobId
@@ -714,10 +773,10 @@ export const addUserEmbeddingFilesMutation = {
   file: true,
 };
 
-export const getUserEmbeddingFilesQuery = {
-  id: 'getUserEmbeddingFilesQuery' as const,
-  op: 'getUserEmbeddingFiles',
-  query: `query getUserEmbeddingFiles($pagination: PaginationInput!) {
+export const getUserFilesQuery = {
+  id: 'getUserFilesQuery' as const,
+  op: 'getUserFiles',
+  query: `query getUserFiles($pagination: PaginationInput!) {
   currentUser {
     embedding {
       files(pagination: $pagination) {
@@ -742,11 +801,11 @@ export const getUserEmbeddingFilesQuery = {
 }`,
 };
 
-export const removeUserEmbeddingFilesMutation = {
-  id: 'removeUserEmbeddingFilesMutation' as const,
-  op: 'removeUserEmbeddingFiles',
-  query: `mutation removeUserEmbeddingFiles($fileId: String!) {
-  removeUserEmbeddingFiles(fileId: $fileId)
+export const removeUserFilesMutation = {
+  id: 'removeUserFilesMutation' as const,
+  op: 'removeUserFiles',
+  query: `mutation removeUserFiles($fileId: String!) {
+  removeUserFiles(fileId: $fileId)
 }`,
 };
 

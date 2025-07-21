@@ -2,7 +2,7 @@ import { Field, ObjectType } from '@nestjs/graphql';
 import { SafeIntResolver } from 'graphql-scalars';
 
 import { Paginated } from '../../../base';
-import { CopilotUserFile } from '../../../models';
+import { CopilotUserDoc, CopilotUserFile } from '../../../models';
 
 declare global {
   interface Events {
@@ -13,6 +13,27 @@ declare global {
       jobId: string;
     };
   }
+}
+
+@ObjectType('CopilotUserDoc')
+export class CopilotUserDocType implements CopilotUserDoc {
+  @Field(() => String)
+  docId!: string;
+
+  @Field(() => String)
+  sessionId!: string;
+
+  @Field(() => String)
+  title!: string;
+
+  @Field(() => String)
+  content!: string;
+
+  @Field(() => Date)
+  createdAt!: Date;
+
+  @Field(() => Date)
+  updatedAt!: Date;
 }
 
 @ObjectType('CopilotUserFile')
@@ -38,6 +59,11 @@ export class CopilotUserFileType implements CopilotUserFile {
   @Field(() => Date)
   createdAt!: Date;
 }
+
+@ObjectType('PaginatedCopilotUserDoc')
+export class PaginatedCopilotUserDocType extends Paginated(
+  CopilotUserDocType
+) {}
 
 @ObjectType('PaginatedCopilotUserFile')
 export class PaginatedCopilotUserFileType extends Paginated(

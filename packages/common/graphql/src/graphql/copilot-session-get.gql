@@ -5,7 +5,10 @@ query getCopilotSession($sessionId: String!) {
     copilot {
       chats(
         pagination: { first: 1 }
-        options: { sessionId: $sessionId }
+        options: {
+          withMessages: true
+          sessionId: $sessionId
+        }
       ) {
         ...PaginatedCopilotChats
       }

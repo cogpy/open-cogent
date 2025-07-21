@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
-import { PageIcon, CopyIcon } from '@blocksuite/icons/rc';
+import type { Store } from '@blocksuite/affine/store';
+import { CopyIcon, PageIcon } from '@blocksuite/icons/rc';
+import { useEffect, useState } from 'react';
+
 import { snapshotHelper } from '@/components/doc-composer/snapshot-helper';
 import { useDocPanelStore } from '@/store/doc-panel';
-import type { Store } from '@blocksuite/affine/store';
 
 interface MakeItRealResultProps {
   /** The enhanced content from make_it_real tool */

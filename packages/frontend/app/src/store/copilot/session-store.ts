@@ -54,6 +54,54 @@ export function mergeStreamObjects(chunks: StreamObject[] = []) {
         break;
       }
       case 'tool-result': {
+        // Special handling for todo list updates
+        // If the current chunk is a `mark_todo` result, merge it into a previous
+        // todo-list related result (either the original `todo_list` creation
+        // or an earlier merged `mark_todo`) that shares the same `todoListId`.
+        if (
+          curr.toolName === 'mark_todo' &&
+          curr.result &&
+          (curr.result as any).todoListId
+        ) {
+          const todoListId = (curr.result as any).todoListId;
+
+          // Find the last todo-list related tool-result with the same list id.
+          const index = acc.findIndex(item => {
+            if (item.type !== 'tool-result') return false;
+            if (!['todo_list', 'mark_todo'].includes((item as any).toolName))
+              return false;
+            const id = (item as any).result?.todoListId;
+            return id && id === todoListId;
+          });
+
+          if (index !== -1) {
+            const prevItem = acc[index] as StreamObject;
+
+            // Create a new merged list by replacing / inserting the updated todo item.
+            const updatedItem = (curr.result as any).item;
+            const prevList: any[] = (prevItem as any).result?.list ?? [];
+
+            const existingIdx = prevList.findIndex(
+              t => t.id === updatedItem.id
+            );
+
+            const newList =
+              existingIdx === -1
+                ? [...prevList, updatedItem]
+                : prevList.map((t, i) => (i === existingIdx ? updatedItem : t));
+
+            acc[index] = {
+              ...prevItem,
+              result: {
+                ...(prevItem as any).result,
+                list: newList,
+              },
+            } as StreamObject;
+
+            break; // Merged; do not push current chunk
+          }
+        }
+
         const index = acc.findIndex(
           item =>
             item.type === 'tool-call' &&
@@ -150,10 +198,30 @@ export function createChatSessionStore(params: {
           const initialMessages =
             historyEntry?.messages ?? meta?.messages ?? [];
 
+          // Merge any streamObjects inside the loaded messages to ensure consistency
+          const mergedMessages: ChatMessage[] = initialMessages.map(
+            (msg: any) => {
+              if (msg?.streamObjects && Array.isArray(msg.streamObjects)) {
+                try {
+                  return {
+                    ...msg,
+                    streamObjects: mergeStreamObjects(
+                      msg.streamObjects as StreamObject[]
+                    ),
+                  } as ChatMessage;
+                } catch {
+                  // If merge fails for any reason, fall back to original message
+                  return msg;
+                }
+              }
+              return msg;
+            }
+          );
+
           set(state => {
             state.meta = meta ?? state.meta ?? null;
             if (state.messages.length === 0) {
-              state.messages = initialMessages;
+              state.messages = mergedMessages;
             }
           });
         });

@@ -73,6 +73,8 @@ export const PromptConfigStrictSchema = z.object({
       'webSearch',
       // artifact tools
       'docCompose',
+      // make it real
+      'makeItReal',
     ])
     .array()
     .nullable()

@@ -19,6 +19,7 @@ import {
   createDocSemanticSearchTool,
   createExaCrawlTool,
   createExaSearchTool,
+  createMakeItRealTool,
 } from '../tools';
 import { CopilotProviderFactory } from './factory';
 import {
@@ -175,6 +176,10 @@ export abstract class CopilotProvider<C = any> {
           }
           case 'docCompose': {
             tools.doc_compose = createDocComposeTool(prompt, this.factory);
+            break;
+          }
+          case 'makeItReal': {
+            tools.make_it_real = createMakeItRealTool(prompt, this.factory);
             break;
           }
         }

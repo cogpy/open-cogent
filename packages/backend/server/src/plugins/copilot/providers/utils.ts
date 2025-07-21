@@ -461,6 +461,10 @@ export class TextStreamParser {
             });
             break;
           }
+          case 'make_it_real': {
+            result += `\nMaking it real\n`;
+            break;
+          }
         }
         result = this.markAsCallout(result);
         break;
@@ -521,6 +525,16 @@ export class TextStreamParser {
           case 'web_search_exa': {
             if (Array.isArray(chunk.result)) {
               result += `\n${this.getWebSearchLinks(chunk.result)}\n`;
+            }
+            break;
+          }
+          case 'make_it_real': {
+            if (
+              chunk.result &&
+              typeof chunk.result === 'object' &&
+              'content' in chunk.result
+            ) {
+              result += `\n${chunk.result.content}\n`;
             }
             break;
           }

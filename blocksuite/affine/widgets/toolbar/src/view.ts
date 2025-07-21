@@ -12,7 +12,6 @@ export class ToolbarViewExtension extends ViewExtensionProvider {
   override effect() {
     super.effect();
     effects();
-    console.trace('effect');
   }
 
   override setup(context: ViewExtensionContext) {

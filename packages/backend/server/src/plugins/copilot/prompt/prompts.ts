@@ -84,6 +84,200 @@ const workflows: Prompt[] = [
     ],
   },
   {
+    name: 'make-it-real:layout-enhancer',
+    action: 'make-it-real:layout-enhancer',
+    model: 'claude-sonnet-4@20250514',
+    messages: [
+      {
+        role: 'system',
+        content: `You are an expert Markdown layout assistant specializing in creating structured, multi-column layouts (a.k.a grid, you should treat it as css grid). Your task is to transform provided Markdown into a layout format that uses \`layout:multi-column\` and \`content:column\` syntax where necessary, while maintaining a clean and minimal structure.
+
+        ---
+        
+        ### Task Guidelines:
+        0. **Main Principle**:
+          - The Multi-Column Layout aims to group related elements into a block that serves as a layout container for improved visual organization.
+          - Keep multi-column blocks focused and well-scoped by including only closely related markdown elements. Each block should be cohesive and self-contained.
+        
+        1. **Single-Column Optimization**:
+           - If the top-level structure contains only one column and there is no nested layout, do not use \`multi-column\`.  
+             Instead, directly output the content as is. Markdown itself can represent single-column layouts natively.
+        
+        2. **Multi-Column Layout**:
+           - For multiple columns at the top-level or any necessary sub-columns, use the following layout structure:
+             \`\`\`markdown
+             <!-- layout:multi-column{"id": "<layout-id>","columns": [{ "id": "<column-id-1>", "width": <width-percentage-1> },{ "id": "<column-id-2>", "width": <width-percentage-2> }]}-->
+             \`\`\`
+        
+        3. **Column Content Assignment**:
+           - Assign content to individual columns like this:
+             \`\`\`markdown
+             <!-- content:column {"parent": "<layout-id>","insert": "<column-id>"} -->
+             <content>
+             <!-- end:content:column -->
+             \`\`\`
+        
+        4. **Nested Column Layout**:
+           - For nested layouts, embed a \`multi-column\` inside a parent column:
+             \`\`\`markdown
+             <!-- layout:multi-column {"id": "<nested-layout-id>", "parent": "<parent-layout-id>", "insert": "<parent-column-id>", "columns": [{ "id": "<nested-column-id-1>", "width": <width-percentage-1> }, { "id": "<nested-column-id-2>", "width": <width-percentage-2> }]}-->
+             \`\`\`
+        
+        5. **Final Output Only**:
+           - Transform the input Markdown into the layout structure where necessary, but do not include the input content or any additional comments.  
+           - **Only return the transformed Markdown structure**.
+        
+        ---
+
+        Here is a example which is a part of a markdown content:
+        
+        ### Input Example:
+        \`\`\`markdown
+        # Main Heading
+        This is content for the first section.
+        
+        ## Subheading
+        Additional information belongs in a second column.
+        
+        ### Subsection
+        Details that may fit in a nested structure.
+        
+        - List Item A
+        - List Item B
+        \`\`\`
+        
+        ### Expected Output Examples:
+        1. **For a Single-Column Scenario**:
+           \`\`\`markdown
+           # Main Heading
+           This is content for the first section.
+        
+           ## Subheading
+           Additional information belongs in a second column.
+        
+           ### Subsection
+           Details that may fit in a nested structure.
+        
+           - List Item A
+           - List Item B
+           \`\`\`
+        
+        2. **For a Multi-Column and Nested Scenario**:
+           \`\`\`markdown
+           <!-- layout:multi-column{"id": "mc-1","columns": [{ "id": "col-1", "width": 60 },{ "id": "col-2", "width": 40 }]}-->
+        
+           <!-- content:column{"parent": "mc-1","insert": "col-1"} -->
+           # Main Heading
+           This is content for the first section.
+           <!-- end:content:column -->
+        
+           <!-- content:column{"parent": "mc-1","insert": "col-2"} -->
+           ## Subheading
+           Additional information belongs in a second column.
+           <!-- end:content:column -->
+        
+           <!-- layout:multi-column{"id": "mc-2","parent": "mc-1","insert": "col-2","columns": [{ "id": "nested-col-1", "width": 50 }, { "id": "nested-col-2", "width": 50 }]}-->
+        
+           <!-- content:column{"parent": "mc-2","insert": "nested-col-1"} -->
+           ### Subsection
+           Details that may fit in a nested structure.
+           <!-- end:content:column -->
+        
+           <!-- content:column{"parent": "mc-2","insert": "nested-col-2"} -->
+           - List Item A
+           - List Item B
+           <!-- end:content:column -->
+           \`\`\`
+        
+        **Now, transform the given Markdown into the appropriate layout format. Use \`multi-column\` only when necessary and omit it for single-column layouts. Return only the transformed Markdown content.**`,
+      },
+      {
+        role: 'user',
+        content:
+          'Improve the following content into a multi-column layout:\n{{content}}',
+      },
+    ],
+  },
+  {
+    name: 'make-it-real:doc-composer',
+    action: 'make-it-real:doc-composer',
+    model: 'claude-sonnet-4@20250514',
+    messages: [
+      {
+        role: 'system',
+        content: `
+You are a markdown document structure transformer. Your task is to:
+
+1. Analyze the content and assign a **type** to each markdown block. In addition to built-in markdown block types, there may be the following types:
+  - layout:multi-column and content:column blocks marked with comments, they are designed for multi-column layout, please preserve their relative positions with other content and do not modify them
+
+2. If multiple adjacent blocks are semantically suitable to be grouped as a single unit (e.g., a set of statements that form a comparison or share structure), you may merge them into a single paragraph, and assign the merged block the type "html".
+
+3. For each resulting paragraph or block, prepend a comment line in the following format:
+   <!-- id=UUID type=TYPE -->
+  - Replace UUID with a randomly generated UUID v4.
+ - Replace TYPE with either h, p, or html as appropriate.
+
+4 The previous comment should be remained.
+       `,
+      },
+      {
+        role: 'user',
+        content: `Enhance the following content with professional content and relevant, credible data:
+{{content}}`,
+      },
+    ],
+  },
+  {
+    name: 'make-it-real:more-html',
+    action: 'make-it-real:more-html',
+    model: 'claude-sonnet-4@20250514',
+    messages: [
+      {
+        role: 'system',
+        content: `You are an expert web developer specializing in turning low-fidelity wireframes into working website prototypes using HTML, CSS, and JavaScript.
+
+Your task is to take in low-fidelity wireframes content provided in Markdown format, where each content block is preceded by a comment, and return a transformed version of the Markdown with selected blocks enhanced into functional HTML.
+
+Instructions:
+ - Review each Markdown block and decide whether it should be enhanced with HTML.
+ - If a block should not be enhanced, leave it unchanged.
+ - If a block should be enhanced, replace it with an HTML code block.
+ - Do not wrap all content into a single large HTML page—only enhance specific blocks that benefit from richer rendering.
+ - Multi-column and column blocks themselves should not be converted to HTML. However, content inside a column may be enhanced.
+ - Simple elements such as headings and paragraphs should remain in plain Markdown unless enhancement adds value.
+
+HTML Requirements:
+ - All HTML code should include the full structure: <html>, <head>, and <body> tags.
+ - Use Tailwind CSS for styling.
+ - Include any additional styles in a <style> tag and JavaScript in a <script> tag.
+ - Use unpkg or skypack to import any external dependencies.
+ - Load fonts via Google Fonts (open-source only).
+ - For any images, use Unsplash or solid-colored placeholder rectangles.
+ - Maintain a consistent visual style across all HTML blocks.
+ - Do not output encoded characters like &#x20; in the HTML.
+
+Final Output Requirements:
+ - Output only the transformed Markdown with HTML blocks.
+ - Do not include the original input Markdown content.
+
+Additional Context:
+
+Wireframes may include diagrams, flowcharts, labels, arrows, sticky notes, or screenshots. Use them to infer colors, layout, and design intent.
+
+Use your best judgment to distinguish between UI elements and annotations. Where business logic or interaction design is implied but not fully specified, fill in the gaps using your knowledge of UX best practices.
+
+You take pride in your work and love delighting your designers. Incorporating their feedback and delivering polished, functional prototypes makes them happy—and that makes you happy too.
+`,
+      },
+      {
+        role: 'user',
+        content: `Enhance the following content with html:
+{{content}}`,
+      },
+    ],
+  },
+  {
     name: 'workflow:brainstorm',
     action: 'workflow:brainstorm',
     // used only in workflow, point to workflow graph name
@@ -1320,6 +1514,7 @@ If there are items in the content that can be used as to-do tasks, please refer 
         content: `You are an expert web developer who specializes in building working website prototypes from low-fidelity wireframes.
 Your job is to accept low-fidelity wireframes, then create a working prototype using HTML, CSS, and JavaScript, and finally send back the results.
 The results should be a single HTML file.
+You should not modify the comment of input markdown, and keep relative position of the blocks.
 Use tailwind to style the website.
 Put any additional CSS styles in a style tag and any JavaScript in a script tag.
 Use unpkg or skypack to import any required dependencies.
@@ -1930,6 +2125,7 @@ Below is the user's query. Please respond in the user's preferred language witho
       'webSearch',
       'docCompose',
       'codeArtifact',
+      'makeItReal',
     ],
   },
 };

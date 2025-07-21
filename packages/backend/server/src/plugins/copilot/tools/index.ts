@@ -6,6 +6,7 @@ import { createDocComposeTool } from './doc-compose';
 import { createDocSemanticSearchTool } from './doc-semantic-search';
 import { createExaCrawlTool } from './exa-crawl';
 import { createExaSearchTool } from './exa-search';
+import { createMakeItRealTool } from './make-it-real';
 
 export interface CustomAITools extends ToolSet {
   code_artifact: ReturnType<typeof createCodeArtifactTool>;
@@ -14,6 +15,7 @@ export interface CustomAITools extends ToolSet {
   doc_compose: ReturnType<typeof createDocComposeTool>;
   web_search_exa: ReturnType<typeof createExaSearchTool>;
   web_crawl_exa: ReturnType<typeof createExaCrawlTool>;
+  make_it_real: ReturnType<typeof createMakeItRealTool>;
 }
 
 export * from './code-artifact';
@@ -23,3 +25,4 @@ export * from './doc-semantic-search';
 export * from './error';
 export * from './exa-crawl';
 export * from './exa-search';
+export * from './make-it-real';

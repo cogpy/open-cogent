@@ -333,7 +333,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@afk/reader@workspace:*, @afk/reader@workspace:packages/common/reader":
+"@afk/reader@workspace:packages/common/reader":
   version: 0.0.0-use.local
   resolution: "@afk/reader@workspace:packages/common/reader"
   dependencies:
@@ -363,7 +363,6 @@ __metadata:
     "@afk-tools/cli": "workspace:*"
     "@afk-tools/utils": "workspace:*"
     "@afk/graphql": "workspace:*"
-    "@afk/reader": "workspace:*"
     "@afk/server-native": "workspace:*"
     "@ai-sdk/anthropic": "npm:^1.2.12"
     "@ai-sdk/google": "npm:^1.2.18"

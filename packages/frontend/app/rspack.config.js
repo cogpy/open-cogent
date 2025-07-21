@@ -10,6 +10,8 @@ import { VanillaExtractPlugin } from '@vanilla-extract/webpack-plugin';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const isDevelopment = process.env.NODE_ENV === 'development';
+
 export default defineConfig({
   entry: {
     main: './src/main.tsx',
@@ -37,8 +39,8 @@ export default defineConfig({
               transform: {
                 react: {
                   runtime: 'automatic',
-                  development: process.env.NODE_ENV === 'development',
-                  refresh: process.env.NODE_ENV === 'development',
+                  development: isDevelopment,
+                  refresh: isDevelopment,
                 },
               },
               target: 'es2020',
@@ -52,23 +54,42 @@ export default defineConfig({
       },
       {
         test: /\.css$/,
-        use: [
-          rspack.CssExtractRspackPlugin.loader,
-          {
-            loader: 'css-loader',
-            options: {
-              importLoaders: 1,
-            },
-          },
-          {
-            loader: 'postcss-loader',
-            options: {
-              postcssOptions: {
-                plugins: ['@tailwindcss/postcss'],
+        use: isDevelopment
+          ? [
+              'style-loader',
+              {
+                loader: 'css-loader',
+                options: {
+                  importLoaders: 1,
+                  modules: false,
+                },
               },
-            },
-          },
-        ],
+              {
+                loader: 'postcss-loader',
+                options: {
+                  postcssOptions: {
+                    plugins: ['@tailwindcss/postcss'],
+                  },
+                },
+              },
+            ]
+          : [
+              rspack.CssExtractRspackPlugin.loader,
+              {
+                loader: 'css-loader',
+                options: {
+                  importLoaders: 1,
+                },
+              },
+              {
+                loader: 'postcss-loader',
+                options: {
+                  postcssOptions: {
+                    plugins: ['@tailwindcss/postcss'],
+                  },
+                },
+              },
+            ],
       },
       {
         test: /\.(png|jpg|jpeg|gif|svg|webp)$/,
@@ -85,13 +106,15 @@ export default defineConfig({
       template: './index.html',
       inject: true,
     }),
-    new rspack.CssExtractRspackPlugin({
-      filename: '[name].[contenthash].css',
-    }),
+    ...(isDevelopment
+      ? []
+      : [
+          new rspack.CssExtractRspackPlugin({
+            filename: '[name].[contenthash].css',
+          }),
+        ]),
     new VanillaExtractPlugin(),
-    ...(process.env.NODE_ENV === 'development'
-      ? [new ReactRefreshRspackPlugin()]
-      : []),
+    ...(isDevelopment ? [new ReactRefreshRspackPlugin()] : []),
   ],
   optimization: {
     splitChunks: {
@@ -110,9 +133,21 @@ export default defineConfig({
     port: 8080,
     open: true,
     hot: true,
+    liveReload: true,
     historyApiFallback: true,
     static: {
       directory: './public',
+    },
+    client: {
+      overlay: {
+        errors: true,
+        warnings: false,
+      },
+      logging: 'info',
+      progress: true,
+    },
+    headers: {
+      'Access-Control-Allow-Origin': '*',
     },
     proxy: [
       {
@@ -122,8 +157,8 @@ export default defineConfig({
       },
     ],
   },
-  devtool:
-    process.env.NODE_ENV === 'development'
-      ? 'eval-cheap-module-source-map'
-      : 'source-map',
+  devtool: isDevelopment ? 'eval-cheap-module-source-map' : 'source-map',
+  experiments: {
+    topLevelAwait: true,
+  },
 });

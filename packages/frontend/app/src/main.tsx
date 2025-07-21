@@ -8,9 +8,22 @@ import App from './app';
 const root = document.getElementById('root');
 
 if (root) {
-  createRoot(root).render(
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
-  );
+  const reactRoot = createRoot(root);
+
+  const render = () => {
+    reactRoot.render(
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    );
+  };
+
+  render();
+
+  // // Enable HMR for React components
+  // if (import.meta.hot) {
+  //   import.meta.hot.accept('./app', () => {
+  //     render();
+  //   });
+  // }
 }

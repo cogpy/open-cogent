@@ -13,6 +13,7 @@ import { LibraryDashboard } from './pages/library-dashboard';
 import { MagicLinkPage } from './pages/magic-link';
 import { SignInPage } from './pages/sign-in';
 import { useSidebarStore } from './store/sidebar';
+import { DocEditTest } from './pages/doc-edit-test';
 
 const ChatsPage = () => {
   return (
@@ -70,6 +71,7 @@ function App() {
           </AuthGuard>
         }
       />
+      <Route path="/doc-edit-test" element={<DocEditTest />} />
       <Route
         path="/"
         element={

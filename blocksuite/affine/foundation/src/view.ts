@@ -1,4 +1,3 @@
-import { FileDropExtension } from '@blocksuite/affine-components/drop-indicator';
 import {
   PeekViewExtension,
   type PeekViewService,
@@ -72,7 +71,6 @@ export class FoundationViewExtension extends ViewExtensionProvider<FoundationVie
       EmbedOptionService,
       PageViewportServiceExtension,
       DNDAPIExtension,
-      FileDropExtension,
       ToolbarRegistryExtension,
       AutoClearSelectionService,
       FileSizeLimitService,

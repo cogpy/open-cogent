@@ -3,6 +3,7 @@ import { VElement, VLine, VText } from './inline/index.js';
 import { EditorHost } from './view/index.js';
 
 export function effects() {
+  console.trace('xx');
   // editor host
   customElements.define('editor-host', EditorHost);
   // gfx

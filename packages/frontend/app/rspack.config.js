@@ -20,6 +20,10 @@ export default defineConfig({
     publicPath: '/',
   },
   resolve: {
+    extensionAlias: {
+      '.js': ['.js', '.tsx', '.ts'],
+      '.mjs': ['.mjs', '.ts'],
+    },
     extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'],
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -27,19 +31,57 @@ export default defineConfig({
   },
   module: {
     rules: [
+      { test: /\.m?js?$/, resolve: { fullySpecified: false } },
       {
-        test: /\.(js|jsx|ts|tsx)$/,
+        test: /\.js$/,
+        enforce: 'pre',
+        include: /@blocksuite/,
+        use: ['source-map-loader'],
+      },
+      {
+        test: /\.ts$/,
         use: {
           loader: 'swc-loader',
           options: {
             jsc: {
+              preserveAllComments: true,
               parser: {
                 syntax: 'typescript',
-                tsx: true,
-                decorators: false,
-                dynamicImport: false,
+                dynamicImport: true,
+                topLevelAwait: false,
+                tsx: false,
+                decorators: true,
               },
               transform: {
+                useDefineForClassFields: false,
+                decoratorVersion: '2022-03',
+              },
+              target: 'es2020',
+            },
+            module: {
+              type: 'es6',
+            },
+          },
+        },
+        exclude: /node_modules/,
+      },
+      {
+        test: /\.tsx$/,
+        use: {
+          loader: 'swc-loader',
+          options: {
+            jsc: {
+              preserveAllComments: true,
+              parser: {
+                syntax: 'typescript',
+                dynamicImport: true,
+                topLevelAwait: true,
+                tsx: true,
+                decorators: true,
+              },
+              transform: {
+                legacyDecorator: true,
+                decoratorMetadata: true,
                 react: {
                   runtime: 'automatic',
                   development: isDevelopment,

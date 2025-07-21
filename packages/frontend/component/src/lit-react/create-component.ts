@@ -243,7 +243,7 @@ export const createComponent = <
 }: Options<I, E>): ReactWebComponent<I, E> => {
   const eventProps = new Set(Object.keys(events ?? {}));
 
-  if (BUILD_CONFIG.debug) {
+  if (process.env.NODE_ENV === 'development') {
     for (const p of reservedReactProperties) {
       if (p in elementClass.prototype && !(p in HTMLElement.prototype)) {
         // Note, this effectively warns only for `ref` since the other

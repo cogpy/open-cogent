@@ -1,8 +1,8 @@
+import type { StreamObject } from '@afk/graphql';
 import { produce } from 'immer';
+import { z } from 'zod';
 import { createStore, type StoreApi } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
-
-import { z } from 'zod';
 
 import type { CopilotClient } from './client';
 import { toTextStream } from './event-source';
@@ -12,7 +12,6 @@ import type {
   SendMessageOptions,
   SessionFlags,
 } from './types';
-import type { StreamObject } from '@afk/graphql';
 
 export const StreamObjectSchema = z.discriminatedUnion('type', [
   z.object({

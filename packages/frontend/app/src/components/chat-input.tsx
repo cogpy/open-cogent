@@ -1,14 +1,48 @@
-import { Button, IconButton } from '@afk/component';
+import { Button, IconButton, Menu, MenuItem } from '@afk/component';
 import {
   ArrowDownSmallIcon,
   ArrowUpBigIcon,
   PlusIcon,
 } from '@blocksuite/icons/rc';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 
 import { cn } from '@/lib/utils';
 
 import * as styles from './chat-input.css';
+
+const tempModels = [
+  'claude-sonnet-4@20250514',
+  'claude-opus-4@20250514',
+  'claude-3-7-sonnet@20250219',
+  'claude-3-5-sonnet-v2@20241022',
+  'gpt-4.1',
+  'o3',
+  'o4-mini',
+  'gemini-2.5-flash',
+  'gemini-2.5-pro',
+];
+
+const ModelSelectorMenu = ({
+  model,
+  setModel,
+  children,
+}: {
+  children: React.ReactNode;
+  model: string;
+  setModel: (model: string) => void;
+}) => {
+  return (
+    <Menu
+      items={tempModels.map(m => (
+        <MenuItem key={m} onClick={() => setModel(m)}>
+          {m}
+        </MenuItem>
+      ))}
+    >
+      {children}
+    </Menu>
+  );
+};
 
 export const ChatInput = ({
   input,
@@ -25,6 +59,7 @@ export const ChatInput = ({
   placeholder?: string;
   sending?: boolean;
 }) => {
+  const [model, setModel] = useState('claude-3-5-sonnet-v2@20241022');
   const handleInput = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       const maxHeight = 120;
@@ -68,12 +103,14 @@ export const ChatInput = ({
         <IconButton icon={<PlusIcon />} />
 
         <div className="flex items-center gap-2">
-          <Button className={styles.modelSelector} variant="plain">
-            <div className="flex items-center gap-1">
-              Claude
-              <ArrowDownSmallIcon className="text-xl" />
-            </div>
-          </Button>
+          {/* <ModelSelectorMenu model={model} setModel={setModel}>
+            <Button className={styles.modelSelector} variant="plain">
+              <div className="flex items-center gap-1">
+                {model}
+                <ArrowDownSmallIcon className="text-xl" />
+              </div>
+            </Button>
+          </ModelSelectorMenu> */}
           <IconButton
             disabled={!input.trim()}
             className={styles.send}

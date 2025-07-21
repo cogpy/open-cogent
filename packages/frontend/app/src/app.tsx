@@ -4,8 +4,8 @@ import '@afk/component/theme';
 import { Route, Routes } from 'react-router';
 
 import { AuthGuard } from './components/auth-guard';
-import { ChatPage } from './pages/chat';
-import { ChatsDashboard } from './pages/chats-dashboard';
+import { ChatPage } from './pages/chats/chat';
+import { ChatsDashboard } from './pages/chats/chats-dashboard';
 import { HomePage } from './pages/home';
 import { ChatLayout } from './pages/layout/chat-layout';
 import { LibraryDashboard } from './pages/library-dashboard';

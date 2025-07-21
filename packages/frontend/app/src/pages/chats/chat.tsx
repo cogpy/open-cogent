@@ -8,9 +8,12 @@ import { copilotClient } from '@/store/copilot/client';
 import { chatSessionsStore } from '@/store/copilot/sessions-instance';
 import type { ChatSessionState } from '@/store/copilot/types';
 
+import { MessageRenderer } from './renderers/message';
+
 const ChatPageImpl = ({ store }: { store: StoreApi<ChatSessionState> }) => {
   const messages = useStore(store, s => s.messages);
   const isSubmitting = useStore(store, s => s.isSubmitting);
+  const isStreaming = useStore(store, s => s.isStreaming);
 
   const [input, setInput] = useState('');
 
@@ -24,15 +27,14 @@ const ChatPageImpl = ({ store }: { store: StoreApi<ChatSessionState> }) => {
   return (
     <div className="flex flex-col h-full p-4 gap-4">
       <div className="flex-1 overflow-auto border rounded p-2 flex flex-col gap-2">
-        {messages.map(m => (
-          <div
-            key={m.id ?? Math.random()}
-            className={m.role === 'user' ? 'text-right' : 'text-left'}
-          >
-            <span className="inline-block bg-gray-100 dark:bg-gray-700 rounded px-2 py-1">
-              {m.content}
-            </span>
-          </div>
+        {messages.map((m, idx) => (
+          <MessageRenderer
+            key={m.id ?? idx}
+            message={m}
+            isStreaming={
+              isStreaming && idx === messages.length - 1 && m.role !== 'user'
+            }
+          />
         ))}
       </div>
       <div className="flex gap-2">

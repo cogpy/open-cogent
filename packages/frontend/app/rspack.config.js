@@ -1,6 +1,7 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { RsdoctorRspackPlugin } from '@rsdoctor/rspack-plugin';
 import { defineConfig } from '@rspack/cli';
 import { rspack } from '@rspack/core';
 import { ReactRefreshRspackPlugin } from '@rspack/plugin-react-refresh';
@@ -151,6 +152,10 @@ export default defineConfig({
       template: './index.html',
       inject: true,
     }),
+    process.env.RSDOCTOR &&
+      new RsdoctorRspackPlugin({
+        experiments: { enableNativePlugin: true },
+      }),
     ...(isDevelopment
       ? []
       : [
@@ -162,13 +167,38 @@ export default defineConfig({
     ...(isDevelopment ? [new ReactRefreshRspackPlugin()] : []),
   ],
   optimization: {
+    minimizer: [
+      new rspack.SwcJsMinimizerRspackPlugin({
+        extractComments: false,
+        minimizerOptions: {
+          minify: true,
+          module: true,
+          ecma: 2020,
+          compress: { unused: true },
+          mangle: { keep_classnames: true },
+        },
+      }),
+      new rspack.LightningCssMinimizerRspackPlugin(),
+    ],
     splitChunks: {
       chunks: 'all',
       cacheGroups: {
+        highlight: {
+          test: /node_modules\/@shikijs/,
+          name: 'highlight',
+          priority: 10,
+          enforce: true,
+        },
+        icons: {
+          test: /node_modules\/@blocksuite\/icons/,
+          name: 'icons',
+          priority: 9,
+          enforce: true,
+        },
         vendor: {
           test: /node_modules/,
           name: 'vendors',
-          priority: 10,
+          priority: 8,
           enforce: true,
         },
       },

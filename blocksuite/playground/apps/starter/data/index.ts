@@ -12,6 +12,7 @@ export * from './empty.js';
 export * from './heavy.js';
 export * from './heavy-whiteboard.js';
 export * from './linked.js';
+export * from './markdown-layout.js';
 export * from './modern-debug-report.js';
 export * from './multi-column.js';
 export * from './multiple-editor.js';

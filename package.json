@@ -8,10 +8,8 @@
     ".",
     "blocksuite/**/*",
     "packages/*/*",
-    "packages/frontend/app/*",
     "tools/*",
-    "tools/@types/*",
-    "tests/*"
+    "tools/@types/*"
   ],
   "engines": {
     "node": "<23.0.0"

@@ -7,387 +7,92 @@ import {
 } from '@blocksuite/affine/store';
 import { SimpleLayoutConverter } from '@blocksuite/affine-shared/adapters';
 
-// import { combinedMarkdownContent } from './markdown-parts/index.js';
 import type { InitFn } from './utils.js';
 
-// 使用拆分的 Markdown 内容
-const testMarkdownContent = `# Markdown 布局解析器测试
+// 富文本测试内容
+const richTextTestContent = `
+# 🎨 富文本功能测试
 
-这个页面用于测试新的多列布局 Markdown 解析器功能。
+## 标准 Markdown 格式测试
 
-## 📝 支持的语法
+这是一个包含 **加粗文本** 和 *斜体文本* 的段落。
 
-下面是基本的多列布局语法示例：
+你也可以使用 ~~删除线~~ 来标记已删除的内容。
 
-<!-- layout:multi-column {"id":"container-0","columns":[{"id":"col-1","width":50},{"id":"col-2","width":50}]} -->
+行内代码示例：\`console.log('Hello World')\`
 
-<!-- content:column {"parent":"container-0","insert":"col-1"} -->
+## 自定义富文本语法测试
 
-### 布局声明语法
+### 颜色和背景测试
 
-\`\`\`markdown
-<!-- layout:multi-column
-{
-  "id": "layout-id",
-  "gap": 20,
-  "columns": [
-    {"id": "col1", "width": 60},
-    {"id": "col2", "width": 40}
-  ]
-}
--->
-\`\`\`
+这是 [红色文本]{color: red} 和 [蓝色背景]{background: blue} 的示例。
 
-特性：
+你可以组合多个属性：[红色加粗文本]{color: red; bold: true} 和 [绿色斜体]{color: green; italic: true}。
 
-- 支持任意列数
+### 高亮语法测试
 
-- 灵活的宽度配置
+这是 ==高亮文本== 的示例，用于强调重要内容。
 
-- 可自定义间距
+### 组合格式测试
 
-<!-- end:content:column -->
+这个段落包含 **加粗**、*斜体*、~~删除线~~、\`行内代码\`、[彩色文本]{color: purple} 和 ==高亮== 的组合。
 
-<!-- content:column {"parent":"container-0","insert":"col-2"} -->
+### 链接测试
 
-### 内容块语法
+访问 [AFFiNE 官网](https://affine.pro) 了解更多信息。
 
-\`\`\`markdown
-<!-- content:column
-{
-  "parent": "layout-id",
-  "insert": "col1"
-}
--->
-列内容...
-<!-- end:content:column -->
-\`\`\`
+## 复杂格式组合
 
-优势：
+在这个段落中，我们测试 **[加粗的红色文本]{color: red; bold: true}** 和 *[斜体的蓝色背景]{background: lightblue; italic: true}*。
 
-- 语法简洁明了
+还可以在链接中使用格式：[**加粗链接**](https://example.com) 和 [*斜体链接*](https://example.com)。
 
-- 易于理解和维护
-
-- 支持复杂嵌套结构
-
-<!-- end:content:column -->
-
-## 🎯 基本两列布局示例
-
-下面展示一个实际的两列布局：
-
-<!-- layout:multi-column {"id":"container-1","columns":[{"id":"col-1","width":65},{"id":"col-2","width":35}]} -->
-
-<!-- content:column {"parent":"container-1","insert":"col-1"} -->
-
-### 主要内容区域
-
-这是主要的内容区域，占据较大的宽度用于显示核心信息。
-
-#### 功能特性
-
-1. 完整的 Markdown 支持 - 兼容标准 Markdown 语法
-
-1. 灵活的布局配置 - 支持任意列数和宽度比例
-
-1. 无限嵌套能力 - 可以创建复杂的布局结构
-
-1. 高性能解析 - 优化的解析算法，快速处理
-
-#### 技术实现
-
-解析器采用以下技术栈：
-
-- TypeScript - 类型安全的开发体验
-
-- Remark.js - 强大的 Markdown 处理引擎
-
-- BlockSuite - 现代化的块编辑器框架
-
-- Vite - 快速的构建工具
-
-\`\`\`typescript
-// 使用示例
-const snapshot = await SimpleLayoutConverter
-  .markdownToSnapshot(markdown);
-\`\`\`
-
-<!-- end:content:column -->
-
-<!-- content:column {"parent":"container-1","insert":"col-2"} -->
-
-### 侧边栏信息
-
-这是侧边栏区域，用于显示辅助信息。
-
-#### 快速导航
-
-- 语法文档
-
-- 示例代码
-
-- API 参考
-
-- 常见问题
-
-#### 统计信息
-
-- 解析速度: < 10ms
-
-- 支持嵌套: 无限层级
-
-- 兼容性: 100%
-
-- 文件大小: < 50KB
-
-#### 版本信息
-
-- 当前版本: v1.0.0
-
-- 最后更新: 2025-01-21
-
-- 许可证: MIT
-
-- 维护状态: 活跃开发
-
-<!-- end:content:column -->
-
-## 🔧 三列布局示例
-
-下面展示更复杂的三列布局：
-
-<!-- layout:multi-column {"id":"container-2","columns":[{"id":"col-1","width":20},{"id":"col-2","width":60},{"id":"col-3","width":20}]} -->
-
-<!-- content:column {"parent":"container-2","insert":"col-1"} -->
-
-### 导航菜单
-
-主要功能
-
-- 首页
-
-- 文档
-
-- 示例
-
-- API
-
-工具链接
-
-- GitHub
-
-- 问题反馈
-
-- 社区讨论
-
-- 更新日志
-
-相关资源
-
-- 教程视频
-
-- 最佳实践
-
-- 性能优化
-
-- 故障排除
-
-<!-- end:content:column -->
-
-<!-- content:column {"parent":"container-2","insert":"col-2"} -->
-
-### 核心内容区域
-
-这是三列布局的核心内容区域，展示主要信息。
-
-#### 解析器工作原理
-
-解析过程分为以下几个步骤：
-
-1. 词法分析 - 扫描 Markdown 文本，识别布局注释
-
-1. 语法解析 - 解析 JSON 配置，构建布局树结构
-
-1. 内容提取 - 提取各个内容块并关联到对应位置
-
-1. 树构建 - 构建完整的 BlockSuite 块树结构
-
-1. 渲染输出 - 生成最终的可视化布局
-
-#### 性能优化策略
-
-- 增量解析 - 只处理变更的部分，减少重复计算
-
-- 缓存机制 - 缓存布局配置和解析结果
-
-- 懒加载 - 支持大型文档的按需加载
-
-- 并行处理 - 多线程处理复杂布局
+### 代码块中的富文本
 
 \`\`\`javascript
-// 性能监控示例
-console.time('markdown-parse');
-const result = parseLayoutMarkdown(content);
-console.timeEnd('markdown-parse');
+// 这是代码块，不应该解析富文本
+const text = "**这不应该是加粗**";
+console.log(text);
 \`\`\`
 
-<!-- end:content:column -->
-
-<!-- content:column {"parent":"container-2","insert":"col-3"} -->
-
-### 辅助信息
-
-技术指标
-
-- 内存占用: < 10MB
-
-- CPU 使用: < 5%
-
-- 网络请求: 0
-
-- 依赖包: 最小化
-
-浏览器支持
-
-- Chrome 90+
-
-- Firefox 88+
-
-- Safari 14+
-
-- Edge 90+
-
-开发工具
-
-- VS Code 插件
-
-- 语法高亮
-
-- 实时预览
-
-- 错误检查
-
-社区支持
-
-- 活跃的开发者社区
-
-- 定期的版本更新
-
-- 完善的文档体系
-
-- 及时的技术支持
-
-<!-- end:content:column -->
-
-## 🚀 嵌套布局示例
-
-展示布局的嵌套能力：
-
-<!-- layout:multi-column {"id":"container-3","columns":[{"id":"col-1","width":75},{"id":"col-2","width":25}]} -->
-
-<!-- content:column {"parent":"container-3","insert":"col-1"} -->
-
-### 嵌套内容区域
-
-这个区域内部包含另一个嵌套的布局结构：
-
-<!-- layout:multi-column {"id":"container-4","columns":[{"id":"col-1","width":50},{"id":"col-2","width":50}],"parent":"container-3","insert":"col-1"} -->
-
-<!-- content:column {"parent":"container-4","insert":"col-1"} -->
-
-#### 嵌套左列
-
-这是嵌套布局的左列内容。
-
-嵌套特性：
-
-- 支持任意深度嵌套
-
-- 每个布局独立配置
-
-- 可以混合不同列数
-
-- 自动处理布局冲突
-
-使用场景：
-
-- 复杂的页面布局
-
-- 响应式设计
-
-- 内容分组展示
-
-- 层次化信息架构
-
-<!-- end:content:column -->
-
-<!-- content:column {"parent":"container-4","insert":"col-2"} -->
-
-#### 嵌套右列
-
-这是嵌套布局的右列内容。
-
-配置示例：
-
-\`\`\`json
-{
-  "layout": "nested",
-  "depth": 2,
-  "parent": "nested-outer",
-  "children": ["inner-left", "inner-right"]
-}
-\`\`\`
-
-注意事项：
-
-- 避免过深的嵌套
-
-- 保持合理的宽度比例
-
-- 考虑移动端适配
-
-- 测试不同屏幕尺寸
-
-<!-- end:content:column -->
-
-<!-- end:content:column -->
-
-<!-- content:column {"parent":"container-3","insert":"col-2"} -->
-
-### 元数据信息
-
-布局层级：
-
-1. 外层布局 (75% + 25%)
-
-1. 内层布局 (50% + 50%)
-
-技术细节：
-
-- 递归解析算法
-
-- 树形数据结构
-
-- 自动验证机制
-
-- 错误恢复策略
-
-性能指标：
-
-- 解析时间: < 5ms
-
-- 内存使用: < 2MB
-
-<!-- end:content:column -->
-
-## 🎨 深度嵌套布局展示
-
+### 列表中的富文本
+
+- **加粗项目**
+- *斜体项目*
+- [彩色项目]{color: orange}
+- ==高亮项目==
+- ~~删除项目~~
+
+1. **有序列表加粗**
+2. *有序列表斜体*
+3. [有序列表彩色]{color: green}
+
+## 测试总结
+
+这个测试页面验证了以下富文本功能：
+
+- ✅ **标准 Markdown 格式**（加粗、斜体、删除线、行内代码）
+- ✅ **自定义颜色语法** \`[文本]{color: 颜色}\`
+- ✅ **自定义背景语法** \`[文本]{background: 颜色}\`
+- ✅ **高亮语法** \`==文本==\`
+- ✅ **组合属性** \`[文本]{color: red; bold: true}\`
+- ✅ **双向转换** Markdown ↔ BlockSuite
+`;
+
+const testMarkdownContent = `
 <!-- layout:multi-column {"id":"container-5","columns":[{"id":"col-1","width":25},{"id":"col-2","width":50},{"id":"col-3","width":25}]} -->
 
 <!-- content:column {"parent":"container-5","insert":"col-1"} -->
 
-### 🧭 导航
+### 🧭 **导航** [面板]{color: blue}
+
+这是一个包含 **加粗文本** 和 *斜体文本* 的导航区域。
+
+你也可以使用 ~~删除线~~ 来标记已删除的内容，还有 ==高亮文本== 用于强调。
+
+行内代码示例：\`console.log('Hello World')\`
+
+[红色提示]{color: red; background: #ffe6e6} 和 [绿色成功]{color: green; background: #e6ffe6} 状态。
 
 \`\`\`html
 <div style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); border-radius: 8px; padding: 12px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
@@ -435,7 +140,11 @@ console.timeEnd('markdown-parse');
 
 <!-- content:column {"parent":"container-5","insert":"col-2"} -->
 
-### 🌟 主要展示
+### 🌟 **主要展示** [区域]{color: purple}
+
+这个区域展示 **[加粗的蓝色文本]{color: blue; bold: true}** 和 *[斜体的橙色背景]{background: orange; italic: true}*。
+
+访问 [**AFFiNE 官网**](https://affine.pro) 了解更多信息。
 
 <!-- layout:multi-column {"id":"container-6","columns":[{"id":"col-1","width":70},{"id":"col-2","width":30}],"parent":"container-5","insert":"col-2"} -->
 
@@ -541,7 +250,16 @@ console.timeEnd('markdown-parse');
 
 <!-- content:column {"parent":"container-5","insert":"col-3"} -->
 
-### 📊 数据面板
+### 📊 **数据面板** [监控]{color: green}
+
+实时监控数据，包含 **性能指标** 和 *响应时间*。
+
+- **[加载速度]{color: green}**: 98ms
+- *[内存使用]{color: blue}*: 2.1MB  
+- ~~[旧指标]{color: gray}~~: 已废弃
+- ==[响应时间]{color: orange}==: 12ms
+
+[优化建议]{background: lightblue}: 启用代码分割和图片优化。
 
 \`\`\`html
 <div style="background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%); border-radius: 12px; padding: 12px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06); border: 1px solid #e2e8f0; margin-bottom: 8px;">
@@ -605,37 +323,7 @@ console.timeEnd('markdown-parse');
 </div>
 \`\`\`
 
-<!-- end:content:column -->
-
-## ✅ 总结
-
-这个多列布局 Markdown 解析器提供了强大而灵活的布局能力：
-
-### 核心优势
-
-- 🎯 精确控制 - 精确的列宽和间距控制
-
-- 🔄 双向转换 - Markdown ↔ BlockSnapshot 无损转换
-
-- 🏗️ 无限嵌套 - 支持任意深度的布局嵌套
-
-- ⚡ 高性能 - 优化的解析和渲染算法
-
-- 🛠️ 易于集成 - 简单的 API 和完善的文档
-
-### 使用方法
-
-\`\`\`typescript
-// 将 Markdown 转换为 BlockSnapshot
-const snapshot = await SimpleLayoutConverter
-  .markdownToSnapshot(markdown);
-
-// 将 BlockSnapshot 转换回 Markdown
-const markdown = await SimpleLayoutConverter
-  .snapshotToMarkdown(snapshot);
-\`\`\`
-
-通过这个解析器，你可以轻松创建复杂的多列文档布局，同时保持 Markdown 的简洁性和可读性。`;
+<!-- end:content:column -->`;
 
 export const markdownLayout: InitFn = async (
   collection: Workspace,
@@ -645,20 +333,27 @@ export const markdownLayout: InitFn = async (
   const store = doc.getStore();
   doc.clear();
 
+  // 使用混合了富文本语法的多列布局内容进行测试
+  const contentToTest = testMarkdownContent;
+  const testTitle = '🎨 富文本 + 多列布局混合测试';
+  const testDescription = '富文本语法扩展与多列布局解析';
+
   // 先创建基本的页面结构，确保 root 存在
   const rootId = store.addBlock('affine:page', {
-    title: new Text('Markdown 布局解析器测试'),
+    title: new Text(testTitle),
   });
   store.addBlock('affine:surface', {}, rootId);
 
   // 然后异步加载内容
   doc.load(async () => {
-    console.log('🚀 开始通过 Markdown 解析器生成页面内容...');
+    console.log(`🚀 开始测试 ${testDescription} 功能...`);
+    console.log(`📋 测试内容: 富文本语法 + 复杂多列布局 + HTML 组件`);
+    console.log(`💡 功能包括: 加粗、斜体、删除线、高亮、自定义颜色、背景色、嵌套多列布局`);
 
     try {
       // 使用 SimpleLayoutConverter 解析 Markdown 并生成 snapshot
       const snapshot =
-        await SimpleLayoutConverter.markdownToSnapshot(testMarkdownContent);
+        await SimpleLayoutConverter.markdownToSnapshot(contentToTest);
 
       console.log('✅ Markdown 解析成功！', snapshot);
 
@@ -751,5 +446,5 @@ export const markdownLayout: InitFn = async (
 };
 
 markdownLayout.id = 'markdown-layout';
-markdownLayout.displayName = 'Markdown 布局解析器';
-markdownLayout.description = '测试多列布局 Markdown 解析功能';
+markdownLayout.displayName = 'Markdown 解析器测试';
+markdownLayout.description = '测试富文本语法扩展与复杂多列布局的混合解析功能';

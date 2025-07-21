@@ -1,29 +1,15 @@
 import type { BlockSnapshot } from '@blocksuite/store';
 import { nanoid } from '@blocksuite/store';
-import type {
-  Code,
-  Heading,
-  Html,
-  List,
-  ListItem,
-  Node,
-  Paragraph,
-  Root,
-} from 'mdast';
+import type { Code, Delete, Emphasis, Heading, Html, Image, InlineCode,Link, List, ListItem, Node, Paragraph, Root, Strong } from 'mdast';
+import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 
-/**
- * 简化的布局状态接口
- */
 interface LayoutState {
-  containerMap: Map<string, BlockSnapshot>; // 存储所有容器和列的映射
-  currentColumnKey: string | null; // 当前列的完整键名 (containerId.columnId)
+  containerMap: Map<string, BlockSnapshot>;
+  currentColumnKey: string | null;
 }
 
-/**
- * Markdown 转 BlockSnapshot 转换器
- */
 export class MarkdownToSnapshotConverter {
   private layoutState: LayoutState;
 
@@ -34,33 +20,22 @@ export class MarkdownToSnapshotConverter {
     };
   }
 
-  /**
-   * 静态方法：创建实例并转换 Markdown
-   */
   static async convert(markdown: string): Promise<BlockSnapshot> {
     const converter = new MarkdownToSnapshotConverter();
     return converter.convertMarkdownToSnapshot(markdown);
   }
 
-  /**
-   * 将 Markdown 转换为 BlockSnapshot
-   */
   async convertMarkdownToSnapshot(markdown: string): Promise<BlockSnapshot> {
-    console.log('🔄 开始解析 Markdown...');
-
-    // 重置状态
     this.resetState();
-
-    // 使用 unified + remark-parse 解析 Markdown 为 AST
-    const processor = unified().use(remarkParse);
-    const ast = processor.parse(markdown) as Root;
-
-    console.log('📊 AST 解析完成，节点数:', ast.children.length, ast);
-
-    // 转换 AST 为 BlockSnapshot
+    
+    // 预处理自定义语法
+    const processedMarkdown = this.preprocessCustomSyntax(markdown);
+    
+    const processor = unified().use(remarkParse).use(remarkGfm);
+    const ast = processor.parse(processedMarkdown) as Root;
+    
     const children = await this.convertAstToBlocks(ast);
-
-    // 创建根 note 块
+    
     const noteSnapshot: BlockSnapshot = {
       type: 'block',
       id: nanoid(),
@@ -75,13 +50,9 @@ export class MarkdownToSnapshotConverter {
       children,
     };
 
-    console.log('✅ 转换完成！生成了', children.length, '个子块');
     return noteSnapshot;
   }
 
-  /**
-   * 重置布局状态
-   */
   private resetState(): void {
     this.layoutState = {
       containerMap: new Map<string, BlockSnapshot>(),
@@ -89,9 +60,6 @@ export class MarkdownToSnapshotConverter {
     };
   }
 
-  /**
-   * 将 AST 转换为块数组
-   */
   private async convertAstToBlocks(ast: Root): Promise<BlockSnapshot[]> {
     const blocks: BlockSnapshot[] = [];
 
@@ -102,138 +70,102 @@ export class MarkdownToSnapshotConverter {
     return blocks;
   }
 
-  /**
-   * 处理单个 AST 节点
-   */
   private async processAstNode(
     node: Node,
-    blocks: BlockSnapshot[]
+    blocks: BlockSnapshot[],
   ): Promise<void> {
     switch (node.type) {
       case 'html':
         await this.processHtmlNode(node as Html, blocks);
         break;
-
+      
       case 'heading':
         const headingBlock = this.createHeadingBlock(node as Heading);
         this.insertBlock(headingBlock, blocks);
         break;
-
+      
       case 'paragraph':
         const paragraphBlock = this.createParagraphBlock(node as Paragraph);
         this.insertBlock(paragraphBlock, blocks);
         break;
-
+      
       case 'list':
         await this.processListNode(node as List, blocks);
         break;
-
+      
       case 'code':
         const codeBlock = this.createCodeBlock(node as Code);
         this.insertBlock(codeBlock, blocks);
         break;
-
-      default:
-        console.log('🔍 未处理的节点类型:', node.type);
+      
+      case 'image':
+        const imageBlock = this.createImageBlock(node as Image);
+        this.insertBlock(imageBlock, blocks);
         break;
     }
   }
 
-  /**
-   * 处理 HTML 节点（布局注释）
-   */
   private async processHtmlNode(
     node: Html,
-    blocks: BlockSnapshot[]
+    blocks: BlockSnapshot[],
   ): Promise<void> {
     const html = node.value;
-
-    // 检查是否是布局声明
+    
     if (html.includes('layout:multi-column')) {
       const layoutMatch = html.match(/^<!-- layout:multi-column([\s\S]*?)-->$/);
       if (layoutMatch) {
         try {
           const config = JSON.parse(layoutMatch[1]);
-
-          // 创建多列容器
+          
           const container = this.createMultiColumnContainer(config);
           this.layoutState.containerMap.set(config.id, container);
-
-          // 处理容器嵌套：如果指定了 parent 和 insert，插入到父容器中
+          
           if (config.parent && config.insert) {
             const parentKey = `${config.parent}.${config.insert}`;
-            const parentContainer =
-              this.layoutState.containerMap.get(parentKey);
+            const parentContainer = this.layoutState.containerMap.get(parentKey);
             if (parentContainer) {
               parentContainer.children.push(container);
-              console.log(
-                '📐 创建嵌套布局容器:',
-                config.id,
-                '插入到父容器:',
-                parentKey
-              );
             } else {
-              console.error('❌ 找不到父容器:', parentKey, '，将插入到主列表');
               blocks.push(container);
             }
           } else {
-            // 没有指定父容器，插入到主列表
             blocks.push(container);
           }
-
-          // 创建所有列并存储到 containerMap 中
+          
           for (const columnConfig of config.columns) {
             const column = this.createColumnBlock(columnConfig);
             const columnKey = `${config.id}.${columnConfig.id}`;
             this.layoutState.containerMap.set(columnKey, column);
             container.children.push(column);
           }
-
-          console.log(
-            '📐 创建布局容器:',
-            config.id,
-            '包含',
-            config.columns.length,
-            '列'
-          );
         } catch (e) {
-          console.error('❌ 解析布局配置失败:', e);
         }
       }
-      return;
+      return 
     }
-
-    // 检查是否是列内容结束
+    
     else if (html.includes('end:content:column')) {
-      console.log('📝 结束列内容:', this.layoutState.currentColumnKey);
       this.layoutState.currentColumnKey = null;
       return;
     }
-
-    // 检查是否是列内容开始
+    
     else if (html.includes('content:column')) {
       const columnMatch = html.match(/^<!-- content:column([\s\S]*?)-->$/);
       if (columnMatch) {
         try {
           const config = JSON.parse(columnMatch[1]);
           this.layoutState.currentColumnKey = `${config.parent}.${config.insert}`;
-
-          console.log('📝 开始列内容:', this.layoutState.currentColumnKey);
         } catch (e) {
-          console.error('❌ 解析列配置失败:', e);
         }
       }
-      return;
+      return 
     }
   }
 
-  /**
-   * 创建标题块
-   */
   private createHeadingBlock(node: Heading): BlockSnapshot {
-    const text = this.extractTextFromMdastNode(node);
+    const delta = this.extractDeltaFromMdastNode(node);
     const level = node.depth;
-
+    
     return {
       type: 'block',
       id: nanoid(),
@@ -241,7 +173,7 @@ export class MarkdownToSnapshotConverter {
       props: {
         text: {
           '$blocksuite:internal:text$': true,
-          delta: [{ insert: text }],
+          delta,
         },
         type: `h${Math.min(level, 6)}`,
       },
@@ -249,12 +181,9 @@ export class MarkdownToSnapshotConverter {
     };
   }
 
-  /**
-   * 创建段落块
-   */
   private createParagraphBlock(node: Paragraph): BlockSnapshot {
-    const text = this.extractTextFromMdastNode(node);
-
+    const delta = this.extractDeltaFromMdastNode(node);
+    
     return {
       type: 'block',
       id: nanoid(),
@@ -262,7 +191,7 @@ export class MarkdownToSnapshotConverter {
       props: {
         text: {
           '$blocksuite:internal:text$': true,
-          delta: [{ insert: text }],
+          delta,
         },
         type: 'text',
       },
@@ -270,39 +199,25 @@ export class MarkdownToSnapshotConverter {
     };
   }
 
-  /**
-   * 统一的插入函数：根据当前上下文决定插入位置
-   */
-  private insertBlock(block: BlockSnapshot, blocks: BlockSnapshot[]): void {
+  private insertBlock(
+    block: BlockSnapshot,
+    blocks: BlockSnapshot[]
+  ): void {
     if (this.layoutState.currentColumnKey) {
-      // 当前在列内容中，插入到对应的列
-      const column = this.layoutState.containerMap.get(
-        this.layoutState.currentColumnKey
-      );
+      const column = this.layoutState.containerMap.get(this.layoutState.currentColumnKey);
       if (column) {
         column.children.push(block);
-        console.log(
-          '📝 添加块到列:',
-          this.layoutState.currentColumnKey,
-          block.flavour
-        );
       } else {
-        console.error('❌ 找不到列:', this.layoutState.currentColumnKey);
-        blocks.push(block); // 降级到主列表
+        blocks.push(block);
       }
     } else {
-      // 不在列内容中，插入到最外层
       blocks.push(block);
-      console.log('📝 添加块到主列表:', block.flavour);
     }
   }
 
-  /**
-   * 创建多列容器块
-   */
   private createMultiColumnContainer(config: {
-    id: string;
-    columns: Array<{ id: string; width: number }>;
+    id: string,
+    columns: Array<{id: string, width: number}>
   }): BlockSnapshot {
     return {
       type: 'block',
@@ -313,12 +228,9 @@ export class MarkdownToSnapshotConverter {
     };
   }
 
-  /**
-   * 创建列块
-   */
   private createColumnBlock(columnConfig: {
-    id: string;
-    width: number;
+    id: string,
+    width: number,
   }): BlockSnapshot {
     return {
       type: 'block',
@@ -331,21 +243,14 @@ export class MarkdownToSnapshotConverter {
     };
   }
 
-  /**
-   * 处理列表节点
-   */
   private async processListNode(
     node: List,
     blocks: BlockSnapshot[]
   ): Promise<void> {
     for (const listItem of node.children) {
-      const listBlock = this.createListBlock(
-        listItem as ListItem,
-        node.ordered || false
-      );
+      const listBlock = this.createListBlock(listItem as ListItem, node.ordered || false);
       this.insertBlock(listBlock, blocks);
-
-      // 处理嵌套列表
+      
       if (listItem.children.length > 1) {
         for (let i = 1; i < listItem.children.length; i++) {
           const child = listItem.children[i];
@@ -357,17 +262,12 @@ export class MarkdownToSnapshotConverter {
     }
   }
 
-  /**
-   * 创建列表块
-   */
   private createListBlock(node: ListItem, ordered: boolean): BlockSnapshot {
-    // 提取第一个段落的文本作为列表项内容
-    let text = '';
+    let delta: any[] = [];
     if (node.children.length > 0 && node.children[0].type === 'paragraph') {
-      text = this.extractTextFromMdastNode(node.children[0]);
+      delta = this.extractDeltaFromMdastNode(node.children[0]);
     }
-
-    // 确定列表类型
+    
     let listType: string;
     if (node.checked !== null && node.checked !== undefined) {
       listType = 'todo';
@@ -376,7 +276,7 @@ export class MarkdownToSnapshotConverter {
     } else {
       listType = 'bulleted';
     }
-
+    
     return {
       type: 'block',
       id: nanoid(),
@@ -385,7 +285,7 @@ export class MarkdownToSnapshotConverter {
         type: listType,
         text: {
           '$blocksuite:internal:text$': true,
-          delta: [{ insert: text }],
+          delta,
         },
         checked: node.checked ?? false,
         collapsed: false,
@@ -394,9 +294,6 @@ export class MarkdownToSnapshotConverter {
     };
   }
 
-  /**
-   * 创建代码块
-   */
   private createCodeBlock(node: Code): BlockSnapshot {
     return {
       type: 'block',
@@ -414,157 +311,353 @@ export class MarkdownToSnapshotConverter {
     };
   }
 
-  /**
-   * 从 mdast 节点提取文本
-   */
+  private createImageBlock(node: Image): BlockSnapshot {
+    return {
+      type: 'block',
+      id: nanoid(),
+      flavour: 'affine:image',
+      props: {
+        sourceId: node.url,
+        caption: node.alt || '',
+        width: 0,
+        height: 0,
+        index: 'a0',
+        xywh: '[0,0,0,0]',
+        rotate: 0,
+      },
+      children: [],
+    };
+  }
+
   private extractTextFromMdastNode(node: any): string {
     if (node.type === 'text') {
       return node.value || '';
     }
-
+    
+    if (node.type === 'link') {
+      const linkNode = node as Link;
+      const text = linkNode.children.map((child: any) => this.extractTextFromMdastNode(child)).join('');
+      return text;
+    }
+    
+    if (node.type === 'image') {
+      const imageNode = node as Image;
+      return imageNode.alt || '';
+    }
+    
     if (node.children) {
-      return node.children
-        .map((child: any) => this.extractTextFromMdastNode(child))
-        .join('');
+      return node.children.map((child: any) => this.extractTextFromMdastNode(child)).join('');
+    }
+    
+    return '';
+  }
+
+  private extractDeltaFromMdastNode(node: any): any[] {
+    if (node.type === 'text') {
+      // 处理自定义语法
+      return this.parseCustomSyntax(node.value || '');
+    }
+    
+    // 支持加粗
+    if (node.type === 'strong') {
+      const childDeltas = node.children ? node.children.flatMap((child: any) => this.extractDeltaFromMdastNode(child)) : [];
+      return this.mergeAttributes(childDeltas, { bold: true });
+    }
+    
+    // 支持斜体
+    if (node.type === 'emphasis') {
+      const childDeltas = node.children ? node.children.flatMap((child: any) => this.extractDeltaFromMdastNode(child)) : [];
+      return this.mergeAttributes(childDeltas, { italic: true });
+    }
+    
+    // 支持删除线
+    if (node.type === 'delete') {
+      const childDeltas = node.children ? node.children.flatMap((child: any) => this.extractDeltaFromMdastNode(child)) : [];
+      return this.mergeAttributes(childDeltas, { strike: true });
+    }
+    
+    // 支持行内代码
+    if (node.type === 'inlineCode') {
+      return [{ insert: node.value, attributes: { code: true } }];
+    }
+    
+    if (node.type === 'link') {
+      const linkNode = node as Link;
+      const childDeltas = linkNode.children ? linkNode.children.flatMap((child: any) => this.extractDeltaFromMdastNode(child)) : [];
+      return this.mergeAttributes(childDeltas, { link: linkNode.url });
+    }
+    
+    if (node.type === 'image') {
+      const imageNode = node as Image;
+      return [{ insert: imageNode.alt || '' }];
+    }
+    
+    if (node.children) {
+      return node.children.flatMap((child: any) => this.extractDeltaFromMdastNode(child));
+    }
+    
+    return [];
+  }
+
+  /**
+   * 合并属性到 Delta 数组中
+   */
+  private mergeAttributes(deltas: any[], newAttributes: any): any[] {
+    return deltas.map(delta => ({
+      ...delta,
+      attributes: {
+        ...delta.attributes,
+        ...newAttributes
+      }
+    }));
+  }
+
+  /**
+   * 预处理自定义语法，将其转换为标准markdown
+   */
+  private preprocessCustomSyntax(markdown: string): string {
+    // 处理高亮语法 ==text== -> <mark>text</mark>
+    markdown = markdown.replace(/==(.*?)==/g, '<mark>$1</mark>');
+    
+    return markdown;
+  }
+
+  /**
+   * 解析自定义语法 [文本]{属性}
+   */
+  private parseCustomSyntax(text: string): any[] {
+    const customSyntaxRegex = /\[([^\]]+)\]\{([^}]+)\}/g;
+    const result: any[] = [];
+    let lastIndex = 0;
+    let match;
+
+    while ((match = customSyntaxRegex.exec(text)) !== null) {
+      // 添加匹配前的普通文本
+      if (match.index > lastIndex) {
+        const beforeText = text.slice(lastIndex, match.index);
+        if (beforeText) {
+          result.push({ insert: beforeText });
+        }
+      }
+
+      const content = match[1];
+      const attributesStr = match[2];
+      const attributes = this.parseAttributes(attributesStr);
+
+      result.push({
+        insert: content,
+        attributes
+      });
+
+      lastIndex = match.index + match[0].length;
     }
 
-    return '';
+    // 添加剩余的普通文本
+    if (lastIndex < text.length) {
+      const remainingText = text.slice(lastIndex);
+      if (remainingText) {
+        result.push({ insert: remainingText });
+      }
+    }
+
+    // 如果没有自定义语法，返回原始文本
+    if (result.length === 0) {
+      return [{ insert: text }];
+    }
+
+    return result;
+  }
+
+  /**
+   * 解析属性字符串
+   */
+  private parseAttributes(attributesStr: string): any {
+    const attributes: any = {};
+    
+    // 解析 key: value 格式
+    const keyValueRegex = /(\w+):\s*([^,;]+)/g;
+    let match;
+    
+    while ((match = keyValueRegex.exec(attributesStr)) !== null) {
+      const key = match[1].trim();
+      const value = match[2].trim();
+      
+      switch (key) {
+        case 'color':
+          attributes.color = value;
+          break;
+        case 'background':
+        case 'bg':
+          attributes.background = value;
+          break;
+        case 'bold':
+          attributes.bold = value === 'true' || value === '1';
+          break;
+        case 'italic':
+          attributes.italic = value === 'true' || value === '1';
+          break;
+        case 'strike':
+          attributes.strike = value === 'true' || value === '1';
+          break;
+        case 'underline':
+          attributes.underline = value === 'true' || value === '1';
+          break;
+        case 'code':
+          attributes.code = value === 'true' || value === '1';
+          break;
+        default:
+          attributes[key] = value;
+      }
+    }
+    
+    // 解析简单的类名格式 .red, .bold 等
+    const classRegex = /\.(\w+)/g;
+    while ((match = classRegex.exec(attributesStr)) !== null) {
+      const className = match[1];
+      
+      switch (className) {
+        case 'red':
+        case 'blue':
+        case 'green':
+        case 'yellow':
+        case 'purple':
+        case 'orange':
+        case 'pink':
+        case 'gray':
+        case 'black':
+        case 'white':
+          attributes.color = className;
+          break;
+        case 'bold':
+          attributes.bold = true;
+          break;
+        case 'italic':
+          attributes.italic = true;
+          break;
+        case 'strike':
+          attributes.strike = true;
+          break;
+        case 'underline':
+          attributes.underline = true;
+          break;
+        case 'code':
+          attributes.code = true;
+          break;
+        case 'highlight':
+          attributes.background = 'yellow';
+          break;
+      }
+    }
+    
+    return attributes;
   }
 }
 type Context = {
-  container?: {
-    id: string;
-    col: string;
-  };
-};
-/**
- * BlockSnapshot 转 Markdown 转换器
- */
+  container?:{
+    id:string,
+    col:string,
+  }
+}
 export class SnapshotToMarkdownConverter {
-  /**
-   * 静态方法：转换 BlockSnapshot 为 Markdown
-   */
+
   static async convert(snapshot: BlockSnapshot): Promise<string> {
     const converter = new SnapshotToMarkdownConverter();
     return converter.convertSnapshotToMarkdown(snapshot);
   }
 
-  /**
-   * 将 BlockSnapshot 转换为 Markdown
-   */
   async convertSnapshotToMarkdown(snapshot: BlockSnapshot): Promise<string> {
-    console.log('🔄 开始将 BlockSnapshot 转换为 Markdown...');
-
     const parts: string[] = [];
-
+    
     for (const child of snapshot.children) {
-      const markdown = await this.blockToMarkdown(child, {});
+      const markdown = await this.blockToMarkdown(child,{});
       if (markdown.trim()) {
         parts.push(markdown);
       }
     }
-
+    
     const result = parts.join('\n\n');
-    console.log('✅ 转换完成！生成了', result.length, '个字符的 Markdown');
     return result;
   }
 
-  /**
-   * 将单个块转换为 Markdown
-   */
-  private async blockToMarkdown(
-    block: BlockSnapshot,
-    context: Context
-  ): Promise<string> {
+  private async blockToMarkdown(block: BlockSnapshot, context:Context): Promise<string> {
     switch (block.flavour) {
       case 'affine:paragraph':
         return this.paragraphToMarkdown(block);
-
+      
       case 'affine:multi-column-container':
-        return this.multiColumnToMarkdown(block, context);
-
+        return this.multiColumnToMarkdown(block,context);
+      
       case 'affine:column':
-        // 列块本身不直接转换，由容器处理
         return '';
-
+      
       case 'affine:list':
         return this.listToMarkdown(block);
-
+      
       case 'affine:code':
         return this.codeToMarkdown(block);
-
+      
+      case 'affine:image':
+        return this.imageToMarkdown(block);
+      
       default:
-        // 其他类型的块，尝试提取文本
         const text = this.extractTextFromBlock(block);
         return text || '';
     }
   }
 
-  /**
-   * 段落块转 Markdown
-   */
   private paragraphToMarkdown(block: BlockSnapshot): string {
-    const text = this.extractTextFromBlock(block);
+    const markdown = this.extractMarkdownFromBlock(block);
     const type = block.props?.type || 'text';
 
     switch (type) {
       case 'h1':
-        return `# ${text}`;
+        return `# ${markdown}`;
       case 'h2':
-        return `## ${text}`;
+        return `## ${markdown}`;
       case 'h3':
-        return `### ${text}`;
+        return `### ${markdown}`;
       case 'h4':
-        return `#### ${text}`;
+        return `#### ${markdown}`;
       case 'h5':
-        return `##### ${text}`;
+        return `##### ${markdown}`;
       case 'h6':
-        return `###### ${text}`;
+        return `###### ${markdown}`;
       default:
-        return text;
+        return markdown;
     }
   }
-  count = 0;
-  /**
-   * 多列容器转 Markdown
-   */
-  private async multiColumnToMarkdown(
-    block: BlockSnapshot,
-    context: Context
-  ): Promise<string> {
+  count = 0
+  private async multiColumnToMarkdown(block: BlockSnapshot,context:Context): Promise<string> {
     const parts: string[] = [];
     const containerId = `container-${this.count++}`;
     const containerDeclaration = `<!-- layout:multi-column ${JSON.stringify({
-      id: containerId,
-      columns: block.children.map((child, index) => ({
-        id: `col-${index + 1}`,
-        width: child.props?.width,
-      })),
-      ...(context.container
-        ? { parent: context.container.id, insert: context.container.col }
-        : {}),
-    })} -->`;
+    id: containerId,
+    columns: block.children.map((child, index) => ({
+    id: `col-${index + 1}`,
+    width: child.props?.width,
+  })),
+  ...context.container?{parent:context.container.id,insert:context.container.col}:{},
+})} -->`;
 
     parts.push(containerDeclaration);
 
-    // 生成列内容
     for (let i = 0; i < block.children.length; i++) {
       const column = block.children[i];
-      const columnId = `col-${i + 1}`;
+      const columnId = `col-${i+1}`;
 
       if (column.children.length > 0) {
         const contentStart = `<!-- content:column ${JSON.stringify({
-          parent: containerId,
-          insert: columnId,
-        })} -->`;
+  parent: containerId,
+  insert: columnId,
+})} -->`;
 
         const contentParts: string[] = [];
         for (const contentChild of column.children) {
-          const markdown = await this.blockToMarkdown(contentChild, {
-            container: {
-              id: containerId,
-              col: columnId,
-            },
+          const markdown = await this.blockToMarkdown(contentChild,{
+            container:{
+              id:containerId,
+              col:columnId,
+            }
           });
           if (markdown.trim()) {
             contentParts.push(markdown);
@@ -584,70 +677,153 @@ export class SnapshotToMarkdownConverter {
     return parts.join('\n\n');
   }
 
-  /**
-   * 列表块转 Markdown
-   */
   private listToMarkdown(block: BlockSnapshot): string {
-    const text = this.extractTextFromBlock(block);
+    const markdown = this.extractMarkdownFromBlock(block);
     const type = block.props?.type || 'bulleted';
     const checked = block.props?.checked;
-
+    
     switch (type) {
       case 'numbered':
-        return `1. ${text}`;
+        return `1. ${markdown}`;
       case 'todo':
         const checkmark = checked ? '[x]' : '[ ]';
-        return `- ${checkmark} ${text}`;
+        return `- ${checkmark} ${markdown}`;
       case 'bulleted':
       default:
-        return `- ${text}`;
+        return `- ${markdown}`;
     }
   }
 
-  /**
-   * 代码块转 Markdown
-   */
   private codeToMarkdown(block: BlockSnapshot): string {
     const text = this.extractTextFromBlock(block);
     const language = block.props?.language || '';
-
+    
     return `\`\`\`${language}\n${text}\n\`\`\``;
   }
 
-  /**
-   * 从块中提取文本
-   */
+  private imageToMarkdown(block: BlockSnapshot): string {
+    const sourceId = block.props?.sourceId || '';
+    const caption = block.props?.caption || '';
+    
+    return `![${caption}](${sourceId})`;
+  }
+
   private extractTextFromBlock(block: BlockSnapshot): string {
     const text = block.props?.text;
-
+    
     if (text && typeof text === 'object' && 'delta' in text) {
       return (text as any).delta.map((d: any) => d.insert || '').join('');
     }
-
+    
     if (typeof text === 'string') {
       return text;
     }
-
+    
     return '';
+  }
+
+  private extractMarkdownFromBlock(block: BlockSnapshot): string {
+    const text = block.props?.text;
+    
+    if (text && typeof text === 'object' && 'delta' in text) {
+      return (text as any).delta.map((d: any) => {
+        let insert = d.insert || '';
+        
+        if (d.attributes) {
+          // 处理链接
+          if (d.attributes.link) {
+            insert = `[${insert}](${d.attributes.link})`;
+          }
+          // 处理标准markdown格式
+          else if (d.attributes.bold && !d.attributes.color && !d.attributes.background) {
+            insert = `**${insert}**`;
+          }
+          else if (d.attributes.italic && !d.attributes.color && !d.attributes.background) {
+            insert = `*${insert}*`;
+          }
+          else if (d.attributes.strike && !d.attributes.color && !d.attributes.background) {
+            insert = `~~${insert}~~`;
+          }
+          else if (d.attributes.code && !d.attributes.color && !d.attributes.background) {
+            insert = `\`${insert}\``;
+          }
+          // 处理自定义语法
+          else {
+            const customAttributes = this.buildCustomAttributes(d.attributes);
+            if (customAttributes) {
+              insert = `[${insert}]{${customAttributes}}`;
+            }
+          }
+        }
+        
+        return insert;
+      }).join('');
+    }
+    
+    if (typeof text === 'string') {
+      return text;
+    }
+    
+    return '';
+  }
+
+  /**
+   * 构建自定义属性字符串
+   */
+  private buildCustomAttributes(attributes: any): string {
+    const parts: string[] = [];
+    
+    // 处理颜色
+    if (attributes.color) {
+      if (['red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink', 'gray', 'black', 'white'].includes(attributes.color)) {
+        parts.push(`.${attributes.color}`);
+      } else {
+        parts.push(`color: ${attributes.color}`);
+      }
+    }
+    
+    // 处理背景色
+    if (attributes.background) {
+      if (attributes.background === 'yellow') {
+        parts.push('.highlight');
+      } else {
+        parts.push(`background: ${attributes.background}`);
+      }
+    }
+    
+    // 处理其他属性
+    if (attributes.bold) {
+      parts.push('.bold');
+    }
+    if (attributes.italic) {
+      parts.push('.italic');
+    }
+    if (attributes.strike) {
+      parts.push('.strike');
+    }
+    if (attributes.underline) {
+      parts.push('.underline');
+    }
+    if (attributes.code) {
+      parts.push('.code');
+    }
+    
+    // 处理其他自定义属性
+    Object.keys(attributes).forEach(key => {
+      if (!['color', 'background', 'bold', 'italic', 'strike', 'underline', 'code', 'link'].includes(key)) {
+        parts.push(`${key}: ${attributes[key]}`);
+      }
+    });
+    
+    return parts.join(', ');
   }
 }
 
-/**
- * 保持向后兼容的简单布局转换器
- */
 export class SimpleLayoutConverter {
-  /**
-   * 静态方法：创建实例并转换 Markdown
-   * @deprecated 请使用 MarkdownToSnapshotConverter.convert()
-   */
   static async markdownToSnapshot(markdown: string): Promise<BlockSnapshot> {
     return MarkdownToSnapshotConverter.convert(markdown);
   }
 
-  /**
-   * 将 BlockSnapshot 转换为 Markdown
-   * @deprecated 请使用 SnapshotToMarkdownConverter.convert()
-   */
   static async snapshotToMarkdown(snapshot: BlockSnapshot): Promise<string> {
     return SnapshotToMarkdownConverter.convert(snapshot);
   }

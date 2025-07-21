@@ -215,11 +215,7 @@ export class CopilotClient {
     }
   }
 
-  async cleanupSessions(input: {
-    workspaceId: string;
-    docId: string;
-    sessionIds: string[];
-  }) {
+  async cleanupSessions(input: { docId: string; sessionIds: string[] }) {
     try {
       const res = await this.gql({
         query: cleanupCopilotSessionMutation,

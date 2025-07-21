@@ -1,3 +1,4 @@
+import type { PaginationInput } from '@afk/graphql';
 import { createStore, type StoreApi } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 
@@ -10,16 +11,38 @@ import type { ChatSessionState } from './types';
 export interface ChatSessionsState {
   activeId?: string;
 
+  /** Cached sessions fetched from backend, indexed by sessionId */
+  sessionsCache: Record<string, unknown>;
+
   /* ---------- Actions ---------- */
   acquire(args: {
     sessionId: string;
-    workspaceId: string;
     client: CopilotClient;
   }): StoreApi<ChatSessionState>;
   release(sessionId: string): void;
   setActive(sessionId?: string): void;
   get(sessionId: string): StoreApi<ChatSessionState> | undefined;
   list(): string[];
+
+  /**
+   * Create a new copilot session on backend and register it locally.
+   * The returned session id is also set as `activeId`.
+   */
+  createSession(args: {
+    client: CopilotClient;
+    options: Parameters<CopilotClient['createSession']>[0];
+  }): Promise<string>;
+
+  /**
+   * Fetch sessions list from backend and cache the result in `sessionsCache`.
+   * Returns the fetched session nodes.
+   */
+  fetchSessions(args: {
+    client: CopilotClient;
+    pagination: PaginationInput;
+    options?: Parameters<CopilotClient['getSessions']>[1];
+    signal?: AbortSignal;
+  }): Promise<unknown[]>;
 }
 
 export function createChatSessionsStore() {
@@ -28,10 +51,11 @@ export function createChatSessionsStore() {
   return createStore<ChatSessionsState>()(
     immer<ChatSessionsState>(set => ({
       activeId: undefined,
+      sessionsCache: {},
 
-      acquire: ({ sessionId, workspaceId, client }) => {
+      acquire: ({ sessionId, client }) => {
         return registry.acquire(sessionId, () =>
-          createChatSessionStore({ sessionId, workspaceId, client })
+          createChatSessionStore({ sessionId, client })
         );
       },
 
@@ -53,6 +77,50 @@ export function createChatSessionsStore() {
       get: (sessionId: string) => registry.get(sessionId),
 
       list: () => registry.list(),
+
+      /** Implement createSession */
+      createSession: async ({ client, options }) => {
+        const sessionId = await client.createSession(options);
+
+        // Preload meta of the newly created session for cache purpose
+        let meta: unknown = null;
+        try {
+          meta = await client.getSession(sessionId);
+        } catch {
+          // ignore
+        }
+
+        set(state => {
+          state.sessionsCache[sessionId] = meta ?? {};
+          state.activeId = sessionId;
+        });
+
+        // Ensure a local store exists for the new session
+        registry.acquire(sessionId, () =>
+          createChatSessionStore({ sessionId, client })
+        );
+
+        return sessionId;
+      },
+
+      /** Implement fetchSessions */
+      fetchSessions: async ({ client, pagination, options, signal }) => {
+        const sessions = await client.getSessions(
+          pagination,
+          options as any,
+          signal
+        );
+        if (sessions && Array.isArray(sessions)) {
+          set(state => {
+            for (const s of sessions) {
+              if (s && typeof s === 'object' && 'sessionId' in s) {
+                state.sessionsCache[(s as any).sessionId] = s;
+              }
+            }
+          });
+        }
+        return sessions ?? [];
+      },
     }))
   );
 }

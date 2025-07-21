@@ -19,6 +19,7 @@
     "dayjs": "^1.11.13",
     "immer": "^10.1.1",
     "lodash-es": "^4.17.21",
+    "nanoid": "^5.1.5",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-resizable-panels": "^3.0.3",

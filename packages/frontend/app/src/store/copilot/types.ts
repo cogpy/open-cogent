@@ -1,5 +1,3 @@
-import type { PaginationInput } from '@afk/graphql';
-
 import type { CopilotClient } from './client';
 
 export interface ChatMessage {
@@ -26,13 +24,13 @@ export interface SessionFlags {
   isLoading: boolean;
   isSubmitting: boolean;
   isStreaming: boolean;
-  error?: Error;
 }
 
 export interface ChatSessionState extends SessionFlags {
   // Identifiers
   sessionId: string;
-  workspaceId: string;
+
+  error?: Error;
 
   // Data
   meta: SessionMeta | null;
@@ -41,11 +39,15 @@ export interface ChatSessionState extends SessionFlags {
   /* ---------------- Actions -------------- */
   init(): Promise<void>;
   reload(): Promise<void>;
-  sendMessage(options: SendMessageOptions): Promise<void>;
-  fetchMoreHistory(pagination: PaginationInput): Promise<void>;
+  sendMessage(options: Omit<SendMessageOptions, 'sessionId'>): Promise<void>;
   updateMeta(options: UpdateSessionOptions): Promise<void>;
   cleanup(sessionIds: string[]): Promise<void>;
   clearError(): void;
+  /** Load older messages (prepend). Returns when fetch completes. */
+  loadMore(limit?: number): Promise<void>;
+
+  /** Toggle pinned state for this session. */
+  togglePin(): Promise<void>;
 }
 
 export type SendMessageOptions = Parameters<CopilotClient['createMessage']>[0];

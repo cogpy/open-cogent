@@ -1,51 +1,23 @@
 import { Button } from '@afk/component';
-import { useState } from 'react';
-import { useParams } from 'react-router';
-import { useStore } from 'zustand';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router';
+import { type StoreApi, useStore } from 'zustand';
 
 import { useRefCounted } from '@/lib/hooks/use-ref-counted';
 import { copilotClient } from '@/store/copilot/client';
 import { chatSessionsStore } from '@/store/copilot/sessions-instance';
+import type { ChatSessionState } from '@/store/copilot/types';
 
-export const ChatPage = () => {
-  const { id = 'default' } = useParams();
-
-  const sessionStore = useRefCounted(
-    id,
-    () =>
-      chatSessionsStore.getState().acquire({
-        sessionId: id,
-        workspaceId: 'mock-workspace',
-        client: copilotClient,
-      }),
-    () => chatSessionsStore.getState().release(id)
-  );
-
-  const messages = useStore(
-    sessionStore ??
-      chatSessionsStore.getState().acquire({
-        sessionId: id,
-        workspaceId: 'mock-workspace',
-        client: copilotClient,
-      }),
-    s => s.messages
-  );
-  const isSubmitting = useStore(
-    sessionStore ??
-      chatSessionsStore.getState().acquire({
-        sessionId: id,
-        workspaceId: 'mock-workspace',
-        client: copilotClient,
-      }),
-    s => s.isSubmitting
-  );
+const ChatPageImpl = ({ store }: { store: StoreApi<ChatSessionState> }) => {
+  const messages = useStore(store, s => s.messages);
+  const isSubmitting = useStore(store, s => s.isSubmitting);
 
   const [input, setInput] = useState('');
 
   const onSend = async () => {
     if (!input.trim()) return;
     // placeholder: backend expects specific options shape
-    await sessionStore?.getState().sendMessage({ content: input } as any);
+    await store.getState().sendMessage({ content: input });
     setInput('');
   };
 
@@ -73,6 +45,94 @@ export const ChatPage = () => {
         />
         <Button onClick={onSend} disabled={isSubmitting || !input.trim()}>
           Send
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+export const ChatPage = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+
+  // Input state shared between modes
+  const [input, setInput] = useState('');
+
+  /* ---------------- Existing-session mode ---------------- */
+  const sessionStore = useRefCounted(
+    id,
+    () =>
+      id
+        ? chatSessionsStore.getState().acquire({
+            sessionId: id,
+            client: copilotClient,
+          })
+        : null,
+    () => id && chatSessionsStore.getState().release(id)
+  );
+
+  // When sessionStore becomes available, clear input local state so ChatPageImpl controls it
+  useEffect(() => {
+    if (sessionStore) {
+      setInput('');
+    }
+  }, [sessionStore]);
+
+  /* ---------------- Placeholder mode handlers ---------------- */
+  const [isCreating, setIsCreating] = useState(false);
+
+  const onSendPlaceholder = async () => {
+    if (!input.trim() || isCreating) return;
+    setIsCreating(true);
+    try {
+      // Create backend session first
+      const newSessionId = await chatSessionsStore.getState().createSession({
+        client: copilotClient,
+        options: {
+          promptName: 'Chat With AFFiNE AI', // default prompt
+        },
+      });
+
+      // Send the first message via the newly created store
+      const newStore =
+        chatSessionsStore.getState().get(newSessionId) ??
+        chatSessionsStore.getState().acquire({
+          sessionId: newSessionId,
+          client: copilotClient,
+        });
+
+      await newStore.getState().sendMessage({ content: input.trim() });
+
+      // Navigate to URL with new session id
+      navigate('/chats/' + newSessionId, { replace: true });
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  /* ---------------- Rendering ---------------- */
+  if (id && sessionStore) {
+    // Existing / newly created session mode
+    return <ChatPageImpl store={sessionStore} />;
+  }
+
+  // Placeholder mode – no session yet
+  return (
+    <div className="flex flex-col h-full p-4 gap-4">
+      <div className="flex-1 overflow-auto border rounded p-2 flex flex-col gap-2" />
+      <div className="flex gap-2">
+        <textarea
+          value={input}
+          placeholder="Type a message..."
+          onChange={e => setInput(e.currentTarget.value)}
+          className="flex-1"
+          rows={2}
+        />
+        <Button
+          onClick={onSendPlaceholder}
+          disabled={isCreating || !input.trim()}
+        >
+          {isCreating ? 'Starting...' : 'Send'}
         </Button>
       </div>
     </div>

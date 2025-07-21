@@ -16,6 +16,9 @@ export default defineConfig({
   entry: {
     main: './src/main.tsx',
   },
+  output: {
+    publicPath: '/',
+  },
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'],
     alias: {
@@ -152,6 +155,11 @@ export default defineConfig({
     proxy: [
       {
         path: '/api',
+        target: 'http://localhost:3010',
+        changeOrigin: true,
+      },
+      {
+        path: '/graphql',
         target: 'http://localhost:3010',
         changeOrigin: true,
       },

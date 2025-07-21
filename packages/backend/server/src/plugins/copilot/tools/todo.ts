@@ -6,8 +6,8 @@ import { z } from 'zod';
 import { Cache } from '../../../base';
 
 type TodoList = {
-  todoListId: string;
-  todoList: Array<{
+  id: string;
+  list: Array<{
     id: string;
     title: string;
     description: string;
@@ -19,21 +19,24 @@ export const createTodoTool = (cache: Cache) => {
   return tool({
     description:
       'Make a todo list for client, returns the todo list with a unique ID',
-    parameters: z
-      .object({
-        title: z.string().describe('The title of the todo item'),
-        description: z.string().describe('The description of the todo item'),
-      })
-      .array(),
-    execute: async (todo): Promise<TodoList> => {
-      const todoListId = randomUUID();
-      const todoList = todo.map(item => ({
+    parameters: z.object({
+      todo: z
+        .object({
+          title: z.string().describe('The title of the todo item'),
+          description: z.string().describe('The description of the todo item'),
+        })
+        .array(),
+    }),
+    execute: async ({ todo }): Promise<TodoList> => {
+      const id = randomUUID();
+      const list = todo.map(item => ({
         id: randomUUID(),
         status: 'pending' as const,
         ...item,
       }));
-      await cache.set(todoListId, todoList);
-      return { todoListId, todoList };
+      const finalTodo: TodoList = { id, list };
+      await cache.set(id, finalTodo);
+      return finalTodo;
     },
   });
 };
@@ -55,7 +58,7 @@ export const createMarkTodoTool = (cache: Cache) => {
       if (!todoList) {
         return 'Todo list not found';
       }
-      const item = todoList.todoList.find((t: any) => t.id === todoId);
+      const item = todoList.list.find((t: any) => t.id === todoId);
       if (!item) {
         return 'Todo item not found';
       }

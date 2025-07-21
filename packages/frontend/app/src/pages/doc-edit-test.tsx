@@ -5,25 +5,29 @@ import { DocEditor } from '@/components/doc-composer/doc-editor';
 import { debounce } from 'lodash';
 import { MarkdownText } from '@/components/ui/markdown';
 
-const useTempDoc = () => {
+const useTempDoc = (defaultMarkdown: string) => {
   const [doc, setDoc] = useState<Store | null>(null);
   useEffect(() => {
-    snapshotHelper.createStore('').then(doc => {
+    snapshotHelper.createStore(defaultMarkdown).then(doc => {
       if (doc) {
         setDoc(doc);
       }
     });
+    // oxlint-disable-next-line exhaustive-deps
   }, []);
   return doc;
 };
 
 export const DocEditTest = () => {
-  const doc = useTempDoc();
-  const [markdown, setMarkdown] = useState('');
+  const [markdown, setMarkdown] = useState(
+    localStorage.getItem('test-markdown') ?? ''
+  );
+  const doc = useTempDoc(markdown);
   const updateMarkdown = useMemo(() => {
     const update = (doc: Store) => {
       snapshotHelper.docToMarkdown(doc).then(markdown => {
         setMarkdown(markdown);
+        localStorage.setItem('test-markdown', markdown);
       });
     };
     return debounce(update, 1000);

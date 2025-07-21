@@ -1,3 +1,4 @@
+import { cn } from '@/lib/utils';
 import { marked } from 'marked';
 import { memo, useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
@@ -42,7 +43,7 @@ export function MarkdownText({
   className?: string;
 }) {
   return (
-    <span className={className}>
+    <span className={cn(className, 'prose')}>
       <MemoizedMarkdown content={text} />
       {showCursor && (
         <span className="inline-block w-2 h-4 bg-current ml-1 animate-pulse" />

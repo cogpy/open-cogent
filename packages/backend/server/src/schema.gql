@@ -527,7 +527,7 @@ type Mutation {
   """Remove user embedding files"""
   removeUserEmbeddingFiles(fileId: String!): Boolean!
   retryAudioTranscription(jobId: String!): TranscriptionResultType
-  sendChangeEmail(callbackUrl: String!, email: String): Boolean!
+  sendChangeEmail(callbackUrl: String!): Boolean!
   sendChangePasswordEmail(callbackUrl: String!): Boolean!
   sendSetPasswordEmail(callbackUrl: String!): Boolean!
   sendTestEmail(config: JSONObject!): Boolean!

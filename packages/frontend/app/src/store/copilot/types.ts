@@ -40,11 +40,8 @@ export interface ChatSessionState extends SessionFlags {
   init(): Promise<void>;
   reload(): Promise<void>;
   sendMessage(options: Omit<SendMessageOptions, 'sessionId'>): Promise<void>;
-  updateMeta(options: UpdateSessionOptions): Promise<void>;
   cleanup(sessionIds: string[]): Promise<void>;
   clearError(): void;
-  /** Load older messages (prepend). Returns when fetch completes. */
-  loadMore(limit?: number): Promise<void>;
 
   /** Toggle pinned state for this session. */
   togglePin(): Promise<void>;

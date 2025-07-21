@@ -4,12 +4,11 @@ import { immer } from 'zustand/middleware/immer';
 
 import type { CopilotClient } from './client';
 import { toTextStream } from './event-source';
-import type { ChatMessage } from './types';
 import type {
+  ChatMessage,
   ChatSessionState,
   SendMessageOptions,
   SessionFlags,
-  UpdateSessionOptions,
 } from './types';
 
 // Helper to apply immer mutation inside async flow
@@ -50,15 +49,16 @@ const withFlag = <K extends keyof SessionFlags>(
 export function createChatSessionStore(params: {
   sessionId: string;
   client: CopilotClient;
+  initialMeta?: unknown | null;
 }): StoreApi<ChatSessionState> {
-  const { sessionId, client } = params;
+  const { sessionId, client, initialMeta } = params;
 
   const store = createStore<ChatSessionState>()(
     immer<ChatSessionState>((set, get) => ({
       /* ---------- Data ---------- */
       sessionId,
-      meta: null,
-      messages: [],
+      meta: (initialMeta as any) ?? null,
+      messages: (initialMeta && (initialMeta as any).messages) ?? [],
 
       /* ---------- Flags ---------- */
       isInitializing: true,
@@ -71,10 +71,25 @@ export function createChatSessionStore(params: {
       init: async () => {
         await withFlag(store, 'isInitializing', async () => {
           const meta = await client.getSession(sessionId);
-          const initialMessages = meta?.messages ?? [];
+          const histories = await client.getHistories(
+            {},
+            {
+              sessionId,
+              withMessages: true,
+            }
+          );
+          const historyEntry = Array.isArray(histories)
+            ? histories.find((h: any) => h.sessionId === sessionId)
+            : undefined;
+
+          const initialMessages =
+            (historyEntry?.messages as any[]) ?? meta?.messages ?? [];
+
           set(state => {
-            state.meta = meta ?? null;
-            state.messages = initialMessages;
+            state.meta = meta ?? state.meta ?? null;
+            if (state.messages.length === 0) {
+              state.messages = initialMessages;
+            }
           });
         });
       },
@@ -165,20 +180,6 @@ export function createChatSessionStore(params: {
         });
       },
 
-      // Fetch older messages by refetching entire session and prepending unseen entries
-      loadMore: async (limit = 50) => {
-        await withFlag(store, 'isLoading', async () => {
-          const meta = await client.getSession(sessionId);
-          const serverMessages = meta?.messages ?? [];
-
-          set(state => {
-            const existingIds = new Set(state.messages.map(m => m.id));
-            const unseen = serverMessages.filter(m => !existingIds.has(m.id));
-            state.messages = [...unseen, ...state.messages];
-          });
-        });
-      },
-
       // Toggle pin status for this session
       togglePin: async () => {
         const pinned = get().meta?.pinned ?? false;
@@ -192,15 +193,6 @@ export function createChatSessionStore(params: {
           const meta = await client.getSession(sessionId);
           set(state => {
             state.meta = meta ?? state.meta;
-          });
-        });
-      },
-
-      updateMeta: async (options: UpdateSessionOptions) => {
-        await withFlag(store, 'isSubmitting', async () => {
-          const updated = await client.updateSession(options);
-          set(state => {
-            state.meta = updated;
           });
         });
       },

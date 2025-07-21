@@ -738,7 +738,6 @@ export interface MutationRetryAudioTranscriptionArgs {
 
 export interface MutationSendChangeEmailArgs {
   callbackUrl: Scalars['String']['input'];
-  email?: InputMaybe<Scalars['String']['input']>;
 }
 
 export interface MutationSendChangePasswordEmailArgs {

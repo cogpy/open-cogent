@@ -49,13 +49,22 @@ export function createChatSessionsStore() {
   const registry = createRefCounter<string, StoreApi<ChatSessionState>>();
 
   return createStore<ChatSessionsState>()(
-    immer<ChatSessionsState>(set => ({
+    immer<ChatSessionsState>((set, get) => ({
       activeId: undefined,
       sessionsCache: {},
 
       acquire: ({ sessionId, client }) => {
+        const currentState = get();
+        const cachedMeta = registry.get(sessionId)
+          ? undefined
+          : (currentState.sessionsCache[sessionId] as unknown | undefined);
+
         return registry.acquire(sessionId, () =>
-          createChatSessionStore({ sessionId, client })
+          createChatSessionStore({
+            sessionId,
+            client,
+            initialMeta: cachedMeta ?? null,
+          })
         );
       },
 

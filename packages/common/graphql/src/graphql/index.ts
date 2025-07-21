@@ -476,10 +476,13 @@ ${paginatedCopilotChatsFragment}`,
 export const getCopilotUserSessionsQuery = {
   id: 'getCopilotUserSessionsQuery' as const,
   op: 'getCopilotUserSessions',
-  query: `query getCopilotUserSessions($pagination: PaginationInput!, $options: QueryChatHistoriesInput) {
+  query: `query getCopilotUserSessions($pagination: PaginationInput!, $messageOrder: ChatHistoryOrder, $withPrompt: Boolean) {
   currentUser {
     copilot {
-      chats(pagination: $pagination, options: $options) {
+      chats(
+        pagination: $pagination
+        options: {pinned: false, messageOrder: $messageOrder, withPrompt: $withPrompt}
+      ) {
         ...PaginatedCopilotChats
       }
     }
@@ -782,6 +785,7 @@ export const getCurrentUserQuery = {
     email
     emailVerified
     avatarUrl
+    hasPassword
   }
 }`,
 };

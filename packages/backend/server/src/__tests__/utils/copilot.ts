@@ -1,4 +1,5 @@
 import {
+  addContextFileMutation,
   ChatHistoryOrder,
   createCopilotContextMutation,
   createCopilotMessageMutation,
@@ -23,7 +24,15 @@ import { TestingApp } from './testing-app';
 
 export const cleanObject = (
   obj: any[] | undefined,
-  condition = ['id', 'status', 'error', 'sessionId', 'createdAt']
+  condition = [
+    'id',
+    'status',
+    'error',
+    'sessionId',
+    'promptName',
+    'createdAt',
+    'updatedAt',
+  ]
 ) =>
   JSON.parse(
     JSON.stringify(obj || [], (k, v) =>
@@ -163,7 +172,6 @@ export async function listContext(
 export async function addContextFile(
   app: TestingApp,
   contextId: string,
-  blobId: string,
   fileName: string,
   content: Buffer
 ): Promise<{ id: string }> {
@@ -173,16 +181,10 @@ export async function addContextFile(
     .field(
       'operations',
       JSON.stringify({
-        query: `
-          mutation addContextFile($options: AddContextFileInput!, $content: Upload!) {
-            addContextFile(content: $content, options: $options) {
-              id
-            }
-          }
-        `,
+        query: addContextFileMutation.query,
         variables: {
           content: null,
-          options: { contextId, blobId },
+          options: { contextId },
         },
       })
     )
@@ -409,7 +411,6 @@ export async function createCopilotMessage(
   app: TestingApp,
   sessionId: string,
   content?: string,
-  attachments?: string[],
   blob?: File,
   blobs?: File[],
   params?: Record<string, string>
@@ -420,7 +421,6 @@ export async function createCopilotMessage(
       options: {
         sessionId,
         content,
-        attachments,
         blob: null,
         blobs: [],
         params,
@@ -595,6 +595,7 @@ type HistoryOptions = {
   skip?: number;
   sessionOrder?: ChatHistoryOrder;
   messageOrder?: ChatHistoryOrder;
+  withMessages?: boolean;
   sessionId?: string;
 };
 
@@ -602,6 +603,7 @@ export async function getHistories(
   app: TestingApp,
   variables: { pagination: PaginationInput; options?: HistoryOptions } = {
     pagination: {},
+    options: { withMessages: true },
   }
 ): Promise<History[]> {
   const res = await app.typedGql({
@@ -612,16 +614,10 @@ export async function getHistories(
   return res.currentUser?.copilot?.chats.edges.map(e => e.node) || [];
 }
 
-export async function getUserSessions(
-  app: TestingApp,
-  variables?: { options?: HistoryOptions }
-): Promise<History[]> {
+export async function getUserSessions(app: TestingApp): Promise<History[]> {
   const res = await app.typedGql({
     query: getCopilotUserSessionsQuery,
-    variables: {
-      pagination: {},
-      options: variables?.options,
-    },
+    variables: { pagination: {} },
   });
 
   return res.currentUser?.copilot?.chats.edges.map(e => e.node) || [];

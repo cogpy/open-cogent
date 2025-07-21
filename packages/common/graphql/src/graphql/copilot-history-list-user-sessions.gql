@@ -2,11 +2,16 @@
 
 query getCopilotUserSessions(
   $pagination: PaginationInput!
-  $options: QueryChatHistoriesInput
+  $messageOrder: ChatHistoryOrder
+  $withPrompt: Boolean
 ) {
   currentUser {
     copilot {
-      chats(pagination: $pagination, options: $options) {
+      chats(pagination: $pagination, options: {
+        pinned: false,
+        messageOrder: $messageOrder,
+        withPrompt: $withPrompt
+      }) {
         ...PaginatedCopilotChats
       }
     }

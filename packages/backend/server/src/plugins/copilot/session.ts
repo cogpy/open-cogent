@@ -402,9 +402,6 @@ export class ChatSessionService {
       await this.unpin(options.userId);
     }
 
-    // validate prompt compatibility with session type
-    this.models.copilotSession.checkSessionPrompt(options, prompt);
-
     return await this.models.copilotSession.createWithPrompt(
       {
         ...options,
@@ -440,7 +437,6 @@ export class ChatSessionService {
         throw new CopilotPromptNotFound({ name: options.promptName });
       }
 
-      this.models.copilotSession.checkSessionPrompt(session, prompt);
       finalData.promptName = prompt.name;
     }
     finalData.pinned = options.pinned;

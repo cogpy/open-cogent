@@ -199,15 +199,6 @@ test('should create message correctly', async t => {
   }
 
   {
-    // with attachment url
-    {
-      const sessionId = await createCopilotSession(app, textPromptName);
-      const messageId = await createCopilotMessage(app, sessionId, undefined, [
-        'http://example.com/cat.jpg',
-      ]);
-      t.truthy(messageId, 'should be able to create message with url link');
-    }
-
     // with attachment
     {
       const sessionId = await createCopilotSession(app, textPromptName);
@@ -217,7 +208,6 @@ test('should create message correctly', async t => {
       const messageId = await createCopilotMessage(
         app,
         sessionId,
-        undefined,
         undefined,
         new File([new Uint8Array(pngData)], '1.png', { type: 'image/png' })
       );
@@ -233,7 +223,6 @@ test('should create message correctly', async t => {
       const messageId = await createCopilotMessage(
         app,
         sessionId,
-        undefined,
         undefined,
         undefined,
         [new File([new Uint8Array(pngData)], '1.png', { type: 'image/png' })]
@@ -325,12 +314,19 @@ test('should be able to chat with special image model', async t => {
 
   Sinon.stub(storage, 'handleRemoteLink').resolvesArg(2);
 
+  const smallestPng =
+    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAIAQMAAAD+wSzIAAAABlBMVEX///+/v7+jQ3Y5AAAADklEQVQI12P4AIX8EAgALgAD/aNpbtEAAAAASUVORK5CYII';
+  const pngData = await fetch(smallestPng).then(res => res.arrayBuffer());
   const testWithModel = async (promptName: string, finalPrompt: string) => {
     const model = prompts.find(p => p.name === promptName)?.model;
     const sessionId = await createCopilotSession(app, promptName);
-    const messageId = await createCopilotMessage(app, sessionId, 'some-tag', [
-      `https://example.com/${promptName}.jpg`,
-    ]);
+
+    const messageId = await createCopilotMessage(
+      app,
+      sessionId,
+      'some-tag',
+      new File([new Uint8Array(pngData)], '1.png', { type: 'image/png' })
+    );
     const ret3 = await chatWithImages(app, sessionId, messageId);
     t.is(
       ret3,
@@ -390,10 +386,13 @@ test('should be able to retry with api', async t => {
     await chatWithText(app, sessionId);
 
     // should only have 1 message
-    const histories = await getHistories(app);
+    const histories = await getHistories(app, {
+      pagination: {},
+      options: { sessionId, withMessages: true },
+    });
     t.snapshot(
       cleanObject(histories),
-      'should be able to list history after retry'
+      'should only have 1 message after retry'
     );
   }
 
@@ -407,10 +406,13 @@ test('should be able to retry with api', async t => {
     await chatWithText(app, sessionId, newMessageId, '', true);
 
     // should only have 1 message
-    const histories = await getHistories(app);
+    const histories = await getHistories(app, {
+      pagination: {},
+      options: { sessionId, withMessages: true },
+    });
     t.snapshot(
       cleanObject(histories),
-      'should be able to list history after retry'
+      'should only have 1 message after retry with new message id'
     );
   }
 
@@ -482,7 +484,7 @@ test('should be able to list history', async t => {
   {
     const histories = await getHistories(app, {
       pagination: {},
-      options: { messageOrder: ChatHistoryOrder.desc },
+      options: { messageOrder: ChatHistoryOrder.desc, withMessages: true },
     });
     t.deepEqual(
       histories.map(h => h.messages.map(m => m.content)),
@@ -493,19 +495,7 @@ test('should be able to list history', async t => {
 });
 
 test('should reject request that user have not permission', async t => {
-  const { app, u1 } = t.context;
-
-  const u2 = await app.createUser();
-
-  // should reject request that user have not permission
-  {
-    await app.login(u2);
-    await t.throwsAsync(
-      getHistories(app),
-      { instanceOf: Error },
-      'should reject request that user have not permission'
-    );
-  }
+  const { app } = t.context;
 
   {
     const sessionId = await createCopilotSession(app, textPromptName);
@@ -520,7 +510,8 @@ test('should reject request that user have not permission', async t => {
       'should able to list history'
     );
 
-    await app.switchUser(u1);
+    const u2 = await app.createUser();
+    await app.login(u2);
     t.deepEqual(
       await getHistories(app),
       [],
@@ -574,7 +565,6 @@ test('should be able to manage context', async t => {
     const { id: fileId } = await addContextFile(
       app,
       contextId,
-      'fileId1',
       'sample.pdf',
       buffer
     );
@@ -775,23 +765,16 @@ test('should list histories for different session types correctly', async t => {
 
   // test for getHistories
   await testHistoryQuery(
-    () => getHistories(app),
-    { sessionId: userSessionId },
-    'user session history'
-  );
-  await testHistoryQuery(
     () => getHistories(app, { pagination: {}, options: { pinned: true } }),
     { sessionId: pinnedSessionId },
     'pinned session history'
   );
-
   // test for getUserSessions
   await testHistoryQuery(
     () => getUserSessions(app),
-    { sessionId: userSessionId, pinned: false },
-    'user-level sessions'
+    { sessionId: userSessionId },
+    'user-level session history'
   );
-
   // test for getPinnedSessions
   await testHistoryQuery(
     () => getPinnedSessions(app),

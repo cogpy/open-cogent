@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { PrismaClient, User } from '@prisma/client';
 import ava, { ExecutionContext, TestFn } from 'ava';
 
-import { CopilotPromptInvalid, CopilotSessionInvalidInput } from '../../base';
+import { CopilotSessionInvalidInput } from '../../base';
 import {
   CopilotSessionModel,
   UpdateChatSessionOptions,
@@ -137,93 +137,6 @@ const createSessionWithMessages = async (
 
 // Simplified update assertion helpers
 type UpdateData = Omit<UpdateChatSessionOptions, 'userId' | 'sessionId'>;
-
-test('should list and filter session type', async t => {
-  const { copilotSession, db } = t.context;
-
-  await createTestPrompts(copilotSession, db);
-
-  await createTestSession(t, { sessionId: randomUUID() });
-  await createTestSession(t, { sessionId: randomUUID(), pinned: true });
-
-  // should list sessions
-  {
-    const userSessions = await copilotSession.list({
-      userId: user.id,
-    });
-
-    t.snapshot(
-      userSessions.map(s => ({ pinned: s.pinned })),
-      'user sessions should include user and pinned sessions'
-    );
-  }
-
-  // should identify session types
-  {
-    // check get session type
-    const testCases = [{ pinned: false }, { pinned: true }];
-
-    const sessionTypeResults = testCases.map(session => ({
-      session,
-      type: copilotSession.getSessionType(session),
-    }));
-
-    t.snapshot(sessionTypeResults, 'session type identification results');
-  }
-});
-
-test('should validate session prompt compatibility', async t => {
-  const { copilotSession, db } = t.context;
-  await createTestPrompts(copilotSession, db);
-
-  const sessionTypes = [
-    { name: 'user', session: { pinned: false } },
-    { name: 'pinned', session: { pinned: true } },
-  ];
-
-  const result = sessionTypes.flatMap(({ name, session }) => [
-    // non-action prompts should work for all session types
-    {
-      sessionType: name,
-      promptType: 'non-action',
-      shouldThrow: false,
-      result: (() => {
-        try {
-          copilotSession.checkSessionPrompt(session, {
-            name: TEST_PROMPTS.NORMAL,
-            action: undefined,
-          });
-          return 'success';
-        } catch (error) {
-          return error instanceof CopilotPromptInvalid
-            ? 'CopilotPromptInvalid'
-            : 'unknown';
-        }
-      })(),
-    },
-    // action prompts should only work for doc session type
-    {
-      sessionType: name,
-      promptType: 'action',
-      shouldThrow: name !== 'doc',
-      result: (() => {
-        try {
-          copilotSession.checkSessionPrompt(session, {
-            name: TEST_PROMPTS.ACTION,
-            action: 'edit',
-          });
-          return 'success';
-        } catch (error) {
-          return error instanceof CopilotPromptInvalid
-            ? 'CopilotPromptInvalid'
-            : 'unknown';
-        }
-      })(),
-    },
-  ]);
-
-  t.snapshot(result, 'session prompt validation results');
-});
 
 test('should pin and unpin sessions', async t => {
   const { copilotSession, db } = t.context;
@@ -418,12 +331,8 @@ test('should handle session queries, ordering, and filtering', async t => {
 
   const sessionIds: string[] = [];
   const sessionConfigs = [
-    { type: 'user', config: { docId: null, pinned: false } },
-    {
-      type: 'pinned',
-      config: { docId: null, pinned: true },
-      withMessages: true,
-    },
+    { type: 'user', config: { pinned: false } },
+    { type: 'pinned', config: { pinned: true }, withMessages: true },
     {
       type: 'action',
       config: { promptName: TEST_PROMPTS.ACTION, promptAction: 'edit' },
@@ -607,21 +516,6 @@ test('should handle session queries, ordering, and filtering', async t => {
       }
     }
   }
-
-  // session type identification
-  const sessionTypeTests = [
-    { docId: null, pinned: false },
-    { docId: undefined, pinned: false },
-    { docId: null, pinned: true },
-    { docId: 'test-doc-id', pinned: false },
-  ];
-
-  const sessionTypeResults = sessionTypeTests.map(session => ({
-    session,
-    type: copilotSession.getSessionType(session),
-  }));
-
-  t.snapshot(sessionTypeResults, 'session type identification results');
 });
 
 test('should cleanup empty sessions correctly', async t => {

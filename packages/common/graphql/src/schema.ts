@@ -1616,7 +1616,8 @@ export type GetCopilotPinnedSessionsQuery = {
 
 export type GetCopilotUserSessionsQueryVariables = Exact<{
   pagination: PaginationInput;
-  options?: InputMaybe<QueryChatHistoriesInput>;
+  messageOrder?: InputMaybe<ChatHistoryOrder>;
+  withPrompt?: InputMaybe<Scalars['Boolean']['input']>;
 }>;
 
 export type GetCopilotUserSessionsQuery = {
@@ -2308,6 +2309,7 @@ export type GetCurrentUserQuery = {
     email: string;
     emailVerified: boolean;
     avatarUrl: string | null;
+    hasPassword: boolean | null;
   } | null;
 };
 

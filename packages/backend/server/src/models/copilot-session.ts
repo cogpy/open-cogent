@@ -4,7 +4,6 @@ import { AiPromptRole, Prisma } from '@prisma/client';
 import { omit } from 'lodash-es';
 
 import {
-  CopilotPromptInvalid,
   CopilotSessionDeleted,
   CopilotSessionInvalidInput,
   CopilotSessionNotFound,
@@ -101,27 +100,6 @@ export class CopilotSessionModel extends BaseModel {
     if (session.pinned) return SessionType.Pinned;
     return SessionType.User;
   }
-
-  checkSessionPrompt(
-    session: Pick<ChatSession, 'pinned'>,
-    prompt: Partial<ChatPrompt>
-  ): boolean {
-    const sessionType = this.getSessionType(session);
-    const { name: promptName, action: promptAction } = prompt;
-
-    // workspace and pinned sessions cannot use action prompts
-    if (
-      [SessionType.User, SessionType.Pinned].includes(sessionType) &&
-      !!promptAction?.trim()
-    ) {
-      throw new CopilotPromptInvalid(
-        `${promptName} are not allowed for ${sessionType} sessions`
-      );
-    }
-
-    return true;
-  }
-
   // NOTE: just for test, remove it after copilot prompt model is ready
   async createPrompt(name: string, model: string, action?: string) {
     await this.db.aiPrompt.create({

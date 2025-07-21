@@ -437,6 +437,7 @@ export class ChatSessionService {
     const finalData: UpdateChatSessionOptions = {
       userId: options.userId,
       sessionId: options.sessionId,
+      metadata: options.metadata,
     };
     if (options.promptName) {
       const prompt = await this.prompt.get(options.promptName);

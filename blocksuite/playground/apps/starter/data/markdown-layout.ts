@@ -348,7 +348,9 @@ export const markdownLayout: InitFn = async (
   doc.load(async () => {
     console.log(`🚀 开始测试 ${testDescription} 功能...`);
     console.log(`📋 测试内容: 富文本语法 + 复杂多列布局 + HTML 组件`);
-    console.log(`💡 功能包括: 加粗、斜体、删除线、高亮、自定义颜色、背景色、嵌套多列布局`);
+    console.log(
+      `💡 功能包括: 加粗、斜体、删除线、高亮、自定义颜色、背景色、嵌套多列布局`
+    );
 
     try {
       // 使用 SimpleLayoutConverter 解析 Markdown 并生成 snapshot

@@ -25,7 +25,7 @@ export const createMakeItRealTool = (
         for (const promptName of [
           'make-it-real:layout-enhancer',
           'make-it-real:doc-composer',
-          'make-it-real:more-html',
+          'make-it-real:formulate-html',
         ]) {
           const prompt = await promptService.get(promptName);
           if (!prompt) {
@@ -35,6 +35,8 @@ export const createMakeItRealTool = (
           if (!provider) {
             throw new Error('Provider not found');
           }
+
+          console.log('content', content);
 
           content = await provider.text(
             { modelId: prompt.model },
@@ -46,8 +48,6 @@ export const createMakeItRealTool = (
           const ret = await saveDoc(content);
           if (ret) return ret;
         }
-
-        return 'Failed to make it real';
       } catch (err: any) {
         logger.error(`Failed to make it real`, err);
         return toolError('Make It Real Failed', err.message ?? String(err));

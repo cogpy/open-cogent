@@ -35,9 +35,7 @@ export const createMakeItRealTool = (
           }
 
           content = await provider.text(
-            {
-              modelId: prompt.model,
-            },
+            { modelId: prompt.model },
             prompt.finish({ content })
           );
         }

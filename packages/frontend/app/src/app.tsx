@@ -7,13 +7,13 @@ import { Route, Routes } from 'react-router';
 import { AuthGuard } from './components/auth-guard';
 import { ChatPage } from './pages/chats/chat';
 import { ChatsDashboard } from './pages/chats/chats-dashboard';
+import { DocEditTest } from './pages/doc-edit-test';
 import { HomePage } from './pages/home';
 import { ChatLayout } from './pages/layout/chat-layout';
 import { LibraryDashboard } from './pages/library-dashboard';
 import { MagicLinkPage } from './pages/magic-link';
 import { SignInPage } from './pages/sign-in';
 import { useSidebarStore } from './store/sidebar';
-import { DocEditTest } from './pages/doc-edit-test';
 
 const ChatsPage = () => {
   return (

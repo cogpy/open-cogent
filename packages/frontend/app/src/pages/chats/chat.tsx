@@ -1,8 +1,8 @@
-import { Button } from '@afk/component';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { type StoreApi, useStore } from 'zustand';
 
+import { ChatInput } from '@/components/chat-input';
 import { useRefCounted } from '@/lib/hooks/use-ref-counted';
 import { copilotClient } from '@/store/copilot/client';
 import { chatSessionsStore } from '@/store/copilot/sessions-instance';
@@ -10,7 +10,12 @@ import type { ChatSessionState } from '@/store/copilot/types';
 
 import { MessageRenderer } from './renderers/message';
 
-const ChatPageImpl = ({ store }: { store: StoreApi<ChatSessionState> }) => {
+const ChatPageImpl = ({
+  store,
+}: {
+  store: StoreApi<ChatSessionState>;
+  referencedDocId?: string;
+}) => {
   const messages = useStore(store, s => s.messages);
   const isSubmitting = useStore(store, s => s.isSubmitting);
   const isStreaming = useStore(store, s => s.isStreaming);
@@ -25,8 +30,8 @@ const ChatPageImpl = ({ store }: { store: StoreApi<ChatSessionState> }) => {
   };
 
   return (
-    <div className="flex flex-col h-full p-4 gap-4">
-      <div className="flex-1 overflow-auto border rounded p-2 flex flex-col gap-2">
+    <div className="flex flex-col justify-center h-full p-4 gap-4 max-w-[900px] mx-auto">
+      <div className="flex-1 overflow-auto rounded p-2 flex flex-col gap-2">
         {messages.map((m, idx) => {
           return (
             <MessageRenderer
@@ -37,18 +42,12 @@ const ChatPageImpl = ({ store }: { store: StoreApi<ChatSessionState> }) => {
           );
         })}
       </div>
-      <div className="flex gap-2">
-        <textarea
-          value={input}
-          placeholder="Type a message..."
-          onChange={e => setInput(e.currentTarget.value)}
-          className="flex-1"
-          rows={2}
-        />
-        <Button onClick={onSend} disabled={isSubmitting || !input.trim()}>
-          Send
-        </Button>
-      </div>
+      <ChatInput
+        input={input}
+        setInput={setInput}
+        onSend={onSend}
+        sending={isSubmitting}
+      />
     </div>
   );
 };
@@ -120,23 +119,11 @@ export const ChatPage = () => {
 
   // Placeholder mode – no session yet
   return (
-    <div className="flex flex-col h-full p-4 gap-4">
-      <div className="flex-1 overflow-auto border rounded p-2 flex flex-col gap-2" />
-      <div className="flex gap-2">
-        <textarea
-          value={input}
-          placeholder="Type a message..."
-          onChange={e => setInput(e.currentTarget.value)}
-          className="flex-1"
-          rows={2}
-        />
-        <Button
-          onClick={onSendPlaceholder}
-          disabled={isCreating || !input.trim()}
-        >
-          {isCreating ? 'Starting...' : 'Send'}
-        </Button>
+    <div className="flex flex-col justify-center h-full p-4 gap-4 max-w-[900px] mx-auto">
+      <div className="text-[26px] font-medium text-center mb-9">
+        What can I help you with?
       </div>
+      <ChatInput input={input} setInput={setInput} onSend={onSendPlaceholder} />
     </div>
   );
 };

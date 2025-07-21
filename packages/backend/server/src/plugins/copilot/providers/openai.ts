@@ -302,6 +302,7 @@ export class OpenAIProvider extends CopilotProvider<OpenAIConfig> {
 
       const modelInstance = this.#instance.responses(model.id);
 
+      const { tools } = await this.getTools(options, model.id);
       const { text } = await generateText({
         model: modelInstance,
         system,
@@ -311,7 +312,7 @@ export class OpenAIProvider extends CopilotProvider<OpenAIConfig> {
         providerOptions: {
           openai: this.getOpenAIOptions(options, model.id),
         },
-        tools: await this.getTools(options, model.id),
+        tools,
         maxSteps: this.MAX_STEPS,
         abortSignal: options.signal,
       });
@@ -514,6 +515,8 @@ export class OpenAIProvider extends CopilotProvider<OpenAIConfig> {
   ) {
     const [system, msgs] = await chatToGPTMessage(messages);
     const modelInstance = this.#instance.responses(model.id);
+
+    const { tools } = await this.getTools(options, model.id);
     const { fullStream } = streamText({
       model: modelInstance,
       system,
@@ -525,7 +528,7 @@ export class OpenAIProvider extends CopilotProvider<OpenAIConfig> {
       providerOptions: {
         openai: this.getOpenAIOptions(options, model.id),
       },
-      tools: await this.getTools(options, model.id),
+      tools,
       maxSteps: this.MAX_STEPS,
       abortSignal: options.signal,
     });

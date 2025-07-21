@@ -43,6 +43,11 @@ import {
   StreamObject,
 } from './types';
 
+type GetToolResult = {
+  toolOneTimeStream?: AsyncGenerator<string>;
+  tools: ToolSet;
+};
+
 @Injectable()
 export abstract class CopilotProvider<C = any> {
   protected readonly logger = new Logger(this.constructor.name);
@@ -130,7 +135,8 @@ export abstract class CopilotProvider<C = any> {
   protected async getTools(
     options: CopilotChatOptions,
     model: string
-  ): Promise<ToolSet> {
+  ): Promise<GetToolResult> {
+    const toolOneTimeStream = undefined;
     const tools: ToolSet = {};
     if (options?.tools?.length) {
       this.logger.debug(`getTools: ${JSON.stringify(options.tools)}`);
@@ -196,9 +202,9 @@ export abstract class CopilotProvider<C = any> {
           }
         }
       }
-      return tools;
+      return { tools, toolOneTimeStream };
     }
-    return tools;
+    return { tools, toolOneTimeStream };
   }
 
   private handleZodError(ret: z.SafeParseReturnType<any, any>) {

@@ -21,15 +21,13 @@ export function MessageRenderer({
   isStreaming = false,
 }: MessageRendererProps) {
   const isAssistant = message.role !== 'user';
-
-  console.log('message', message);
   return (
     <div className={isAssistant ? 'text-left' : 'text-right'}>
       {message.streamObjects?.length ? (
         <ChatContentStreamObjects streamObjects={message.streamObjects} />
       ) : (
         <MarkdownText
-          className="inline-block bg-gray-100 rounded px-2 py-1 max-w-full prose"
+          className="inline-block bg-gray-100 rounded p-3 max-w-full prose rounded-lg"
           text={message.content}
           showCursor={isAssistant && isStreaming}
         />

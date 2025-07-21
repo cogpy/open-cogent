@@ -31,6 +31,7 @@ export const copilotChatHistoryFragment = `fragment CopilotChatHistory on Copilo
   title
   metadata
   tokens
+  metadata
   messages {
     ...CopilotChatMessage
   }
@@ -818,6 +819,7 @@ export const getUserFilesQuery = {
             mimeType
             size
             createdAt
+            metadata
           }
         }
       }

@@ -15,6 +15,7 @@ query getUserFiles($pagination: PaginationInput!) {
             mimeType
             size
             createdAt
+            metadata
           }
         }
       }

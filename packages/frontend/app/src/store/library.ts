@@ -10,15 +10,35 @@ import { create } from 'zustand';
 
 import { gql } from '@/lib/gql';
 
-export type Chat = NonNullable<
-  GetCopilotHistoriesQuery['currentUser']
->['copilot']['chats']['edges'][number]['node'];
-export type Doc = NonNullable<
-  GetUserDocsQuery['currentUser']
->['embedding']['docs']['edges'][number]['node'];
-export type File = NonNullable<
-  GetUserFilesQuery['currentUser']
->['embedding']['files']['edges'][number]['node'];
+export interface GenericLibraryMetadata {
+  collected: boolean;
+}
+export interface ChatMetadata extends GenericLibraryMetadata {}
+export interface DocMetadata extends GenericLibraryMetadata {}
+export interface FileMetadata extends GenericLibraryMetadata {}
+
+type MapMetadata<T, K extends GenericLibraryMetadata> = Omit<T, 'metadata'> & {
+  metadata: K;
+};
+
+export type Chat = MapMetadata<
+  NonNullable<
+    GetCopilotHistoriesQuery['currentUser']
+  >['copilot']['chats']['edges'][number]['node'],
+  ChatMetadata
+>;
+export type Doc = MapMetadata<
+  NonNullable<
+    GetUserDocsQuery['currentUser']
+  >['embedding']['docs']['edges'][number]['node'],
+  DocMetadata
+>;
+export type File = MapMetadata<
+  NonNullable<
+    GetUserFilesQuery['currentUser']
+  >['embedding']['files']['edges'][number]['node'],
+  FileMetadata
+>;
 
 export type AllItem = Array<
   | ({
@@ -40,11 +60,13 @@ export interface LibraryState {
   chatsMap: Record<string, Chat>;
   docsMap: Record<string, Doc>;
   filesMap: Record<string, File>;
+  initialized: boolean;
   refresh: () => Promise<void>;
 }
 
 export const useLibraryStore = create<LibraryState>()((set, get) => ({
   loading: false,
+  initialized: false,
   chats: [],
   docs: [],
   files: [],
@@ -88,21 +110,24 @@ export const useLibraryStore = create<LibraryState>()((set, get) => ({
         files: File[] = [];
       if (chatsRes.status === 'fulfilled') {
         chats =
-          chatsRes.value.currentUser?.copilot.chats.edges.map(
-            edge => edge.node
-          ) ?? [];
+          chatsRes.value.currentUser?.copilot.chats.edges.map(edge => ({
+            ...edge.node,
+            metadata: JSON.parse(edge.node.metadata || '{}') as ChatMetadata,
+          })) ?? [];
       }
       if (docsRes.status === 'fulfilled') {
         docs =
-          docsRes.value.currentUser?.embedding.docs.edges.map(
-            edge => edge.node
-          ) ?? [];
+          docsRes.value.currentUser?.embedding.docs.edges.map(edge => ({
+            ...edge.node,
+            metadata: JSON.parse(edge.node.metadata || '{}') as DocMetadata,
+          })) ?? [];
       }
       if (filesRes.status === 'fulfilled') {
         files =
-          filesRes.value.currentUser?.embedding.files.edges.map(
-            edge => edge.node
-          ) ?? [];
+          filesRes.value.currentUser?.embedding.files.edges.map(edge => ({
+            ...edge.node,
+            metadata: JSON.parse(edge.node.metadata || '{}') as FileMetadata,
+          })) ?? [];
       }
 
       set({ docs, chats, files });
@@ -132,6 +157,7 @@ export const useLibraryStore = create<LibraryState>()((set, get) => ({
           );
         }) as unknown as AllItem[],
       });
+      set({ initialized: true });
     } catch (error) {
       console.error(error);
     } finally {

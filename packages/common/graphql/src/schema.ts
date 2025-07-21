@@ -2311,6 +2311,7 @@ export type GetUserFilesQuery = {
             mimeType: string;
             size: number;
             createdAt: string;
+            metadata: string;
           };
         }>;
       };

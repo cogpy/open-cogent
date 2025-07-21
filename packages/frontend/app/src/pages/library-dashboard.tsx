@@ -1,15 +1,29 @@
 import {
   Button,
+  IconButton,
+  Loading,
   Masonry,
   type MasonryGroup,
   type MasonryItem,
 } from '@afk/component';
-import { FileIcon, PageIcon } from '@blocksuite/icons/rc';
+import {
+  updateCopilotSessionMutation,
+  updateUserDocsMutation,
+  updateUserFilesMutation,
+} from '@afk/graphql';
+import {
+  FavoritedIcon,
+  FavoriteIcon,
+  FileIcon,
+  PageIcon,
+} from '@blocksuite/icons/rc';
+import { cssVarV2 } from '@toeverything/theme/v2';
 import dayjs from 'dayjs';
-import { useEffect, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
 
 import { ChatIcon } from '@/icons/chat';
+import { gql } from '@/lib/gql';
 import { cn } from '@/lib/utils';
 import { useLibraryStore } from '@/store/library';
 import { useSidebarStore } from '@/store/sidebar';
@@ -66,9 +80,64 @@ const DateGroupHeader: MasonryGroup['Component'] = ({ groupId, itemCount }) => {
   );
 };
 
+const FavoriteAction = ({
+  collected,
+  setToggleAsync,
+}: {
+  collected: boolean;
+  setToggleAsync: (toggle: boolean) => Promise<void>;
+}) => {
+  const [toggling, setToggling] = useState(false);
+
+  const toggleCollect = useCallback(() => {
+    setToggling(true);
+    setToggleAsync(!collected).finally(() => {
+      setToggling(false);
+    });
+  }, [collected, setToggleAsync]);
+
+  return (
+    <IconButton
+      onClick={e => {
+        e.preventDefault();
+        e.stopPropagation();
+        toggleCollect();
+      }}
+      loading={toggling}
+    >
+      {collected ? (
+        <FavoritedIcon style={{ color: cssVarV2('button/primary') }} />
+      ) : (
+        <FavoriteIcon />
+      )}
+    </IconButton>
+  );
+};
+
 const ChatListItem: MasonryItem['Component'] = ({ itemId }) => {
-  const { chatsMap } = useLibraryStore();
+  const { chatsMap, refresh } = useLibraryStore();
   const chat = chatsMap[itemId];
+  const collected = chat?.metadata?.collected;
+
+  const toggleCollect = useCallback(
+    async (value: boolean) => {
+      await gql({
+        query: updateCopilotSessionMutation,
+        variables: {
+          options: {
+            sessionId: itemId,
+            metadata: JSON.stringify({
+              ...chat?.metadata,
+              collected: value,
+            }),
+          },
+        },
+      });
+      refresh();
+    },
+    [chat?.metadata, itemId, refresh]
+  );
+
   return (
     <Link to={`/chats/${itemId}`}>
       <div className={styles.listItem}>
@@ -76,7 +145,12 @@ const ChatListItem: MasonryItem['Component'] = ({ itemId }) => {
           <ChatIcon />
         </div>
         <div className={styles.listItemTitle}>{chat?.title}</div>
-        <div>TODO: actions</div>
+        <div>
+          <FavoriteAction
+            collected={collected}
+            setToggleAsync={toggleCollect}
+          />
+        </div>
       </div>
     </Link>
   );
@@ -85,13 +159,35 @@ const ChatListItem: MasonryItem['Component'] = ({ itemId }) => {
 const DocListItem: MasonryItem['Component'] = ({ itemId }) => {
   const { docsMap } = useLibraryStore();
   const doc = docsMap[itemId];
+
+  const toggleCollect = useCallback(
+    async (value: boolean) => {
+      await gql({
+        query: updateUserDocsMutation,
+        variables: {
+          docId: itemId,
+          metadata: JSON.stringify({
+            ...doc?.metadata,
+            collected: value,
+          }),
+        },
+      });
+    },
+    [doc?.metadata, itemId]
+  );
+
   return (
     <div className={styles.listItem}>
       <div className={styles.listItemIcon}>
         <PageIcon />
       </div>
       <div className={styles.listItemTitle}>{doc.title}</div>
-      <div>TODO: actions</div>
+      <div>
+        <FavoriteAction
+          collected={doc?.metadata?.collected}
+          setToggleAsync={toggleCollect}
+        />
+      </div>
     </div>
   );
 };
@@ -99,13 +195,35 @@ const DocListItem: MasonryItem['Component'] = ({ itemId }) => {
 const FileListItem: MasonryItem['Component'] = ({ itemId }) => {
   const { filesMap } = useLibraryStore();
   const file = filesMap[itemId];
+
+  const toggleCollect = useCallback(
+    async (value: boolean) => {
+      await gql({
+        query: updateUserFilesMutation,
+        variables: {
+          fileId: itemId,
+          metadata: JSON.stringify({
+            ...file?.metadata,
+            collected: value,
+          }),
+        },
+      });
+    },
+    [file?.metadata, itemId]
+  );
+
   return (
     <div className={styles.listItem}>
       <div className={styles.listItemIcon}>
         <FileIcon />
       </div>
       <div className={styles.listItemTitle}>{file.fileName}</div>
-      <div>TODO: actions</div>
+      <div>
+        <FavoriteAction
+          collected={file?.metadata?.collected}
+          setToggleAsync={toggleCollect}
+        />
+      </div>
     </div>
   );
 };
@@ -123,7 +241,7 @@ const getComponentByType = (type: string) =>
 
 export const LibraryDashboard = () => {
   const { open } = useSidebarStore();
-  const { chats, docs, files, refresh } = useLibraryStore();
+  const { chats, docs, files, initialized } = useLibraryStore();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
@@ -169,7 +287,12 @@ export const LibraryDashboard = () => {
         height: 24,
         Component: DateGroupHeader,
         items: items.map((item: any) => ({
-          id: item.id,
+          id:
+            type === 'chats'
+              ? item.sessionId
+              : type === 'docs'
+                ? item.docId
+                : item.fileId,
           height: 42,
           Component: getComponentByType(type),
         })),
@@ -178,9 +301,13 @@ export const LibraryDashboard = () => {
 
   const isEmpty = masonryItems.length === 0;
 
-  useEffect(() => {
-    refresh();
-  }, [refresh]);
+  if (!initialized) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <Loading />
+      </div>
+    );
+  }
 
   return (
     <div className="h-full flex flex-col">

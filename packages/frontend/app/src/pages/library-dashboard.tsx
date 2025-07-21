@@ -7,7 +7,7 @@ import {
 import { FileIcon, PageIcon } from '@blocksuite/icons/rc';
 import dayjs from 'dayjs';
 import { useEffect, useMemo } from 'react';
-import { useNavigate, useSearchParams } from 'react-router';
+import { Link, useNavigate, useSearchParams } from 'react-router';
 
 import { ChatIcon } from '@/icons/chat';
 import { cn } from '@/lib/utils';
@@ -70,13 +70,15 @@ const ChatListItem: MasonryItem['Component'] = ({ itemId }) => {
   const { chatsMap } = useLibraryStore();
   const chat = chatsMap[itemId];
   return (
-    <div className={styles.listItem}>
-      <div className={styles.listItemIcon}>
-        <ChatIcon />
+    <Link to={`/chats/${itemId}`}>
+      <div className={styles.listItem}>
+        <div className={styles.listItemIcon}>
+          <ChatIcon />
+        </div>
+        <div className={styles.listItemTitle}>{chat?.title}</div>
+        <div>TODO: actions</div>
       </div>
-      <div className={styles.listItemTitle}>{chat.title}</div>
-      <div>TODO: actions</div>
-    </div>
+    </Link>
   );
 };
 
@@ -102,7 +104,7 @@ const FileListItem: MasonryItem['Component'] = ({ itemId }) => {
       <div className={styles.listItemIcon}>
         <FileIcon />
       </div>
-      <div className={styles.listItemTitle}>{file.title}</div>
+      <div className={styles.listItemTitle}>{file.fileName}</div>
       <div>TODO: actions</div>
     </div>
   );
@@ -144,10 +146,16 @@ export const LibraryDashboard = () => {
           height: 24,
           Component: DateGroupHeader,
           items: items.map((item: any) => {
+            const type = item._type;
             return {
-              id: item.id,
+              id:
+                type === 'chats'
+                  ? item.sessionId
+                  : type === 'docs'
+                    ? item.docId
+                    : item.fileId,
               height: 42,
-              Component: getComponentByType(item._type),
+              Component: getComponentByType(type),
             };
           }),
         }));

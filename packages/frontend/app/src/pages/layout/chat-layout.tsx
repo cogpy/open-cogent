@@ -1,25 +1,30 @@
 import { ScrollableContainer } from '@afk/component';
 import {
-  BookmarkIcon,
+  AllDocsIcon,
   EditIcon,
   FileIcon,
   PageIcon,
 } from '@blocksuite/icons/rc';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Link, Outlet } from 'react-router';
 
 import { UserInfo } from '@/components/sidebar/user-info';
 import { ChatIcon } from '@/icons/chat';
 import { cn } from '@/lib/utils';
-import { useLibraryStore } from '@/store/library';
+import {
+  type Chat,
+  type Doc,
+  type File,
+  useLibraryStore,
+} from '@/store/library';
 
 import * as styles from './chat-layout.css';
 import { SidebarLayout } from './sidebar-layout';
 
 const filterCollected = (items: any[]) =>
-  items.filter(item => item.metadata.collected);
+  items.filter(item => item?.metadata?.collected);
 
-const ChatItem = ({ chat }: { chat: any }) => {
+const ChatItem = ({ chat }: { chat: Chat }) => {
   return (
     <li className={styles.listItem}>
       <ChatIcon className={styles.listItemIcon} />
@@ -28,7 +33,7 @@ const ChatItem = ({ chat }: { chat: any }) => {
   );
 };
 
-const DocItem = ({ doc }: { doc: any }) => {
+const DocItem = ({ doc }: { doc: Doc }) => {
   return (
     <li className={styles.listItem}>
       <PageIcon className={styles.listItemIcon} />
@@ -37,22 +42,22 @@ const DocItem = ({ doc }: { doc: any }) => {
   );
 };
 
-const FileItem = ({ file }: { file: any }) => {
+const FileItem = ({ file }: { file: File }) => {
   return (
     <li className={styles.listItem}>
       <FileIcon className={styles.listItemIcon} />
-      <div className={styles.listItemLabel}>{file.title}</div>
+      <div className={styles.listItemLabel}>{file.fileName}</div>
     </li>
   );
 };
 
 const SidebarContent = () => {
-  const { allItems } = useLibraryStore();
+  const { allItems, refresh } = useLibraryStore();
   const collectedItems = useMemo(() => filterCollected(allItems), [allItems]);
 
-  // const [expandChats, setExpandChats] = useState(true);
-  // const [expandDocs, setExpandDocs] = useState(true);
-  // const [expandFiles, setExpandFiles] = useState(true);
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
 
   return (
     <div className="size-full flex flex-col">
@@ -67,17 +72,19 @@ const SidebarContent = () => {
         </Link>
         <Link to="/library">
           <li className={styles.hoverableItem}>
-            <BookmarkIcon className={styles.hoverableIcon} />
+            <AllDocsIcon className={styles.hoverableIcon} />
             <div className={styles.hoverableLabel}>Library</div>
           </li>
         </Link>
       </div>
 
       {/* scroll area */}
-      <div className="flex-1 h-0 mt-2">
-        <ScrollableContainer className="px-2">
-          {/* Chats */}
-          {/* <section className="mb-2">
+      <h3 className={cn(styles.sectionTitle, 'mb-2', 'pt-2 px-4')}>
+        Favorites
+      </h3>
+      <ScrollableContainer className="px-2 flex-1 h-0">
+        {/* Chats */}
+        {/* <section className="mb-2">
           <h3
             className={cn(styles.sectionTitle, 'mb-2')}
             onClick={() => setExpandChats(prev => !prev)}
@@ -93,23 +100,24 @@ const SidebarContent = () => {
             </ul>
           ) : null}
         </section> */}
-          <ul>
-            <h3 className={cn(styles.sectionTitle, 'mb-2')}>Favorites</h3>
-            {collectedItems.map(item => {
-              if (item.type === 'chat') {
-                return <ChatItem chat={item} key={item.id} />;
-              }
-              if (item.type === 'doc') {
-                return <DocItem doc={item} key={item.id} />;
-              }
-              if (item.type === 'file') {
-                return <FileItem file={item} key={item.id} />;
-              }
-              return null;
-            })}
-          </ul>
-        </ScrollableContainer>
-      </div>
+        <ul>
+          {collectedItems.length === 0 ? (
+            <span className="text-xs text-gray-400 px-2">No favorites yet</span>
+          ) : null}
+          {collectedItems.map(item => {
+            if (item.type === 'chat') {
+              return <ChatItem chat={item} key={item.id} />;
+            }
+            if (item.type === 'doc') {
+              return <DocItem doc={item} key={item.id} />;
+            }
+            if (item.type === 'file') {
+              return <FileItem file={item} key={item.id} />;
+            }
+            return null;
+          })}
+        </ul>
+      </ScrollableContainer>
     </div>
   );
 };

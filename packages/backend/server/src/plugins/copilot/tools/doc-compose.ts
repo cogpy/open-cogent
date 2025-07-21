@@ -40,7 +40,7 @@ export const buildSaveDocGetter = (
       options.session,
       { title: finalTitle, content }
     );
-    return { docId, title, content };
+    return { docId, title: finalTitle, content };
   };
   return saveDoc;
 };

@@ -4,6 +4,7 @@ import type { StreamObject } from '@afk/graphql';
 import { MarkdownText } from '@/components/ui/markdown';
 import { DocCard } from '@/components/doc-panel/doc-card';
 import { MakeItRealResult } from './make-it-real-result';
+import { WebSearchResult } from './web-search-result';
 
 interface ChatContentStreamObjectsProps {
   streamObjects: StreamObject[];
@@ -57,6 +58,19 @@ export function ChatContentStreamObjects({
                   key={idx}
                   content={obj.result.content}
                   originalContent={obj.result.originalContent}
+                />
+              );
+            }
+
+            // Special handling for web_search_exa tool
+            if (obj.toolName === 'web_search_exa' && obj.result) {
+              const results =
+                obj.result.results || obj.result.data || obj.result;
+              return (
+                <WebSearchResult
+                  key={idx}
+                  results={Array.isArray(results) ? results : [results]}
+                  query={obj.result.query}
                 />
               );
             }

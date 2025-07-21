@@ -31,7 +31,7 @@ export const MemoizedMarkdown = memo(({ content }: { content: string }) => {
 MemoizedMarkdown.displayName = 'MemoizedMarkdown';
 
 // Typewriter text with markdown support
-export function TypewriterText({
+export function MarkdownText({
   text,
   showCursor = false,
   className,

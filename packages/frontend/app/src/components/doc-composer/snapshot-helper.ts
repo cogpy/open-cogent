@@ -104,7 +104,7 @@ const docToMarkdown = async (doc: Store) => {
 };
 
 const createStore = async (markdown?: string): Promise<Store | undefined> => {
-  if (markdown) {
+  if (markdown !== undefined) {
     return markDownToDoc(markdown);
   } else {
     const collection = getTempWorkspace();

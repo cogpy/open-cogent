@@ -1,4 +1,4 @@
-import { MemoizedMarkdown, TypewriterText } from '@/components/ui/markdown';
+import { MemoizedMarkdown, MarkdownText } from '@/components/ui/markdown';
 import type { ChatMessage } from '@/store/copilot/types';
 
 interface MessageRendererProps {
@@ -24,7 +24,7 @@ export function MessageRenderer({
     <div className={isAssistant ? 'text-left' : 'text-right'}>
       <span className="inline-block bg-gray-100 dark:bg-gray-700 rounded px-2 py-1 max-w-full prose dark:prose-invert">
         {isAssistant && isStreaming ? (
-          <TypewriterText text={message.content} showCursor />
+          <MarkdownText text={message.content} showCursor />
         ) : (
           <MemoizedMarkdown content={message.content} />
         )}

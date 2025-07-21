@@ -4,9 +4,9 @@ import type { StreamObject } from '@afk/graphql';
 import { DocCard } from '@/components/doc-panel/doc-card';
 import { MessageCard } from '@/components/ui/card/message-card';
 import { MarkdownText } from '@/components/ui/markdown';
-
 import { MakeItRealResult } from './make-it-real-result';
 import { WebSearchResult } from './web-search-result';
+import { TodoListResult } from './todo-list-result';
 
 interface ChatContentStreamObjectsProps {
   streamObjects: StreamObject[];
@@ -83,6 +83,14 @@ export function ChatContentStreamObjects({
                   query={obj.result.query}
                 />
               );
+            }
+
+            // Specialized handling for todo list
+            if (
+              ['todo_list', 'mark_todo'].includes(obj.toolName ?? '') &&
+              obj.result?.list
+            ) {
+              return <TodoListResult key={idx} result={obj.result} />;
             }
 
             // Check if result contains document content (markdown-like text)

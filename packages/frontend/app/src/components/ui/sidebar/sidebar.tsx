@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 import { useSidebarStore } from '@/store/sidebar';
 
 import { type SidedOptions, sidePick } from './side-pick';
-import * as styles from './sidebar.css.ts';
+import * as styles from './sidebar.css';
 
 export type AppSidebarProps = SidedOptions<'inset', number> &
   HTMLAttributes<HTMLDivElement>;

@@ -1,6 +1,7 @@
 import './index.css';
 import '@afk/component/theme';
 
+import { useEffect } from 'react';
 import { Route, Routes } from 'react-router';
 
 import { AuthGuard } from './components/auth-guard';
@@ -11,6 +12,7 @@ import { ChatLayout } from './pages/layout/chat-layout';
 import { LibraryDashboard } from './pages/library-dashboard';
 import { MagicLinkPage } from './pages/magic-link';
 import { SignInPage } from './pages/sign-in';
+import { useSidebarStore } from './store/sidebar';
 
 const ChatsPage = () => {
   return (
@@ -35,6 +37,11 @@ const LibraryPage = () => {
 };
 
 function App() {
+  const { open } = useSidebarStore();
+  useEffect(() => {
+    document.body.classList.toggle('sidebar-open', open);
+  }, [open]);
+
   return (
     <Routes>
       <Route path="/sign-in" element={<SignInPage />} />

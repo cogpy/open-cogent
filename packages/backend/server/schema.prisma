@@ -33,6 +33,7 @@ model User {
   createdAiJobs     AiJobs[]           @relation("createdAiJobs")
   settings          UserSettings?
   AiUserFiles       AiUserFiles[]
+  AiUserDocs        AiUserDocs[]
 
   @@index([email])
   @@map("users")
@@ -190,17 +191,17 @@ model AiSessionMessage {
 }
 
 model AiSession {
-  id              String    @id @default(uuid()) @db.VarChar
-  userId          String    @map("user_id") @db.VarChar
-  promptName      String    @map("prompt_name") @db.VarChar(32)
-  promptAction    String?   @default("") @map("prompt_action") @db.VarChar(32)
-  pinned          Boolean   @default(false)
-  title           String?   @db.VarChar
-  messageCost     Int       @default(0)
-  tokenCost       Int       @default(0)
-  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
-  deletedAt       DateTime? @map("deleted_at") @db.Timestamptz(3)
+  id           String    @id @default(uuid()) @db.VarChar
+  userId       String    @map("user_id") @db.VarChar
+  promptName   String    @map("prompt_name") @db.VarChar(32)
+  promptAction String?   @default("") @map("prompt_action") @db.VarChar(32)
+  pinned       Boolean   @default(false)
+  title        String?   @db.VarChar
+  messageCost  Int       @default(0)
+  tokenCost    Int       @default(0)
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+  deletedAt    DateTime? @map("deleted_at") @db.Timestamptz(3)
 
   user     User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   prompt   AiPrompt           @relation(fields: [promptName], references: [name], onDelete: Cascade)
@@ -243,6 +244,41 @@ model AiContextEmbedding {
   @@unique([contextId, fileId, chunk])
   @@index([embedding], map: "ai_context_embeddings_idx")
   @@map("ai_context_embeddings")
+}
+
+model AiUserDocs {
+  docId     String @default(uuid()) @map("doc_id") @db.VarChar
+  userId    String @map("user_id") @db.VarChar
+  // always create from exists session
+  sessionId String @map("session_id") @db.VarChar
+  title     String @db.VarChar
+  content   String @db.VarChar
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  embeddings AiUserDocEmbedding[]
+
+  @@id([userId, docId])
+  @@map("ai_user_docs")
+}
+
+model AiUserDocEmbedding {
+  userId    String                      @map("user_id") @db.VarChar
+  docId     String                      @map("doc_id") @db.VarChar
+  // a document can be divided into multiple chunks and embedded separately.
+  chunk     Int                         @db.Integer
+  content   String                      @db.VarChar
+  embedding Unsupported("vector(1024)")
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  doc AiUserDocs @relation(fields: [userId, docId], references: [userId, docId], onDelete: Cascade)
+
+  @@id([userId, docId, chunk])
+  @@index([embedding], map: "ai_workspace_doc_embeddings_idx")
+  @@map("ai_user_doc_embeddings")
 }
 
 model AiUserFiles {

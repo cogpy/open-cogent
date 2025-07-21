@@ -64,7 +64,7 @@ export const createMarkTodoTool = (cache: Cache) => {
       }
       item.status = status;
       await cache.set(todoListId, todoList);
-      return { success: true, item };
+      return { success: true, todoListId, item };
     },
   });
 };

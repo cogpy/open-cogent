@@ -62,6 +62,8 @@ export const PromptConfigStrictSchema = z.object({
     .enum([
       'codeArtifact',
       'conversationSummary',
+      // artifact tools
+      'docCompose',
       // work with morph
       'docEdit',
       // work with indexer
@@ -69,6 +71,8 @@ export const PromptConfigStrictSchema = z.object({
       'docKeywordSearch',
       // work with embeddings
       'docSemanticSearch',
+      'todoList',
+      'markTodo',
       // work with exa/model internal tools
       'webSearch',
       // artifact tools

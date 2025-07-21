@@ -4,6 +4,7 @@ import { Tool, ToolSet } from 'ai';
 import { z } from 'zod';
 
 import {
+  Cache,
   Config,
   CopilotPromptInvalid,
   CopilotProviderNotSupported,
@@ -20,6 +21,8 @@ import {
   createExaCrawlTool,
   createExaSearchTool,
   createMakeItRealTool,
+  createMarkTodoTool,
+  createTodoTool,
 } from '../tools';
 import { CopilotProviderFactory } from './factory';
 import {
@@ -50,6 +53,7 @@ export abstract class CopilotProvider<C = any> {
   @Inject() protected readonly AFFiNEConfig!: Config;
   @Inject() protected readonly factory!: CopilotProviderFactory;
   @Inject() protected readonly moduleRef!: ModuleRef;
+  @Inject() protected readonly cache!: Cache;
 
   get config(): C {
     return this.AFFiNEConfig.copilot.providers[this.type] as C;
@@ -167,6 +171,14 @@ export abstract class CopilotProvider<C = any> {
             tools.doc_semantic_search = createDocSemanticSearchTool(
               searchDocs.bind(null, options)
             );
+            break;
+          }
+          case 'todoList': {
+            tools.todo_list = createTodoTool(this.cache);
+            break;
+          }
+          case 'markTodo': {
+            tools.mark_todo = createMarkTodoTool(this.cache);
             break;
           }
           case 'webSearch': {

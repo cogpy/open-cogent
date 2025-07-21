@@ -14,10 +14,6 @@ export const ColumnBlockSchema = defineBlockSchema({
   flavour: 'affine:column',
   props: (): ColumnProps => ({
     width: 50, // 默认 50% 宽度
-    'meta:createdAt': undefined,
-    'meta:createdBy': undefined,
-    'meta:updatedAt': undefined,
-    'meta:updatedBy': undefined,
   }),
   metadata: {
     version: 1,

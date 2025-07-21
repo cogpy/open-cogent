@@ -17,6 +17,7 @@ export {
   InlineDeltaToHtmlAdapterMatcherIdentifier,
 } from './html';
 export * from './image';
+export { SimpleLayoutConverter } from './markdown';
 export {
   BlockMarkdownAdapterExtension,
   type BlockMarkdownAdapterMatcher,

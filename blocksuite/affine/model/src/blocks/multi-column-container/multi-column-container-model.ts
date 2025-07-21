@@ -10,18 +10,11 @@ import type { ColumnBlockModel } from '../column/column-model';
 
 export type MultiColumnContainerProps = {
   // 可以添加容器级别的属性，比如间距、对齐方式等
-  gap?: number; // 列间距
 } & BlockMeta;
 
 export const MultiColumnContainerBlockSchema = defineBlockSchema({
   flavour: 'affine:multi-column-container',
-  props: (): MultiColumnContainerProps => ({
-    gap: 16, // 默认 16px 间距
-    'meta:createdAt': undefined,
-    'meta:createdBy': undefined,
-    'meta:updatedAt': undefined,
-    'meta:updatedBy': undefined,
-  }),
+  props: (): MultiColumnContainerProps => ({}),
   metadata: {
     version: 1,
     role: 'content',

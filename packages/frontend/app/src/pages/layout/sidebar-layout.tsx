@@ -22,7 +22,9 @@ export const SidebarLayout = ({
       </AppSidebar>
 
       {/* main */}
-      <main className="w-0 flex-1">{children}</main>
+      <main className="w-0 flex-1 bg-white rounded-[8px] overflow-hidden">
+        {children}
+      </main>
 
       {/* actions */}
       <IconButton

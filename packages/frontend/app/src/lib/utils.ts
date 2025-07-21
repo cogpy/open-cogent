@@ -12,7 +12,6 @@ export function text(
   fontWeight: number, 
   options: {
     ellipsis?: boolean;
-    color?: string;
   } = {}
 ) {
   const style = {

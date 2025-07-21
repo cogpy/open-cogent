@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 
-import { RowInput } from '@afk/component';
+import { Button, RowInput } from '@afk/component';
 import { GoogleDuotoneIcon } from '@blocksuite/icons/rc';
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -10,6 +10,8 @@ import { cn } from '@/lib/utils';
 import { useAuthStore } from '../store/auth';
 import { AuthLayout } from './layout/auth-layout';
 import * as styles from './sign-in.css';
+
+import ReactCodeInput from 'react-verification-code-input';
 
 type Step = 'methodSelect' | 'password' | 'magic';
 
@@ -146,6 +148,7 @@ export const SignInPage: React.FC = () => {
               autoComplete="email"
               required
               autoFocus
+              onEnter={() => void handleEmailContinue()}
             />
             <button
               onClick={() => void handleEmailContinue()}
@@ -202,34 +205,39 @@ export const SignInPage: React.FC = () => {
 
         {step === 'magic' && (
           <>
-            <h2 className="text-xl font-bold mb-2 text-center">
-              Enter 6-digit code
-            </h2>
-            <p className="text-sm text-gray-700 mb-4">
-              We emailed a code to <strong>{email}</strong>
+            <h2 className={styles.title}>Verify your email</h2>
+            <p className={styles.hit}>
+              We've sent to a security code to <br />
+              <span className={styles.hitEmail}>{email}</span>, please enter the
+              code
             </p>
-            <input
-              type="text"
-              maxLength={6}
-              className="w-full px-3 py-2 border rounded mb-3 tracking-widest text-center"
-              value={otp}
-              onChange={e => setOtp(e.target.value)}
-            />
+            <div className="flex justify-center mt-8">
+              <ReactCodeInput
+                className={styles.codeInput}
+                values={otp.split('')}
+                onChange={setOtp}
+                fieldWidth={43}
+                fieldHeight={43}
+                autoFocus
+              />
+            </div>
             {error && <p className="text-sm text-red-600 mb-2">{error}</p>}
+            {/* resend code */}
+            <div className="flex justify-center mt-4">
+              <Button onClick={() => void resendOtp()} disabled={cooldown > 0}>
+                {cooldown > 0 ? `Resend in ${cooldown}s` : 'Resend code'}
+              </Button>
+            </div>
+
             <button
               onClick={() => void handleVerifyOtp()}
-              className="w-full py-2 px-4 bg-indigo-600 text-white rounded disabled:opacity-50"
+              className={cn(styles.submit, 'mt-8')}
               disabled={otp.length !== 6 || isLoading}
+              aria-disabled={otp.length !== 6 || isLoading}
             >
               Verify & Sign in
             </button>
-            <button
-              onClick={() => void resendOtp()}
-              disabled={cooldown > 0}
-              className="mt-3 w-full text-sm text-indigo-600 hover:underline disabled:opacity-50"
-            >
-              {cooldown > 0 ? `Resend in ${cooldown}s` : 'Resend code'}
-            </button>
+
             {hasPassword && (
               <button
                 onClick={() => setStep('password')}
@@ -238,6 +246,13 @@ export const SignInPage: React.FC = () => {
                 Use password instead
               </button>
             )}
+
+            <div
+              onClick={() => setStep('methodSelect')}
+              className={cn('mt-4', styles.oauthButton)}
+            >
+              Back
+            </div>
           </>
         )}
       </div>

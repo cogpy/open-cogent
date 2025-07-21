@@ -19,10 +19,20 @@ export const title = style({
   fontSize: 32,
   fontWeight: 600,
   lineHeight: '39px',
-  marginBottom: 32,
   letterSpacing: -0.32,
   color: '#000',
   textAlign: 'center',
+});
+
+export const hit = style({
+  ...text(15, 24, 400),
+  color: cssVarV2.text.secondary,
+  textAlign: 'center',
+  marginTop: 16,
+});
+export const hitEmail = style({
+  color: cssVarV2.text.primary,
+  fontWeight: 500,
 });
 
 export const item = style({
@@ -39,6 +49,7 @@ export const input = style([
   {
     borderColor: '#000',
     padding: '9px 16px',
+    marginTop: 32,
   },
 ]);
 
@@ -79,7 +90,8 @@ export const line = style({
 export const orText = style({
   lineHeight: '22px',
   padding: '0px 8px',
-  ...text(14, 22, 500, { color: '#929292' }),
+  ...text(14, 22, 500),
+  color: '#929292',
   flexShrink: 0,
 });
 
@@ -88,7 +100,8 @@ export const oauthButton = style([
   {
     cursor: 'pointer',
     border: `1px solid ${cssVarV2.layer.insideBorder.border}`,
-    ...text(14, 22, 500, { color: '#000' }),
+    ...text(14, 22, 500),
+    color: '#000',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -101,4 +114,14 @@ export const oauthButton = style([
 
 globalStyle(`${oauthButton} svg`, {
   fontSize: 24,
+});
+
+export const codeInput = style({});
+globalStyle(`${codeInput} input`, {
+  borderColor: `${cssVarV2.layer.insideBorder.border} !important`,
+  fontFamily: 'inherit !important',
+});
+globalStyle(`${codeInput} input:focus`, {
+  borderColor: `#000 !important`,
+  caretColor: `#000 !important`,
 });

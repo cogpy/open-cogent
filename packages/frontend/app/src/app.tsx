@@ -26,12 +26,10 @@ const ChatsPage = () => {
 const LibraryPage = () => {
   return (
     <Routes>
-      <AuthGuard>
-        <Route element={<ChatLayout />}>
-          <Route path="/" element={<LibraryDashboard />} />
-          <Route path="/:id" element={<div>Document</div>} />
-        </Route>
-      </AuthGuard>
+      <Route element={<ChatLayout />}>
+        <Route path="/" element={<LibraryDashboard />} />
+        <Route path="/:id" element={<div>Document</div>} />
+      </Route>
     </Routes>
   );
 };

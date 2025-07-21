@@ -13,6 +13,7 @@ query getUserDocs($pagination: PaginationInput!) {
             docId
             title
             content
+            metadata
             createdAt
             updatedAt
           }

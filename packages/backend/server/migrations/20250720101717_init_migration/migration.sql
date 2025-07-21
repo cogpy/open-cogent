@@ -152,6 +152,8 @@ CREATE TABLE "ai_sessions_metadata" (
     "created_at" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "deleted_at" TIMESTAMPTZ(3),
+    "doc_id" VARCHAR,
+    "metadata" VARCHAR NOT NULL,
 
     CONSTRAINT "ai_sessions_metadata_pkey" PRIMARY KEY ("id")
 );
@@ -188,6 +190,7 @@ CREATE TABLE "ai_user_docs" (
     "session_id" VARCHAR NOT NULL,
     "title" VARCHAR NOT NULL,
     "content" VARCHAR NOT NULL,
+    "metadata" VARCHAR NOT NULL,
     "created_at" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ(3) NOT NULL,
 
@@ -214,6 +217,7 @@ CREATE TABLE "ai_user_files" (
     "file_name" VARCHAR NOT NULL,
     "mime_type" VARCHAR NOT NULL,
     "size" INTEGER NOT NULL,
+    "metadata" VARCHAR NOT NULL,
     "created_at" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "ai_user_files_pkey" PRIMARY KEY ("user_id","file_id")

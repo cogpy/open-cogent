@@ -409,6 +409,7 @@ export class ChatSessionService {
         prompt,
         title: null,
         messages: [],
+        metadata: '',
       },
       options.reuseLatestChat ?? false
     );

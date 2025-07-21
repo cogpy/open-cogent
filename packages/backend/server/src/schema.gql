@@ -248,6 +248,7 @@ type CopilotUserDoc {
   content: String!
   createdAt: DateTime!
   docId: String!
+  metadata: String!
   sessionId: String!
   title: String!
   updatedAt: DateTime!
@@ -263,6 +264,7 @@ type CopilotUserFile {
   createdAt: DateTime!
   fileId: String!
   fileName: String!
+  metadata: String!
   mimeType: String!
   size: SafeInt!
   userId: String!
@@ -496,10 +498,10 @@ type Mutation {
   addContextFile(content: Upload!, options: AddContextFileInput!): CopilotContextFile!
 
   """Add user embedding doc"""
-  addUserDocs(content: String!, docId: String, sessionId: String!, title: String!): CopilotUserDoc!
+  addUserDocs(content: String!, metadata: String, sessionId: String!, title: String!): CopilotUserDoc!
 
   """Upload user embedding files"""
-  addUserFiles(blob: Upload!): CopilotUserFile!
+  addUserFiles(blob: Upload!, metadata: String): CopilotUserFile!
 
   """Ban an user"""
   banUser(id: String!): UserType!
@@ -577,8 +579,14 @@ type Mutation {
   """Update an user"""
   updateUser(id: String!, input: ManageUserInput!): UserType!
 
+  """Update user embedding doc"""
+  updateUserDocs(content: String, docId: String!, metadata: String, title: String): CopilotUserDoc!
+
   """update user enabled feature"""
   updateUserFeatures(features: [FeatureType!]!, id: String!): [FeatureType!]!
+
+  """Update user embedding files"""
+  updateUserFiles(fileId: String!, metadata: String!): CopilotUserFile!
 
   """Upload user avatar"""
   uploadAvatar(avatar: Upload!): UserType!
@@ -791,6 +799,9 @@ input UpdateAppConfigInput {
 }
 
 input UpdateChatSessionInput {
+  """Client custom metadata for the session"""
+  metadata: String
+
   """Whether to pin the session"""
   pinned: Boolean
 

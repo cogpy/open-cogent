@@ -81,6 +81,12 @@ class UpdateChatSessionInput
     nullable: true,
   })
   promptName!: string;
+
+  @Field(() => String, {
+    description: 'Client custom metadata for the session',
+    nullable: true,
+  })
+  metadata!: string;
 }
 
 @InputType()

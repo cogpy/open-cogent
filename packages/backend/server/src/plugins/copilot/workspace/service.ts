@@ -18,18 +18,12 @@ export class CopilotUserService {
   async addDoc(
     userId: string,
     sessionId: string,
-    title: string,
-    content: string
+    options: { title: string; content: string; metadata?: string }
   ) {
-    return await this.models.copilotUser.addDoc(
-      userId,
-      sessionId,
-      title,
-      content
-    );
+    return await this.models.copilotUser.addDoc(userId, sessionId, options);
   }
 
-  async addFile(userId: string, content: FileUpload) {
+  async addFile(userId: string, content: FileUpload, metadata: string = '') {
     const fileName = content.filename;
     const buffer = await readStream(content.createReadStream());
     const blobId = createHash('sha256').update(buffer).digest('base64url');
@@ -39,6 +33,7 @@ export class CopilotUserService {
       blobId,
       mimeType: content.mimetype,
       size: buffer.length,
+      metadata,
     });
     return { blobId, file };
   }
@@ -46,9 +41,13 @@ export class CopilotUserService {
   async updateDoc(
     userId: string,
     docId: string,
-    update: { title?: string; content?: string }
+    update: { title?: string; content?: string; metadata?: string }
   ) {
     return await this.models.copilotUser.updateDoc(userId, docId, update);
+  }
+
+  async updateFile(userId: string, fileId: string, metadata: string) {
+    return await this.models.copilotUser.updateFile(userId, fileId, metadata);
   }
 
   async getDoc(userId: string, docId: string) {

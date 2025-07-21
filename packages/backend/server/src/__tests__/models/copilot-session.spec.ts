@@ -75,6 +75,7 @@ const createTestSession = async (
     title: null,
     promptName: TEST_PROMPTS.NORMAL,
     promptAction: null,
+    metadata: '',
     ...overrides,
   };
 
@@ -156,6 +157,7 @@ test('should pin and unpin sessions', async t => {
       promptAction: null,
       pinned: true,
       title: null,
+      metadata: '',
     });
 
     const firstSession = await copilotSession.get(firstSessionId);
@@ -170,6 +172,7 @@ test('should pin and unpin sessions', async t => {
       promptAction: null,
       pinned: true,
       title: null,
+      metadata: '',
     });
 
     const sessionStatesAfterSecondPin = await getSessionStates(db, [

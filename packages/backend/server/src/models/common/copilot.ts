@@ -87,13 +87,14 @@ export type DocChunkSimilarity = ChunkSimilarity & {
 export const CopilotUserDocSchema = z.object({
   title: z.string(),
   content: z.string(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
+  metadata: z.string(),
 });
 export type CopilotUserDocMetadata = z.infer<typeof CopilotUserDocSchema>;
 export type CopilotUserDoc = CopilotUserDocMetadata & {
   docId: string;
   sessionId: string;
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 export const CopilotUserFileSchema = z.object({
@@ -101,6 +102,7 @@ export const CopilotUserFileSchema = z.object({
   blobId: z.string(),
   mimeType: z.string(),
   size: z.number(),
+  metadata: z.string(),
 });
 
 export type CopilotUserFileMetadata = z.infer<typeof CopilotUserFileSchema>;

@@ -1,9 +1,10 @@
-mutation addUserDocs($sessionId: String!, $title: String!, $content: String!, $docId: String) {
-  addUserDocs(content: $content, docId: $docId, sessionId: $sessionId, title: $title) {
+mutation addUserDocs($sessionId: String!, $title: String!, $content: String!, $metadata: String) {
+  addUserDocs(content: $content, sessionId: $sessionId, title: $title, metadata: $metadata) {
     sessionId
     docId
     title
     content
+    metadata
     createdAt
     updatedAt
   }

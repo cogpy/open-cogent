@@ -340,6 +340,7 @@ export interface CopilotUserDoc {
   content: Scalars['String']['output'];
   createdAt: Scalars['DateTime']['output'];
   docId: Scalars['String']['output'];
+  metadata: Scalars['String']['output'];
   sessionId: Scalars['String']['output'];
   title: Scalars['String']['output'];
   updatedAt: Scalars['DateTime']['output'];
@@ -357,6 +358,7 @@ export interface CopilotUserFile {
   createdAt: Scalars['DateTime']['output'];
   fileId: Scalars['String']['output'];
   fileName: Scalars['String']['output'];
+  metadata: Scalars['String']['output'];
   mimeType: Scalars['String']['output'];
   size: Scalars['SafeInt']['output'];
   userId: Scalars['String']['output'];
@@ -673,8 +675,12 @@ export interface Mutation {
   updateSettings: Scalars['Boolean']['output'];
   /** Update an user */
   updateUser: UserType;
+  /** Update user embedding doc */
+  updateUserDocs: CopilotUserDoc;
   /** update user enabled feature */
   updateUserFeatures: Array<FeatureType>;
+  /** Update user embedding files */
+  updateUserFiles: CopilotUserFile;
   /** Upload user avatar */
   uploadAvatar: UserType;
   /** validate app configuration */
@@ -689,13 +695,14 @@ export interface MutationAddContextFileArgs {
 
 export interface MutationAddUserDocsArgs {
   content: Scalars['String']['input'];
-  docId?: InputMaybe<Scalars['String']['input']>;
+  metadata?: InputMaybe<Scalars['String']['input']>;
   sessionId: Scalars['String']['input'];
   title: Scalars['String']['input'];
 }
 
 export interface MutationAddUserFilesArgs {
   blob: Scalars['Upload']['input'];
+  metadata?: InputMaybe<Scalars['String']['input']>;
 }
 
 export interface MutationBanUserArgs {
@@ -832,9 +839,21 @@ export interface MutationUpdateUserArgs {
   input: ManageUserInput;
 }
 
+export interface MutationUpdateUserDocsArgs {
+  content?: InputMaybe<Scalars['String']['input']>;
+  docId: Scalars['String']['input'];
+  metadata?: InputMaybe<Scalars['String']['input']>;
+  title?: InputMaybe<Scalars['String']['input']>;
+}
+
 export interface MutationUpdateUserFeaturesArgs {
   features: Array<FeatureType>;
   id: Scalars['String']['input'];
+}
+
+export interface MutationUpdateUserFilesArgs {
+  fileId: Scalars['String']['input'];
+  metadata: Scalars['String']['input'];
 }
 
 export interface MutationUploadAvatarArgs {
@@ -1070,6 +1089,8 @@ export interface UpdateAppConfigInput {
 }
 
 export interface UpdateChatSessionInput {
+  /** Client custom metadata for the session */
+  metadata?: InputMaybe<Scalars['String']['input']>;
   /** Whether to pin the session */
   pinned?: InputMaybe<Scalars['Boolean']['input']>;
   /** The prompt name to use for the session */
@@ -2152,7 +2173,7 @@ export type AddUserDocsMutationVariables = Exact<{
   sessionId: Scalars['String']['input'];
   title: Scalars['String']['input'];
   content: Scalars['String']['input'];
-  docId?: InputMaybe<Scalars['String']['input']>;
+  metadata?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 export type AddUserDocsMutation = {
@@ -2163,6 +2184,7 @@ export type AddUserDocsMutation = {
     docId: string;
     title: string;
     content: string;
+    metadata: string;
     createdAt: string;
     updatedAt: string;
   };
@@ -2194,6 +2216,7 @@ export type GetUserDocsQuery = {
             docId: string;
             title: string;
             content: string;
+            metadata: string;
             createdAt: string;
             updatedAt: string;
           };
@@ -2212,8 +2235,30 @@ export type RemoveUserDocsMutation = {
   removeUserDocs: boolean;
 };
 
+export type UpdateUserDocsMutationVariables = Exact<{
+  docId: Scalars['String']['input'];
+  title?: InputMaybe<Scalars['String']['input']>;
+  content?: InputMaybe<Scalars['String']['input']>;
+  metadata?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+export type UpdateUserDocsMutation = {
+  __typename?: 'Mutation';
+  updateUserDocs: {
+    __typename?: 'CopilotUserDoc';
+    sessionId: string;
+    docId: string;
+    title: string;
+    content: string;
+    metadata: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+};
+
 export type AddUserFilesMutationVariables = Exact<{
   blob: Scalars['Upload']['input'];
+  metadata?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 export type AddUserFilesMutation = {
@@ -2225,6 +2270,7 @@ export type AddUserFilesMutation = {
     blobId: string;
     mimeType: string;
     size: number;
+    metadata: string;
     createdAt: string;
   };
 };
@@ -2271,6 +2317,25 @@ export type RemoveUserFilesMutationVariables = Exact<{
 export type RemoveUserFilesMutation = {
   __typename?: 'Mutation';
   removeUserFiles: boolean;
+};
+
+export type UpdateUserFilesMutationVariables = Exact<{
+  fileId: Scalars['String']['input'];
+  metadata: Scalars['String']['input'];
+}>;
+
+export type UpdateUserFilesMutation = {
+  __typename?: 'Mutation';
+  updateUserFiles: {
+    __typename?: 'CopilotUserFile';
+    fileId: string;
+    fileName: string;
+    blobId: string;
+    mimeType: string;
+    size: number;
+    metadata: string;
+    createdAt: string;
+  };
 };
 
 export type DeleteAccountMutationVariables = Exact<{ [key: string]: never }>;
@@ -2923,6 +2988,11 @@ export type Mutations =
       response: RemoveUserDocsMutation;
     }
   | {
+      name: 'updateUserDocsMutation';
+      variables: UpdateUserDocsMutationVariables;
+      response: UpdateUserDocsMutation;
+    }
+  | {
       name: 'addUserFilesMutation';
       variables: AddUserFilesMutationVariables;
       response: AddUserFilesMutation;
@@ -2931,6 +3001,11 @@ export type Mutations =
       name: 'removeUserFilesMutation';
       variables: RemoveUserFilesMutationVariables;
       response: RemoveUserFilesMutation;
+    }
+  | {
+      name: 'updateUserFilesMutation';
+      variables: UpdateUserFilesMutationVariables;
+      response: UpdateUserFilesMutation;
     }
   | {
       name: 'deleteAccountMutation';

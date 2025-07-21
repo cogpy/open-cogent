@@ -67,6 +67,18 @@ export class CopilotUserConfigModel extends BaseModel {
     return row;
   }
 
+  async updateFile(
+    userId: string,
+    fileId: string,
+    metadata: string = ''
+  ): Promise<CopilotUserFile> {
+    const row = await this.db.aiUserFiles.update({
+      where: { userId_fileId: { userId, fileId } },
+      data: { metadata },
+    });
+    return row;
+  }
+
   async getFile(
     userId: string,
     fileId: string
@@ -106,6 +118,16 @@ export class CopilotUserConfigModel extends BaseModel {
   ): Promise<CopilotUserFile[]> {
     const files = await this.db.aiUserFiles.findMany({
       where: { userId },
+      select: {
+        userId: true,
+        fileId: true,
+        fileName: true,
+        blobId: true,
+        mimeType: true,
+        size: true,
+        metadata: true,
+        createdAt: true,
+      },
       orderBy: { createdAt: 'desc' },
       skip: options?.offset,
       take: options?.first,
@@ -162,11 +184,11 @@ export class CopilotUserConfigModel extends BaseModel {
   async addDoc(
     userId: string,
     sessionId: string,
-    title: string,
-    content: string
-  ) {
+    options: { title: string; content: string; metadata?: string }
+  ): Promise<CopilotUserDoc> {
+    const { title, content, metadata = '' } = options;
     return await this.db.aiUserDocs.create({
-      data: { userId, sessionId, title, content },
+      data: { userId, sessionId, title, content, metadata },
     });
   }
 
@@ -176,6 +198,7 @@ export class CopilotUserConfigModel extends BaseModel {
     options: {
       title?: string;
       content?: string;
+      metadata?: string;
     }
   ) {
     if (!options.title && !options.content) {
@@ -188,6 +211,7 @@ export class CopilotUserConfigModel extends BaseModel {
       data: {
         title: options.title,
         content: options.content,
+        metadata: options.metadata ?? '',
         updatedAt: new Date(),
       },
     });
@@ -240,6 +264,7 @@ export class CopilotUserConfigModel extends BaseModel {
         sessionId: true,
         title: true,
         content: true,
+        metadata: true,
         createdAt: true,
         updatedAt: true,
       },

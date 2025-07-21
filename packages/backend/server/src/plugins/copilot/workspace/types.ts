@@ -29,6 +29,9 @@ export class CopilotUserDocType implements CopilotUserDoc {
   @Field(() => String)
   content!: string;
 
+  @Field(() => String)
+  metadata!: string;
+
   @Field(() => Date)
   createdAt!: Date;
 
@@ -55,6 +58,9 @@ export class CopilotUserFileType implements CopilotUserFile {
 
   @Field(() => SafeIntResolver)
   size!: number;
+
+  @Field(() => String)
+  metadata!: string;
 
   @Field(() => Date)
   createdAt!: Date;

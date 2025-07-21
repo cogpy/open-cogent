@@ -48,6 +48,7 @@ type PureChatSession = {
   pinned?: boolean;
   title: string | null;
   messages?: ChatMessage[];
+  metadata: string;
   // connect ids
   userId: string;
 };
@@ -70,7 +71,7 @@ type UpdateChatSessionMessage = ChatSessionBaseState & {
 };
 
 export type UpdateChatSessionOptions = ChatSessionBaseState &
-  Pick<Partial<ChatSession>, 'pinned' | 'promptName' | 'title'>;
+  Pick<Partial<ChatSession>, 'pinned' | 'promptName' | 'title' | 'metadata'>;
 
 export type UpdateChatSession = ChatSessionBaseState & UpdateChatSessionOptions;
 
@@ -127,6 +128,7 @@ export class CopilotSessionModel extends BaseModel {
         userId: state.userId,
         promptName: state.promptName,
         promptAction: state.promptAction,
+        metadata: '',
       },
       select: { id: true },
     });
@@ -296,7 +298,7 @@ export class CopilotSessionModel extends BaseModel {
 
   @Transactional()
   async update(options: UpdateChatSessionOptions): Promise<string> {
-    const { userId, sessionId, promptName, pinned, title } = options;
+    const { userId, sessionId, promptName, pinned, title, metadata } = options;
     const session = await this.getExists(
       sessionId,
       {
@@ -335,7 +337,7 @@ export class CopilotSessionModel extends BaseModel {
 
     await this.db.aiSession.update({
       where: { id: sessionId },
-      data: { promptName, pinned, title },
+      data: { promptName, pinned, title, metadata },
     });
 
     return sessionId;

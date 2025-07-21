@@ -704,17 +704,18 @@ ${paginatedCopilotChatsFragment}`,
 export const addUserDocsMutation = {
   id: 'addUserDocsMutation' as const,
   op: 'addUserDocs',
-  query: `mutation addUserDocs($sessionId: String!, $title: String!, $content: String!, $docId: String) {
+  query: `mutation addUserDocs($sessionId: String!, $title: String!, $content: String!, $metadata: String) {
   addUserDocs(
     content: $content
-    docId: $docId
     sessionId: $sessionId
     title: $title
+    metadata: $metadata
   ) {
     sessionId
     docId
     title
     content
+    metadata
     createdAt
     updatedAt
   }
@@ -739,6 +740,7 @@ export const getUserDocsQuery = {
             docId
             title
             content
+            metadata
             createdAt
             updatedAt
           }
@@ -757,16 +759,38 @@ export const removeUserDocsMutation = {
 }`,
 };
 
+export const updateUserDocsMutation = {
+  id: 'updateUserDocsMutation' as const,
+  op: 'updateUserDocs',
+  query: `mutation updateUserDocs($docId: String!, $title: String, $content: String, $metadata: String) {
+  updateUserDocs(
+    content: $content
+    docId: $docId
+    title: $title
+    metadata: $metadata
+  ) {
+    sessionId
+    docId
+    title
+    content
+    metadata
+    createdAt
+    updatedAt
+  }
+}`,
+};
+
 export const addUserFilesMutation = {
   id: 'addUserFilesMutation' as const,
   op: 'addUserFiles',
-  query: `mutation addUserFiles($blob: Upload!) {
-  addUserFiles(blob: $blob) {
+  query: `mutation addUserFiles($blob: Upload!, $metadata: String) {
+  addUserFiles(blob: $blob, metadata: $metadata) {
     fileId
     fileName
     blobId
     mimeType
     size
+    metadata
     createdAt
   }
 }`,
@@ -806,6 +830,22 @@ export const removeUserFilesMutation = {
   op: 'removeUserFiles',
   query: `mutation removeUserFiles($fileId: String!) {
   removeUserFiles(fileId: $fileId)
+}`,
+};
+
+export const updateUserFilesMutation = {
+  id: 'updateUserFilesMutation' as const,
+  op: 'updateUserFiles',
+  query: `mutation updateUserFiles($fileId: String!, $metadata: String!) {
+  updateUserFiles(fileId: $fileId, metadata: $metadata) {
+    fileId
+    fileName
+    blobId
+    mimeType
+    size
+    metadata
+    createdAt
+  }
 }`,
 };
 

@@ -413,7 +413,7 @@ export class ChatSessionService {
         title: null,
         messages: [],
       },
-      options.reuseLatestChat ?? true
+      options.reuseLatestChat ?? false
     );
   }
 

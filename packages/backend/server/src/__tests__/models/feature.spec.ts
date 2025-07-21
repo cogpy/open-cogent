@@ -52,7 +52,7 @@ test('should throw if feature config in invalid', async t => {
     data: {
       configs: {
         ...freePlanFeature.configs,
-        memberLimit: 'invalid' as any,
+        copilotLimit: 'invalid' as any,
       },
     },
   });
@@ -91,12 +91,7 @@ test('should create feature', async t => {
   const { feature } = t.context;
 
   // @ts-expect-error internal
-  const newFeature = await feature.upsert(
-    'new_feature' as any,
-    {},
-    FeatureType.Feature,
-    1
-  );
+  const newFeature = await feature.upsert('new_feature' as any, {});
 
   t.deepEqual(newFeature.configs, {});
 });
@@ -106,19 +101,14 @@ test('should update feature', async t => {
   const freePlanFeature = await feature.get('free_plan_v1');
 
   // @ts-expect-error internal
-  const newFreePlanFeature = await feature.upsert(
-    'free_plan_v1',
-    {
-      ...freePlanFeature.configs,
-      memberLimit: 10,
-    },
-    FeatureType.Quota,
-    1
-  );
+  const newFreePlanFeature = await feature.upsert('free_plan_v1', {
+    ...freePlanFeature.configs,
+    copilotLimit: 10,
+  });
 
   t.deepEqual(newFreePlanFeature.configs, {
     ...freePlanFeature.configs,
-    memberLimit: 10,
+    copilotLimit: 10,
   });
 });
 

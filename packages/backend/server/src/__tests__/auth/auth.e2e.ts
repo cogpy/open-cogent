@@ -33,7 +33,7 @@ test('change email', async t => {
   const u2Email = 'u2@affine.pro';
 
   const user = await app.signupV1(u1Email);
-  await sendChangeEmail(app, u1Email, 'affine.pro');
+  await sendChangeEmail(app, 'affine.pro');
 
   const changeMail = app.mails.last('ChangeEmail');
 
@@ -94,7 +94,7 @@ test('set and change password', async t => {
   const u1Email = 'u1@affine.pro';
 
   const u1 = await app.signupV1(u1Email);
-  await sendSetPasswordEmail(app, u1Email, 'affine.pro');
+  await sendSetPasswordEmail(app, 'affine.pro');
 
   const setPasswordMail = app.mails.last('ChangePassword');
   const link = new URL(setPasswordMail.props.url);

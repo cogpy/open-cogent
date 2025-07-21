@@ -1,18 +1,15 @@
 export { createFactory } from './factory';
-export * from './team-workspace.mock';
 export * from './user.mock';
 
 import { MockCopilotProvider } from './copilot.mock';
 import { MockEventBus } from './eventbus.mock';
 import { MockMailer } from './mailer.mock';
 import { MockJobQueue } from './queue.mock';
-import { MockTeamWorkspace } from './team-workspace.mock';
 import { MockUser } from './user.mock';
 import { MockUserSettings } from './user-settings.mock';
 
 export const Mockers = {
   User: MockUser,
-  TeamWorkspace: MockTeamWorkspace,
   UserSettings: MockUserSettings,
 };
 

@@ -1,3 +1,17 @@
+import {
+  ChatHistoryOrder,
+  createCopilotContextMutation,
+  createCopilotMessageMutation,
+  createCopilotSessionMutation,
+  getCopilotHistoriesQuery,
+  getCopilotPinnedSessionsQuery,
+  getCopilotSessionQuery,
+  getCopilotUserSessionsQuery,
+  PaginationInput,
+  removeContextFileMutation,
+  updateCopilotSessionMutation,
+} from '@afk/graphql';
+
 import { PromptConfig, PromptMessage } from '../../plugins/copilot/providers';
 import { NodeExecutorType } from '../../plugins/copilot/workflow/executor';
 import {
@@ -22,14 +36,10 @@ export async function createCopilotSession(
   promptName: string,
   pinned: boolean = false
 ): Promise<string> {
-  const res = await app.gql(
-    `
-    mutation createCopilotSession($options: CreateChatSessionInput!) {
-      createCopilotSession(options: $options)
-    }
-  `,
-    { options: { promptName, pinned } }
-  );
+  const res = await app.typedGql({
+    query: createCopilotSessionMutation,
+    variables: { options: { promptName, pinned } },
+  });
 
   return res.createCopilotSession;
 }
@@ -56,25 +66,17 @@ export async function getCopilotSession(
   pinned: boolean;
   promptName: string;
 }> {
-  const res = await app.gql(
-    `
-      query getCopilotSession(
-        $sessionId: String!
-      ) {
-        currentUser {
-          copilot {
-            session(sessionId: $sessionId) {
-              id
-              pinned
-              promptName
-            }
-          }
-        }
-      }`,
-    { sessionId }
-  );
+  const res = await app.typedGql({
+    query: getCopilotSessionQuery,
+    variables: { sessionId },
+  });
 
-  return res.currentUser?.copilot?.session;
+  const node = res.currentUser?.copilot?.chats.edges[0]?.node;
+  return {
+    id: node?.sessionId || '',
+    pinned: node?.pinned || false,
+    promptName: node?.promptName || '',
+  };
 }
 
 export async function updateCopilotSession(
@@ -82,14 +84,10 @@ export async function updateCopilotSession(
   sessionId: string,
   promptName: string
 ): Promise<string> {
-  const res = await app.gql(
-    `
-      mutation updateCopilotSession($options: UpdateChatSessionInput!) {
-        updateCopilotSession(options: $options)
-      }
-    `,
-    { options: { sessionId, promptName } }
-  );
+  const res = await app.typedGql({
+    query: updateCopilotSessionMutation,
+    variables: { options: { sessionId, promptName } },
+  });
 
   return res.updateCopilotSession;
 }
@@ -98,11 +96,10 @@ export async function createCopilotContext(
   app: TestingApp,
   sessionId: string
 ): Promise<string> {
-  const res = await app.gql(`
-        mutation {
-          createCopilotContext(sessionId: "${sessionId}")
-        }
-      `);
+  const res = await app.typedGql({
+    query: createCopilotContextMutation,
+    variables: { sessionId },
+  });
 
   return res.createCopilotContext;
 }
@@ -204,50 +201,12 @@ export async function removeContextFile(
   contextId: string,
   fileId: string
 ): Promise<string> {
-  const res = await app.gql(
-    `
-        mutation removeContextFile($options: RemoveContextFileInput!) {
-          removeContextFile(options: $options)
-        }
-    `,
-    { options: { contextId, fileId } }
-  );
+  const res = await app.typedGql({
+    query: removeContextFileMutation,
+    variables: { options: { contextId, fileId } },
+  });
 
-  return res.removeContextFile;
-}
-
-export async function addContextDoc(
-  app: TestingApp,
-  contextId: string
-): Promise<{ id: string }[]> {
-  const res = await app.gql(
-    `
-          mutation addContextDoc($options: AddContextDocInput!) {
-            addContextDoc(options: $options) {
-              id
-            }
-          }
-        `,
-    { options: { contextId } }
-  );
-
-  return res.addContextDoc;
-}
-
-export async function removeContextDoc(
-  app: TestingApp,
-  contextId: string
-): Promise<string> {
-  const res = await app.gql(
-    `
-      mutation removeContextDoc($options: RemoveContextFileInput!) {
-        removeContextDoc(options: $options)
-      }
-    `,
-    { options: { contextId } }
-  );
-
-  return res.removeContextDoc;
+  return res.removeContextFile ? 'success' : 'failed';
 }
 
 export async function listContextFiles(
@@ -456,11 +415,7 @@ export async function createCopilotMessage(
   params?: Record<string, string>
 ): Promise<string> {
   const gql = {
-    query: `
-          mutation createCopilotMessage($options: CreateChatMessageInput!) {
-            createCopilotMessage(options: $options)
-          }
-        `,
+    query: createCopilotMessageMutation.query,
     variables: {
       options: {
         sessionId,
@@ -617,7 +572,7 @@ export function textToEventStream(
 }
 
 type ChatMessage = {
-  id?: string;
+  id: string | null;
   role: string;
   content: string;
   attachments: string[] | null;
@@ -638,85 +593,38 @@ type HistoryOptions = {
   pinned?: boolean;
   limit?: number;
   skip?: number;
-  sessionOrder?: 'asc' | 'desc';
-  messageOrder?: 'asc' | 'desc';
+  sessionOrder?: ChatHistoryOrder;
+  messageOrder?: ChatHistoryOrder;
   sessionId?: string;
 };
 
 export async function getHistories(
   app: TestingApp,
-  variables?: { options?: HistoryOptions }
+  variables: { pagination: PaginationInput; options?: HistoryOptions } = {
+    pagination: {},
+  }
 ): Promise<History[]> {
-  const res = await app.gql(
-    `
-    query getCopilotHistories(
-      $options: QueryChatHistoriesInput
-    ) {
-      currentUser {
-        copilot {
-          histories(options: $options) {
-            sessionId
-            pinned
-            tokens
-            action
-            createdAt
-            messages {
-              id
-              role
-              content
-              attachments
-              createdAt
-            }
-          }
-        }
-      }
-    }
-    `,
-    variables
-  );
+  const res = await app.typedGql({
+    query: getCopilotHistoriesQuery,
+    variables,
+  });
 
-  return res.currentUser?.copilot?.histories || [];
+  return res.currentUser?.copilot?.chats.edges.map(e => e.node) || [];
 }
 
 export async function getUserSessions(
   app: TestingApp,
   variables?: { options?: HistoryOptions }
 ): Promise<History[]> {
-  const res = await app.gql(
-    `query getCopilotWorkspaceSessions(
-        $options: QueryChatHistoriesInput
-      ) {
-        currentUser {
-          copilot {
-            histories(options: $options) {
-              sessionId
-              pinned
-              tokens
-              action
-              createdAt
-              messages {
-                id
-                role
-                content
-                streamObjects {
-                  type
-                  textDelta
-                  toolCallId
-                  toolName
-                  args
-                  result
-                }
-                attachments
-                createdAt
-              }
-            }
-          }
-        }
-      }`,
-    variables
-  );
+  const res = await app.typedGql({
+    query: getCopilotUserSessionsQuery,
+    variables: {
+      pagination: {},
+      options: variables?.options,
+    },
+  });
 
-  return res.currentUser?.copilot?.histories || [];
+  return res.currentUser?.copilot?.chats.edges.map(e => e.node) || [];
 }
 
 export async function getPinnedSessions(
@@ -726,47 +634,15 @@ export async function getPinnedSessions(
     withPrompt?: boolean;
   }
 ): Promise<History[]> {
-  const res = await app.gql(
-    `query getCopilotPinnedSessions(
-        $messageOrder: ChatHistoryOrder
-        $withPrompt: Boolean
-      ) {
-        currentUser {
-          copilot {
-            histories(options: {
-              limit: 1,
-              pinned: true,
-              messageOrder: $messageOrder,
-              withPrompt: $withPrompt
-            }) {
-              sessionId
-              pinned
-              tokens
-              action
-              createdAt
-              messages {
-                id
-                role
-                content
-                streamObjects {
-                  type
-                  textDelta
-                  toolCallId
-                  toolName
-                  args
-                  result
-                }
-                attachments
-                createdAt
-              }
-            }
-          }
-        }
-      }`,
-    variables
-  );
+  const res = await app.typedGql({
+    query: getCopilotPinnedSessionsQuery,
+    variables: {
+      messageOrder: variables?.messageOrder as ChatHistoryOrder,
+      withPrompt: variables?.withPrompt,
+    },
+  });
 
-  return res.currentUser?.copilot?.histories || [];
+  return res.currentUser?.copilot?.chats.edges.map(e => e.node) || [];
 }
 
 type Prompt = {

@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
+import { ChatHistoryOrder } from '@afk/graphql';
 import { ProjectRoot } from '@afk-tools/utils/path';
 import { PrismaClient } from '@prisma/client';
 import type { TestFn } from 'ava';
@@ -480,7 +481,8 @@ test('should be able to list history', async t => {
 
   {
     const histories = await getHistories(app, {
-      options: { messageOrder: 'desc' },
+      pagination: {},
+      options: { messageOrder: ChatHistoryOrder.desc },
     });
     t.deepEqual(
       histories.map(h => h.messages.map(m => m.content)),
@@ -778,7 +780,7 @@ test('should list histories for different session types correctly', async t => {
     'user session history'
   );
   await testHistoryQuery(
-    () => getHistories(app, { options: { pinned: true } }),
+    () => getHistories(app, { pagination: {}, options: { pinned: true } }),
     { sessionId: pinnedSessionId },
     'pinned session history'
   );

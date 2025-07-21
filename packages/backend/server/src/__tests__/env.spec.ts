@@ -83,7 +83,7 @@ test('should read FLAVOR', t => {
     },
     {
       message:
-        'Invalid value "unknown" for environment variable SERVER_FLAVOR, expected one of ["allinone","graphql","sync","renderer","doc","script"]',
+        'Invalid value "unknown" for environment variable SERVER_FLAVOR, expected one of ["allinone","graphql","script"]',
     }
   );
 });
@@ -108,27 +108,18 @@ test('should tell flavors correctly', t => {
   process.env.SERVER_FLAVOR = 'allinone';
   t.deepEqual(new Env().flavors, {
     graphql: true,
-    sync: true,
-    renderer: true,
-    doc: true,
     script: false,
   });
 
   process.env.SERVER_FLAVOR = 'graphql';
   t.deepEqual(new Env().flavors, {
     graphql: true,
-    sync: false,
-    renderer: false,
-    doc: false,
     script: false,
   });
 
   process.env.SERVER_FLAVOR = 'script';
   t.deepEqual(new Env().flavors, {
     graphql: false,
-    sync: false,
-    renderer: false,
-    doc: false,
     script: true,
   });
 });

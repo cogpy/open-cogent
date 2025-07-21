@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
+import { GraphQLQuery, QueryOptions, QueryResponse } from '@afk/graphql';
 import { INestApplication, ModuleMetadata } from '@nestjs/common';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { TestingModuleBuilder } from '@nestjs/testing';
@@ -197,6 +198,13 @@ export class TestingApp extends ApplyType<INestApplication>() {
     }
 
     return res.body.data;
+  }
+
+  async typedGql<Query extends GraphQLQuery>(
+    options: QueryOptions<Query>
+  ): Promise<QueryResponse<Query>> {
+    const res = await this.gql(options.query.query, options.variables);
+    return res as QueryResponse<Query>;
   }
 
   private randomEmail() {

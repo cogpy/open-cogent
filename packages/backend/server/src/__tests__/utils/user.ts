@@ -1,3 +1,13 @@
+import {
+  changeEmailMutation,
+  changePasswordMutation,
+  deleteAccountMutation,
+  getPublicUserByIdQuery,
+  sendChangeEmailMutation,
+  sendSetPasswordEmailMutation,
+  sendVerifyChangeEmailMutation,
+} from '@afk/graphql';
+
 import { PublicUserType } from '../../core/user';
 import { TestingApp } from './testing-app';
 
@@ -5,8 +15,7 @@ export async function currentUser(app: TestingApp) {
   const res = await app.gql(`
       query {
         currentUser {
-          id, name, email, emailVerified, avatarUrl, hasPassword,
-          token { token }
+          id, name, email, emailVerified, avatarUrl, hasPassword
         }
       }
     `);
@@ -17,45 +26,33 @@ export async function getPublicUserById(
   app: TestingApp,
   id: string
 ): Promise<PublicUserType | null> {
-  const res = await app.gql(
-    `
-    query getPublicUserById($id: String!) {
-      publicUserById(id: $id) {
-        id
-        name
-        avatarUrl
-      }
-    }
-    `,
-    { id }
-  );
+  const res = await app.typedGql({
+    query: getPublicUserByIdQuery,
+    variables: { id },
+  });
   return res.publicUserById;
 }
 
 export async function sendChangeEmail(
   app: TestingApp,
-  email: string,
   callbackUrl: string
 ): Promise<boolean> {
-  const res = await app.gql(`
-    mutation {
-      sendChangeEmail(email: "${email}", callbackUrl: "${callbackUrl}")
-    }
-  `);
+  const res = await app.typedGql({
+    query: sendChangeEmailMutation,
+    variables: { callbackUrl },
+  });
 
   return res.sendChangeEmail;
 }
 
 export async function sendSetPasswordEmail(
   app: TestingApp,
-  email: string,
   callbackUrl: string
 ): Promise<boolean> {
-  const res = await app.gql(`
-    mutation {
-      sendSetPasswordEmail(email: "${email}", callbackUrl: "${callbackUrl}")
-    }
-  `);
+  const res = await app.typedGql({
+    query: sendSetPasswordEmailMutation,
+    variables: { callbackUrl },
+  });
 
   return res.sendSetPasswordEmail;
 }
@@ -65,12 +62,11 @@ export async function changePassword(
   userId: string,
   token: string,
   password: string
-): Promise<string> {
-  const res = await app.gql(`
-    mutation {
-      changePassword(token: "${token}", userId: "${userId}", newPassword: "${password}")
-    }
-  `);
+): Promise<boolean> {
+  const res = await app.typedGql({
+    query: changePasswordMutation,
+    variables: { token, userId, newPassword: password },
+  });
 
   return res.changePassword;
 }
@@ -81,11 +77,10 @@ export async function sendVerifyChangeEmail(
   email: string,
   callbackUrl: string
 ): Promise<boolean> {
-  const res = await app.gql(`
-    mutation {
-      sendVerifyChangeEmail(token: "${token}", email: "${email}", callbackUrl: "${callbackUrl}")
-    }
-  `);
+  const res = await app.typedGql({
+    query: sendVerifyChangeEmailMutation,
+    variables: { token, email, callbackUrl },
+  });
 
   return res.sendVerifyChangeEmail;
 }
@@ -95,28 +90,18 @@ export async function changeEmail(
   token: string,
   email: string
 ) {
-  const res = await app.gql(`
-    mutation {
-      changeEmail(token: "${token}", email: "${email}") {
-        id
-        name
-        avatarUrl
-        email
-      }
-    }
-  `);
+  const res = await app.typedGql({
+    query: changeEmailMutation,
+    variables: { token, email },
+  });
 
   return res.changeEmail;
 }
 
 export async function deleteAccount(app: TestingApp) {
-  const res = await app.gql(`
-    mutation {
-      deleteAccount {
-        success
-      }
-    }
-  `);
+  const res = await app.typedGql({
+    query: deleteAccountMutation,
+  });
 
   return res.deleteAccount.success;
 }

@@ -1,16 +1,9 @@
-import {
-  AiJobStatus,
-  AiJobType,
-  PrismaClient,
-  User,
-  Workspace,
-} from '@prisma/client';
+import { AiJobStatus, AiJobType, PrismaClient, User } from '@prisma/client';
 import ava, { TestFn } from 'ava';
 
 import { Config } from '../../base';
 import { CopilotJobModel } from '../../models';
 import { UserModel } from '../../models/user';
-import { WorkspaceModel } from '../../models/workspace';
 import { createTestingModule, type TestingModule } from '../utils';
 
 interface Context {
@@ -18,7 +11,6 @@ interface Context {
   module: TestingModule;
   db: PrismaClient;
   user: UserModel;
-  workspace: WorkspaceModel;
   copilotJob: CopilotJobModel;
 }
 
@@ -27,7 +19,6 @@ const test = ava as TestFn<Context>;
 test.before(async t => {
   const module = await createTestingModule();
   t.context.user = module.get(UserModel);
-  t.context.workspace = module.get(WorkspaceModel);
   t.context.copilotJob = module.get(CopilotJobModel);
   t.context.db = module.get(PrismaClient);
   t.context.config = module.get(Config);
@@ -35,14 +26,12 @@ test.before(async t => {
 });
 
 let user: User;
-let workspace: Workspace;
 
 test.beforeEach(async t => {
   await t.context.module.initTestingDB();
   user = await t.context.user.create({
     email: 'test@affine.pro',
   });
-  workspace = await t.context.workspace.create(user.id);
 });
 
 test.after(async t => {
@@ -51,7 +40,6 @@ test.after(async t => {
 
 test('should create a copilot job', async t => {
   const data = {
-    workspaceId: workspace.id,
     blobId: 'blob-id',
     createdBy: user.id,
     type: AiJobType.transcription,
@@ -80,17 +68,12 @@ test('should get null for non-exist job', async t => {
 
 test('should update job', async t => {
   const { id: jobId } = await t.context.copilotJob.create({
-    workspaceId: workspace.id,
     blobId: 'blob-id',
     createdBy: user.id,
     type: AiJobType.transcription,
   });
 
-  const hasJob = await t.context.copilotJob.has(
-    user.id,
-    workspace.id,
-    'blob-id'
-  );
+  const hasJob = await t.context.copilotJob.has(user.id, 'blob-id');
   t.true(hasJob);
 
   const job = await t.context.copilotJob.get(jobId);
@@ -106,7 +89,6 @@ test('should update job', async t => {
 
 test('should claim job', async t => {
   const { id: jobId } = await t.context.copilotJob.create({
-    workspaceId: workspace.id,
     blobId: 'blob-id',
     createdBy: user.id,
     type: AiJobType.transcription,

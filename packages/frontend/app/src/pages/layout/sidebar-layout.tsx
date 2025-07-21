@@ -1,10 +1,10 @@
 import { IconButton } from '@afk/component';
 import { SidebarIcon } from '@blocksuite/icons/rc';
 
-import AppSidebar from '@/components/ui/sidebar/sidebar';
-import { useSidebarStore } from '@/store/sidebar';
 import { DocPanel } from '@/components/doc-panel/doc-panel';
+import AppSidebar from '@/components/ui/sidebar/sidebar';
 import { useDocPanelStore } from '@/store/doc-panel';
+import { useSidebarStore } from '@/store/sidebar';
 
 export const SidebarLayout = ({
   sidebar,

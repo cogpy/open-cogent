@@ -16,7 +16,7 @@ export function DocPanel() {
   return (
     <div className="h-full flex flex-col p-4 gap-4">
       {/* 头部 */}
-      <div className="flex items-center justify-between p-2 border rounded">
+      <div className="flex items-center justify-between p-2 rounded">
         <h2 className="text-lg font-medium text-gray-900 truncate">
           {docTitle}
         </h2>
@@ -29,7 +29,7 @@ export function DocPanel() {
       </div>
 
       {/* 文档内容 */}
-      <div className="flex-1 overflow-auto border rounded p-2">
+      <div className="flex-1 overflow-auto rounded p-2">
         <DocEditor doc={currentDoc} readonly={true} />
       </div>
     </div>

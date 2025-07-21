@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
-import { FileTextIcon } from '@blocksuite/icons/rc';
 import type { Store } from '@blocksuite/affine/store';
+import { FileIcon } from '@blocksuite/icons/rc';
+import { useEffect, useState } from 'react';
+
 import { snapshotHelper } from '@/components/doc-composer/snapshot-helper';
 import { useDocPanelStore } from '@/store/doc-panel';
 
@@ -53,7 +54,7 @@ export function DocCard({
       {/* 头部 */}
       <div className="flex items-center gap-3 mb-3">
         <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/50">
-          <FileTextIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+          <FileIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
         </div>
         <div className="flex-1 min-w-0">
           <h3 className="text-sm font-medium text-blue-700 dark:text-blue-300 truncate">

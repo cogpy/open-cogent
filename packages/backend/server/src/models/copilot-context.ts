@@ -9,6 +9,7 @@ import {
   ContextConfig,
   ContextConfigSchema,
   CopilotContext,
+  DocChunkSimilarity,
   Embedding,
   FileChunkSimilarity,
   MinimalContextConfigSchema,
@@ -94,16 +95,16 @@ export class CopilotContextModel extends BaseModel {
   // ================ embeddings ================
 
   private processEmbeddings(
-    contextId: string,
-    fileId: string,
+    contextOrUserId: string,
+    fileOrDocId: string,
     embeddings: Embedding[],
     withId = true
   ) {
     const groups = embeddings.map(e =>
       [
         withId ? randomUUID() : undefined,
-        contextId,
-        fileId,
+        contextOrUserId,
+        fileOrDocId,
         e.index,
         e.content,
         Prisma.raw(`'[${e.embedding.join(',')}]'`),
@@ -128,11 +129,11 @@ export class CopilotContextModel extends BaseModel {
     const values = this.processEmbeddings(contextId, fileId, embeddings);
 
     await this.db.$executeRaw`
-    INSERT INTO "ai_context_embeddings"
-    ("id", "context_id", "file_id", "chunk", "content", "embedding", "updated_at") VALUES ${values}
-    ON CONFLICT (context_id, file_id, chunk) DO UPDATE SET
-    content = EXCLUDED.content, embedding = EXCLUDED.embedding, updated_at = excluded.updated_at;
-  `;
+      INSERT INTO "ai_context_embeddings"
+      ("id", "context_id", "file_id", "chunk", "content", "embedding", "updated_at") VALUES ${values}
+      ON CONFLICT (context_id, file_id, chunk) DO UPDATE SET
+      content = EXCLUDED.content, embedding = EXCLUDED.embedding, updated_at = excluded.updated_at;
+    `;
   }
 
   async deleteFileEmbedding(contextId: string, fileId: string) {
@@ -153,6 +154,64 @@ export class CopilotContextModel extends BaseModel {
       SELECT "file_id" as "fileId", "chunk", "content", "embedding" <=> ${embedding}::vector as "distance" 
       FROM "ai_context_embeddings"
       WHERE context_id = ${contextId}
+      ORDER BY "distance" ASC
+      LIMIT ${topK};
+    `;
+    return similarityChunks.filter(c => Number(c.distance) <= threshold);
+  }
+
+  async createDoc(userId: string, sessionId: string) {
+    const row = await this.db.aiUserDocs.create({
+      data: {
+        userId,
+        sessionId,
+        title: '',
+        content: '',
+      },
+    });
+    return row.docId;
+  }
+
+  async insertDocEmbedding(
+    userId: string,
+    docId: string,
+    embeddings: Embedding[]
+  ) {
+    if (embeddings.length === 0) {
+      this.logger.warn(
+        `No embeddings provided for userId: ${userId}, docId: ${docId}. Skipping insertion.`
+      );
+      return;
+    }
+
+    const values = this.processEmbeddings(userId, docId, embeddings, false);
+
+    await this.db.$executeRaw`
+      INSERT INTO "ai_user_doc_embeddings"
+      ("user_id", "doc_id", "chunk", "content", "embedding", "created_at") VALUES ${values}
+      ON CONFLICT (user_id, doc_id, chunk) DO UPDATE SET
+      content = EXCLUDED.content, embedding = EXCLUDED.embedding;
+    `;
+  }
+
+  async deleteDocEmbedding(userId: string, docId: string) {
+    await this.db.aiUserDocEmbedding.deleteMany({
+      where: { userId, docId },
+    });
+  }
+
+  async matchDocEmbedding(
+    embedding: number[],
+    userId: string,
+    topK: number,
+    threshold: number
+  ): Promise<Omit<DocChunkSimilarity, 'title'>[]> {
+    const similarityChunks = await this.db.$queryRaw<
+      Array<Omit<DocChunkSimilarity, 'title'>>
+    >`
+      SELECT "doc_id" as "docId", "chunk", "content", "embedding" <=> ${embedding}::vector as "distance" 
+      FROM "ai_user_doc_embeddings"
+      WHERE user_id = ${userId}
       ORDER BY "distance" ASC
       LIMIT ${topK};
     `;

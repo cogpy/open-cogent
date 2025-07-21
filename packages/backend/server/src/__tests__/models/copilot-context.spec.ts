@@ -79,8 +79,9 @@ test('should get null for non-exist job', async t => {
 });
 
 test('should update context', async t => {
-  const { id: contextId } = await t.context.copilotContext.create(sessionId);
-  const config = await t.context.copilotContext.getConfig(contextId);
+  const { copilotContext } = t.context;
+  const { id: contextId } = await copilotContext.create(sessionId);
+  const config = await copilotContext.getConfig(contextId);
 
   config?.files.push({
     id: 'file1',
@@ -92,17 +93,19 @@ test('should update context', async t => {
     blobId: 'blob1',
     createdAt: Date.now(),
   });
-  await t.context.copilotContext.update(contextId, { config });
+  await copilotContext.update(contextId, { config });
 
-  const config1 = await t.context.copilotContext.getConfig(contextId);
+  const config1 = await copilotContext.getConfig(contextId);
   t.deepEqual(config1, config);
 });
 
 test('should insert embedding', async t => {
-  const { id: contextId } = await t.context.copilotContext.create(sessionId);
+  const { copilotContext } = t.context;
+  const { id: contextId } = await copilotContext.create(sessionId);
 
+  // file embedding
   {
-    await t.context.copilotContext.insertFileEmbedding(contextId, 'file-id', [
+    await copilotContext.insertFileEmbedding(contextId, 'file-id', [
       {
         index: 0,
         content: 'content',
@@ -111,7 +114,7 @@ test('should insert embedding', async t => {
     ]);
 
     {
-      const ret = await t.context.copilotContext.matchFileEmbedding(
+      const ret = await copilotContext.matchFileEmbedding(
         Array.from({ length: 1024 }, () => 0.9),
         contextId,
         1,
@@ -124,10 +127,46 @@ test('should insert embedding', async t => {
     }
 
     {
-      await t.context.copilotContext.deleteFileEmbedding(contextId, 'file-id');
-      const ret = await t.context.copilotContext.matchFileEmbedding(
+      await copilotContext.deleteFileEmbedding(contextId, 'file-id');
+      const ret = await copilotContext.matchFileEmbedding(
         Array.from({ length: 1024 }, () => 0.9),
         contextId,
+        1,
+        1
+      );
+      t.snapshot(ret, 'should return empty array when embedding is deleted');
+    }
+  }
+
+  // doc embedding
+  {
+    const docId = await copilotContext.createDoc(user.id, sessionId);
+    await copilotContext.insertDocEmbedding(user.id, docId, [
+      {
+        index: 0,
+        content: 'doc content',
+        embedding: Array.from({ length: 1024 }, () => 1),
+      },
+    ]);
+
+    {
+      const ret = await copilotContext.matchDocEmbedding(
+        Array.from({ length: 1024 }, () => 0.9),
+        user.id,
+        1,
+        1
+      );
+      t.snapshot(
+        cleanObject(ret, ['docId', 'distance']),
+        'should match doc embedding'
+      );
+    }
+
+    {
+      await copilotContext.deleteDocEmbedding(user.id, docId);
+      const ret = await copilotContext.matchDocEmbedding(
+        Array.from({ length: 1024 }, () => 0.9),
+        user.id,
         1,
         1
       );

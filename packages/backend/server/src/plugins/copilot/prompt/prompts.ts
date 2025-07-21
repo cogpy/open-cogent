@@ -1923,13 +1923,15 @@ Below is the user's query. Please respond in the user's preferred language witho
   ],
   config: {
     tools: [
+      'codeArtifact',
+      'docCompose',
       'docRead',
       'docEdit',
       'docKeywordSearch',
       'docSemanticSearch',
+      'todoList',
+      'markTodo',
       'webSearch',
-      'docCompose',
-      'codeArtifact',
     ],
   },
 };

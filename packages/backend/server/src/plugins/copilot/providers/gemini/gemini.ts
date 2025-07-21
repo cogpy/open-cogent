@@ -83,6 +83,8 @@ export abstract class GeminiProvider<T> extends CopilotProvider<T> {
       const [system, msgs] = await chatToGPTMessage(messages);
 
       const modelInstance = this.instance(model.id);
+
+      const { tools } = await this.getTools(options, model.id);
       const { text } = await generateText({
         model: modelInstance,
         system,
@@ -91,7 +93,7 @@ export abstract class GeminiProvider<T> extends CopilotProvider<T> {
         providerOptions: {
           google: this.getGeminiOptions(options, model.id),
         },
-        tools: await this.getTools(options, model.id),
+        tools,
         maxSteps: this.MAX_STEPS,
         experimental_continueSteps: true,
       });
@@ -272,6 +274,7 @@ export abstract class GeminiProvider<T> extends CopilotProvider<T> {
     options: CopilotChatOptions = {}
   ) {
     const [system, msgs] = await chatToGPTMessage(messages);
+    const { tools } = await this.getTools(options, model.id);
     const { fullStream } = streamText({
       model: this.instance(model.id),
       system,
@@ -280,7 +283,7 @@ export abstract class GeminiProvider<T> extends CopilotProvider<T> {
       providerOptions: {
         google: this.getGeminiOptions(options, model.id),
       },
-      tools: await this.getTools(options, model.id),
+      tools,
       maxSteps: this.MAX_STEPS,
       experimental_continueSteps: true,
     });

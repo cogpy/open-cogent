@@ -1,9 +1,15 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 
+import { RowInput } from '@afk/component';
+import { GoogleDuotoneIcon } from '@blocksuite/icons/rc';
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
+import { cn } from '@/lib/utils';
+
 import { useAuthStore } from '../store/auth';
+import { AuthLayout } from './layout/auth-layout';
+import * as styles from './sign-in.css';
 
 type Step = 'methodSelect' | 'password' | 'magic';
 
@@ -34,10 +40,8 @@ const OAuthButton: React.FC<OAuthButtonProps> = ({ provider, redirectUrl }) => {
   };
 
   return (
-    <button
-      onClick={handleClick}
-      className="w-full mb-2 py-2 px-4 border rounded-md text-sm font-medium bg-white hover:bg-gray-100"
-    >
+    <button onClick={handleClick} className={styles.oauthButton}>
+      <GoogleDuotoneIcon />
       Continue with {provider.charAt(0).toUpperCase() + provider.slice(1)}
     </button>
   );
@@ -50,7 +54,7 @@ export const SignInPage: React.FC = () => {
   const redirectUrl = searchParams.get('redirect') || '/';
 
   const {
-    isAuthenticated,
+    user,
     isLoading,
     error,
     clearError,
@@ -70,10 +74,10 @@ export const SignInPage: React.FC = () => {
 
   // Navigate after login effect
   useEffect(() => {
-    if (isAuthenticated) {
+    if (!isLoading && user) {
       navigate(redirectUrl, { replace: true });
     }
-  }, [isAuthenticated, navigate, redirectUrl]);
+  }, [isLoading, navigate, redirectUrl, user]);
 
   // Countdown timer for resend OTP
   useEffect(() => {
@@ -127,31 +131,36 @@ export const SignInPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-      <div className="w-full max-w-md bg-white p-6 rounded shadow">
+    <AuthLayout>
+      <div className={styles.wrapper}>
         {step === 'methodSelect' && (
           <>
-            <h2 className="text-2xl font-bold mb-4 text-center">Sign in</h2>
-            <OAuthButton provider="google" />
-            <div className="flex items-center my-4">
-              <hr className="flex-1" />
-              <span className="px-2 text-xs text-gray-500">OR</span>
-              <hr className="flex-1" />
-            </div>
-            <input
+            <h2 className={styles.title}>Welcome Back</h2>
+            <RowInput
               type="email"
               placeholder="Email address"
-              className="w-full px-3 py-2 border rounded mb-3"
               value={email}
-              onChange={e => setEmail(e.target.value)}
+              onChange={setEmail}
+              className={styles.input}
+              style={{ marginBottom: 16 }}
+              autoComplete="email"
+              required
+              autoFocus
             />
             <button
               onClick={() => void handleEmailContinue()}
-              className="w-full py-2 px-4 bg-indigo-600 text-white rounded disabled:opacity-50"
+              className={styles.submit}
               disabled={!email || isLoading}
+              aria-disabled={!email || isLoading}
             >
-              Continue
+              Continue with email
             </button>
+            <div className={styles.or}>
+              <div className={cn('flex-1', styles.line)} />
+              <span className={styles.orText}>OR</span>
+              <div className={cn('flex-1', styles.line, 'reverse')} />
+            </div>
+            <OAuthButton provider="google" />
           </>
         )}
 
@@ -232,6 +241,6 @@ export const SignInPage: React.FC = () => {
           </>
         )}
       </div>
-    </div>
+    </AuthLayout>
   );
 };

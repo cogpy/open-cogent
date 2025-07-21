@@ -9,7 +9,6 @@ export interface User {
 
 export interface AuthState {
   user: User | null;
-  isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
   // authentication methods
@@ -35,7 +34,6 @@ export const useAuthStore = create<AuthState>()(
   persist(
     (set, _get) => ({
       user: null,
-      isAuthenticated: false,
       isLoading: false,
       error: null,
 
@@ -89,7 +87,6 @@ export const useAuthStore = create<AuthState>()(
           const data = await response.json();
           set({
             user: data.user,
-            isAuthenticated: true,
             isLoading: false,
             error: null,
           });
@@ -138,7 +135,6 @@ export const useAuthStore = create<AuthState>()(
           const data = await res.json();
           set({
             user: data.user,
-            isAuthenticated: true,
             isLoading: false,
             error: null,
           });
@@ -164,7 +160,6 @@ export const useAuthStore = create<AuthState>()(
           const data = await res.json();
           set({
             user: data.user,
-            isAuthenticated: true,
             isLoading: false,
             error: null,
           });
@@ -178,8 +173,8 @@ export const useAuthStore = create<AuthState>()(
       },
 
       logout: () => {
-        fetch('/api/auth/sign-out', { method: 'POST' }).catch(console.error);
-        set({ user: null, isAuthenticated: false, error: null });
+        fetch('/api/auth/sign-out', { method: 'GET' }).catch(console.error);
+        set({ user: null, error: null });
       },
 
       refreshSession: async () => {
@@ -188,12 +183,12 @@ export const useAuthStore = create<AuthState>()(
           const res = await fetch('/api/auth/session');
           if (res.ok) {
             const data = await res.json();
-            set({ user: data.user, isAuthenticated: true, isLoading: false });
+            set({ user: data.user, isLoading: false });
           } else {
-            set({ user: null, isAuthenticated: false, isLoading: false });
+            set({ user: null, isLoading: false });
           }
         } catch {
-          set({ user: null, isAuthenticated: false, isLoading: false });
+          set({ user: null, isLoading: false });
         }
       },
 
@@ -203,7 +198,6 @@ export const useAuthStore = create<AuthState>()(
       name: 'auth-storage',
       partialize: state => ({
         user: state.user,
-        isAuthenticated: state.isAuthenticated,
       }),
     }
   )

@@ -8,7 +8,7 @@ interface AuthGuardProps {
 }
 
 export const AuthGuard = ({ children }: AuthGuardProps) => {
-  const { isAuthenticated, isLoading, refreshSession } = useAuthStore();
+  const { user, isLoading, refreshSession } = useAuthStore();
   const location = useLocation();
 
   // Check authentication status on mount
@@ -46,9 +46,12 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
       </div>
     );
   }
+  if (isLoading) {
+    return null;
+  }
 
   // Redirect to sign-in if not authenticated
-  if (!isAuthenticated) {
+  if (!user) {
     const redirectUrl = location.pathname + location.search;
     return (
       <Navigate

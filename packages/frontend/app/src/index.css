@@ -12,3 +12,10 @@ body,
   height: 100%;
   width: 100%;
 }
+
+html {
+  background-color: var(--affine-v2-layer-background-secondary);
+}
+body {
+  padding: 8px !important;
+}

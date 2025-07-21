@@ -26,10 +26,12 @@ const ChatsPage = () => {
 const LibraryPage = () => {
   return (
     <Routes>
-      <Route element={<ChatLayout />}>
-        <Route path="/" element={<LibraryDashboard />} />
-        <Route path="/:id" element={<div>Document</div>} />
-      </Route>
+      <AuthGuard>
+        <Route element={<ChatLayout />}>
+          <Route path="/" element={<LibraryDashboard />} />
+          <Route path="/:id" element={<div>Document</div>} />
+        </Route>
+      </AuthGuard>
     </Routes>
   );
 };
@@ -39,8 +41,22 @@ function App() {
     <Routes>
       <Route path="/sign-in" element={<SignInPage />} />
       <Route path="/magic-link" element={<MagicLinkPage />} />
-      <Route path="/chats/*" element={<ChatsPage />} />
-      <Route path="/library/*" element={<LibraryPage />} />
+      <Route
+        path="/chats/*"
+        element={
+          <AuthGuard>
+            <ChatsPage />
+          </AuthGuard>
+        }
+      />
+      <Route
+        path="/library/*"
+        element={
+          <AuthGuard>
+            <LibraryPage />
+          </AuthGuard>
+        }
+      />
       <Route
         path="/settings"
         element={

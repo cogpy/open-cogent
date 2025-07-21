@@ -18,7 +18,7 @@ type TodoList = {
 export const createTodoTool = (cache: Cache) => {
   return tool({
     description:
-      'Make a todo list for client, returns the todo list with a unique ID',
+      'Make a todo list for client, returns the todo list with a unique ID, this tool should only used when you are doing something that requires multiple steps, like writing a document or composing an email.',
     parameters: z.object({
       todo: z
         .object({

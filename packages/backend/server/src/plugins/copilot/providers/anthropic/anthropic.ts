@@ -66,6 +66,7 @@ export abstract class AnthropicProvider<T> extends CopilotProvider<T> {
       const [system, msgs] = await chatToGPTMessage(messages, true, true);
 
       const modelInstance = this.instance(model.id);
+      const { tools } = await this.getTools(options, model.id);
       const { text, reasoning } = await generateText({
         model: modelInstance,
         system,
@@ -74,7 +75,7 @@ export abstract class AnthropicProvider<T> extends CopilotProvider<T> {
         providerOptions: {
           anthropic: this.getAnthropicOptions(options, model.id),
         },
-        tools: await this.getTools(options, model.id),
+        tools,
         maxSteps: this.MAX_STEPS,
         experimental_continueSteps: true,
       });
@@ -160,6 +161,7 @@ export abstract class AnthropicProvider<T> extends CopilotProvider<T> {
     options: CopilotChatOptions = {}
   ) {
     const [system, msgs] = await chatToGPTMessage(messages, true, true);
+    const { tools } = await this.getTools(options, model.id);
     const { fullStream } = streamText({
       model: this.instance(model.id),
       system,
@@ -168,7 +170,7 @@ export abstract class AnthropicProvider<T> extends CopilotProvider<T> {
       providerOptions: {
         anthropic: this.getAnthropicOptions(options, model.id),
       },
-      tools: await this.getTools(options, model.id),
+      tools,
       maxSteps: this.MAX_STEPS,
       experimental_continueSteps: true,
     });

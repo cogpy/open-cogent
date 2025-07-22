@@ -56,14 +56,11 @@ type Shift<Fn> = Fn extends (arg0: any, ...rest: infer Rest) => infer R
 export type SaveDocFunc = Shift<Awaited<ReturnType<typeof buildSaveDocGetter>>>;
 
 export const createDocComposeTool = (
-  toolStream: ReadableStream<StreamObjectToolResult>[],
+  toolStream: WritableStream<StreamObjectToolResult>,
   promptService: PromptService,
   factory: CopilotProviderFactory,
   saveDoc: SaveDocFunc
 ) => {
-  let { readable, writable } = new TransformStream<StreamObjectToolResult>();
-  toolStream.push(readable);
-
   return tool({
     description:
       'Write a new document with markdown content. This tool creates structured markdown content for documents including titles, sections, and formatting.',
@@ -75,7 +72,8 @@ export const createDocComposeTool = (
           'The user description of the document, will be used to generate the document'
         ),
     }),
-    execute: async ({ title, userPrompt }, { toolCallId, abortSignal }) => {
+    execute: async (args, { toolCallId, abortSignal }) => {
+      const { title, userPrompt } = args;
       try {
         const prompt = await promptService.get('Write an article about this');
         if (!prompt) {
@@ -95,7 +93,7 @@ export const createDocComposeTool = (
         const content = await duplicateStreamObjectStream(
           toolCallId,
           originalStream,
-          writable,
+          toolStream,
           abortSignal
         );
 

@@ -53,13 +53,13 @@ export function duplicateToolStream(
 export async function duplicateStreamObjectStream(
   toolCallId: string,
   originalStream: AsyncIterable<StreamObject>,
-  targetStream: WritableStream<StreamObjectToolResult>,
+  toolStream: WritableStream<StreamObject>,
   abortSignal?: AbortSignal
 ): Promise<string> {
   const { branch: aiStream, done: pipelineDone } = duplicateToolStream(
     toolCallId,
     originalStream,
-    targetStream,
+    toolStream,
     abortSignal
   );
 
@@ -80,15 +80,7 @@ export async function duplicateStreamObjectStream(
     }
   })();
 
-  try {
-    await Promise.all([readBranchB, pipelineDone]);
-    return content;
-  } catch (err) {
-    try {
-      await targetStream.abort();
-    } catch (_) {
-      /* ignore */
-    }
-    throw err;
-  }
+  await Promise.all([readBranchB, pipelineDone]);
+
+  return content;
 }

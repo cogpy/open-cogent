@@ -58,7 +58,6 @@ export function mergeStream<F, S>(
 
   return new ReadableStream({
     async pull(controller) {
-      // Promise.race 等待任意 reader 先出数据
       const { value, done, idx } = await Promise.race(
         readers.map((r, i) => r.read().then(res => ({ ...res, idx: i })))
       );
@@ -67,31 +66,6 @@ export function mergeStream<F, S>(
         readers.splice(idx, 1);
         // close the controller if all readers are done or first reader is done
         if (readers.length === 0 || idx === 0) controller.close();
-        return;
-      }
-      controller.enqueue(value);
-    },
-    cancel() {
-      readers.forEach(r => r.cancel());
-    },
-  });
-}
-
-export function mergeStreams<T>(
-  ...sources: ReadableStream<T>[]
-): ReadableStream<T> {
-  const readers = sources.map(stream => stream.getReader());
-
-  return new ReadableStream({
-    async pull(controller) {
-      // Promise.race 等待任意 reader 先出数据
-      const { value, done, idx } = await Promise.race(
-        readers.map((r, i) => r.read().then(res => ({ ...res, idx: i })))
-      );
-
-      if (done) {
-        readers.splice(idx, 1);
-        if (readers.length === 0) controller.close();
         return;
       }
       controller.enqueue(value);

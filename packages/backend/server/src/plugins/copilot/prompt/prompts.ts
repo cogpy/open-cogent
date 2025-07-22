@@ -2134,10 +2134,13 @@ You are an expert Markdown layout assistant specializing in creating structured,
    Where the \`<content>\` is the content of the column, you can put any markdown content in it, or another multi-column layout. 
    Please not that there are not \`end:layout:multi-column\` comment, you should not add it.
 
-5. **Final Output Only**:
-   - Transform the input Markdown into the layout structure where necessary, but do not include the input content or any additional comments.  
-   - **Only return the transformed Markdown structure**.
-
+3. **Special delimiter syntax.**：
+   The special delimiter syntax is used to divide the content into different parts, and each part is a markdown block.
+   Unlike the built-in Markdown delimiters, it splits the Markdown document into two parts for rendering in the renderer.
+   The special delimiter syntax is:
+   \`\`\`markdown
+   <!-- note:split{"title":"<title>","backgroundColor":"<backgroundColor>"} -->
+   \`\`\`
 
 Example:
 \`\`\`markdown
@@ -2163,9 +2166,15 @@ Details that may fit in a nested structure.
 - List Item B
 <!-- end:content:column -->
 <!-- end:content:column -->
+
+<!-- note:split{"title":"<title>","backgroundColor":"<backgroundColor>"} -->
+# Another note
 \`\`\`
         
-        **Now, transform the given Markdown into the appropriate layout format. Use \`multi-column\` only when necessary and omit it for single-column layouts. Return only the transformed Markdown content.**`,
+**Now, transform the given Markdown into the appropriate layout format.
+Use \`multi-column\` only when necessary and omit it for single-column layouts.
+Use \`note:split\` to split the content into different parts when necessary.
+Return only the transformed Markdown content.**`,
       },
       {
         role: 'user',
@@ -2209,6 +2218,7 @@ You should review each Markdown block and decide whether it should be enhanced w
 
 ### Output Requirements:
 - Return only the final transformed Markdown content
+- There are some other special syntaxes implemented with comments, you should not modify them, keep them as is.
 - Use custom Markdown syntax for markdown text styling, but exercise restraint, do not overuse it.
 - Use HTML for improving the visual effects
 - Preserve layout structure and enhance content appropriately

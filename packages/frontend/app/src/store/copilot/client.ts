@@ -14,7 +14,6 @@ import {
   type GraphQLQuery,
   listContextObjectQuery,
   listContextQuery,
-  matchContextQuery,
   type PaginationInput,
   type QueryOptions,
   type QueryResponse,
@@ -283,27 +282,6 @@ export class CopilotClient {
       },
     });
     return res.currentUser?.copilot?.contexts?.[0];
-  }
-
-  async matchContext(
-    content: string,
-    contextId?: string,
-    limit?: number,
-    scopedThreshold?: number,
-    threshold?: number
-  ) {
-    const res = await this.gql({
-      query: matchContextQuery,
-      variables: {
-        content,
-        contextId,
-        limit,
-        scopedThreshold,
-        threshold,
-      },
-    });
-    const { matchFiles: files } = res.currentUser?.copilot?.contexts?.[0] || {};
-    return { files };
   }
 
   async chatText({

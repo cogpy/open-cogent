@@ -138,55 +138,6 @@ export class CopilotUserEmbeddingConfigResolver {
     }
   }
 
-  @Mutation(() => CopilotUserFileType, {
-    complexity: 2,
-    description: 'Upload user embedding files',
-  })
-  async addUserFiles(
-    @Context() ctx: { req: Request },
-    @CurrentUser() user: CurrentUser,
-    @Args({ name: 'blob', type: () => GraphQLUpload })
-    content: FileUpload,
-    @Args('metadata', { type: () => String, nullable: true })
-    metadata?: string
-  ): Promise<CopilotUserFileType> {
-    const lockFlag = `${COPILOT_LOCKER}:user:${user.id}`;
-    await using lock = await this.mutex.acquire(lockFlag);
-    if (!lock) {
-      throw new TooManyRequest('Server is busy');
-    }
-
-    const length = Number(ctx.req.headers['content-length']);
-    if (length && length >= MAX_EMBEDDABLE_SIZE) {
-      throw new BlobQuotaExceeded();
-    }
-
-    try {
-      const { blobId, file } = await this.copilotUser.addFile(
-        user.id,
-        content,
-        metadata
-      );
-      await this.copilotUser.queueFileEmbedding({
-        userId: user.id,
-        blobId,
-        fileId: file.fileId,
-        fileName: file.fileName,
-      });
-
-      return file;
-    } catch (e: any) {
-      // passthrough user friendly error
-      if (e instanceof UserFriendlyError) {
-        throw e;
-      }
-      throw new CopilotFailedToAddUserArtifact({
-        type: 'file',
-        message: e.message,
-      });
-    }
-  }
-
   @Mutation(() => CopilotUserDocType, {
     complexity: 2,
     description: 'Update user embedding doc',

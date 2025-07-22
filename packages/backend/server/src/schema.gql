@@ -508,13 +508,10 @@ type Mutation {
   addContextDoc(contextId: String!, docId: String!): CopilotContextChatOrDoc!
 
   """add a file to context"""
-  addContextFile(content: Upload!, contextId: String!): CopilotContextFile!
+  addContextFile(blobId: String, content: Upload, contextId: String!): CopilotContextFile!
 
   """Add user embedding doc"""
   addUserDocs(content: String!, metadata: String, sessionId: String!, title: String!): CopilotUserDoc!
-
-  """Upload user embedding files"""
-  addUserFiles(blob: Upload!, metadata: String): CopilotUserFile!
 
   """Ban an user"""
   banUser(id: String!): UserType!

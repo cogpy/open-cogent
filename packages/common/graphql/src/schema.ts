@@ -387,6 +387,8 @@ export interface CreateChatMessageInput {
 }
 
 export interface CreateChatSessionInput {
+  /** mark the session create from which doc */
+  docId?: InputMaybe<Scalars['String']['input']>;
   pinned?: InputMaybe<Scalars['Boolean']['input']>;
   /** The prompt name to use for the session */
   promptName: Scalars['String']['input'];

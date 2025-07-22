@@ -1,6 +1,7 @@
+import { CheckBoxCheckSolidIcon } from '@blocksuite/icons/rc';
+
 import { MessageCard } from '@/components/ui/card/message-card';
 import { cn } from '@/lib/utils';
-import { CheckBoxCheckSolidIcon } from '@blocksuite/icons/rc';
 
 interface TodoItem {
   id: string;
@@ -34,6 +35,7 @@ const statusToCardStatus = (
     case 'in_progress':
     case 'in-progress':
     case 'inProgress':
+    case 'processing':
       return 'loading';
     case 'pending':
     case 'todo':
@@ -58,6 +60,7 @@ const getIcon = (status: string) => {
           <circle cx="12" cy="12" r="9.25" stroke="#B3B3B3" strokeWidth="1.5" />
         </svg>
       );
+    // processing & loading show spinner via MessageCard, no icon needed
     default:
       return undefined;
   }
@@ -71,6 +74,7 @@ const statusCategory = (status: string): keyof typeof COLUMN_LABELS => {
     case 'in_progress':
     case 'in-progress':
     case 'inProgress':
+    case 'processing':
       return 'inProgress';
     case 'pending':
     case 'todo':

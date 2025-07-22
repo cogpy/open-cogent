@@ -28,7 +28,10 @@ export const createMakeItRealTool = (
         .describe("User's special requirements."),
       markdown: z.string().describe('The markdown content'),
     }),
-    execute: async ({ instructions, markdown }, { toolCallId }) => {
+    execute: async (
+      { instructions, markdown },
+      { toolCallId, abortSignal }
+    ) => {
       console.log('makeItRealTool', instructions, markdown);
       try {
         const prompt = await promptService.get('make-it-real');
@@ -51,7 +54,8 @@ export const createMakeItRealTool = (
         const content = await duplicateStreamObjectStream(
           toolCallId,
           originalStream,
-          writable
+          writable,
+          abortSignal
         );
         console.log(content);
         const ret = await saveDoc(content);

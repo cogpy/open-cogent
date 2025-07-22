@@ -75,7 +75,7 @@ export const createDocComposeTool = (
           'The user description of the document, will be used to generate the document'
         ),
     }),
-    execute: async ({ title, userPrompt }, { toolCallId }) => {
+    execute: async ({ title, userPrompt }, { toolCallId, abortSignal }) => {
       try {
         const prompt = await promptService.get('Write an article about this');
         if (!prompt) {
@@ -95,7 +95,8 @@ export const createDocComposeTool = (
         const content = await duplicateStreamObjectStream(
           toolCallId,
           originalStream,
-          writable
+          writable,
+          abortSignal
         );
 
         const ret = await saveDoc(content);

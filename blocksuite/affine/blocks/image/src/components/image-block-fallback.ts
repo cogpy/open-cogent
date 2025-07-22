@@ -33,13 +33,13 @@ export class ImageBlockFallbackCard extends WithDisposable(ShadowlessElement) {
       border: 1px solid ${unsafeCSSVarV2('layer/background/tertiary')};
       background: ${unsafeCSSVarV2('layer/background/secondary')};
       padding: 12px;
-    }
 
-    .truncate {
-      align-self: stretch;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      overflow: hidden;
+      .truncate {
+        align-self: stretch;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+      }
     }
 
     .affine-image-fallback-card-title {

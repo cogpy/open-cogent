@@ -34,13 +34,6 @@ export const styles = css`
     min-width: 0;
   }
 
-  .truncate {
-    align-self: stretch;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    overflow: hidden;
-  }
-
   .affine-attachment-content-title {
     display: flex;
     flex-direction: row;

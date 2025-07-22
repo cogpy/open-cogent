@@ -183,7 +183,7 @@ export const SignInPage: React.FC = () => {
             {error && <p className="text-sm text-red-600 mb-2">{error}</p>}
             <button
               onClick={() => void handlePasswordLogin()}
-              className="w-full py-2 px-4 bg-indigo-600 text-white rounded disabled:opacity-50"
+              className={cn(styles.submit, 'mt-8')}
               disabled={!password || isLoading}
             >
               Sign in

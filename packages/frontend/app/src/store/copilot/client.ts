@@ -292,6 +292,15 @@ export class CopilotClient {
     return res.currentUser?.copilot?.contexts?.[0];
   }
 
+  async getContextFiles(sessionId: string) {
+    return await this.gql({
+      query: listContextQuery,
+      variables: {
+        sessionId,
+      },
+    });
+  }
+
   async matchContext(
     content: string,
     contextId?: string,

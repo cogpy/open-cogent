@@ -186,6 +186,7 @@ export function createChatSessionStore(params: {
       sessionId,
       meta: (initialMeta as any) ?? null,
       messages: (initialMeta && (initialMeta as any).messages) ?? [],
+      contextId: '',
 
       /* ---------- Flags ---------- */
       isInitializing: true,
@@ -205,6 +206,7 @@ export function createChatSessionStore(params: {
               withMessages: true,
             }
           );
+          const contextId = await client.createContext(sessionId);
           const historyEntry = Array.isArray(histories)
             ? histories.find((h: any) => h.sessionId === sessionId)
             : undefined;
@@ -237,6 +239,7 @@ export function createChatSessionStore(params: {
             if (state.messages.length === 0) {
               state.messages = mergedMessages;
             }
+            state.contextId = contextId;
           });
         });
       },
@@ -375,6 +378,10 @@ export function createChatSessionStore(params: {
         set(state => {
           state.error = undefined;
         });
+      },
+
+      loadContexts: async () => {
+        const contexts = await client.getContextFiles(sessionId);
       },
     }))
   );

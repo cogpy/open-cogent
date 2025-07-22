@@ -319,6 +319,7 @@ __metadata:
     eslint-plugin-unicorn: "npm:^59.0.0"
     happy-dom: "npm:^18.0.0"
     husky: "npm:^9.1.7"
+    idb: "npm:^8.0.3"
     lint-staged: "npm:^16.0.0"
     msw: "npm:^2.6.8"
     oxlint: "npm:^1.1.0"
@@ -20390,7 +20391,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"idb@npm:^8.0.0":
+"idb@npm:^8.0.0, idb@npm:^8.0.3":
   version: 8.0.3
   resolution: "idb@npm:8.0.3"
   checksum: 10/e2beccb0be7c6af562a5e92b209363358571a770aecdc68e891d1141d994d8f1e8f34b79dafa309ed7467d0f4df2b7b4c15f67cfd0611100282bfc3d85f9c73c

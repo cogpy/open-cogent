@@ -1,4 +1,4 @@
-import type { StreamObject } from '@afk/graphql';
+import type { CopilotContextFile, StreamObject } from '@afk/graphql';
 
 import type { CopilotClient } from './client';
 
@@ -32,12 +32,14 @@ export interface SessionFlags {
 export interface ChatSessionState extends SessionFlags {
   // Identifiers
   sessionId: string;
+  contextId: string;
 
   error?: Error;
 
   // Data
   meta: SessionMeta | null;
   messages: ChatMessage[];
+  contextFiles: CopilotContextFile[];
 
   /* ---------------- Actions -------------- */
   init(): Promise<void>;

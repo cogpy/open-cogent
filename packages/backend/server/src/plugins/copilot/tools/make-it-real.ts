@@ -16,7 +16,7 @@ export const createMakeItRealTool = (
   saveDoc: SaveDocFunc
 ) => {
   return tool({
-    description: `This tool(make-it-real) is used to improve the document with more beautiful layout and professional appearance.`,
+    description: `This tool(make-it-real) is used to improve the document with more beautiful layout and professional appearance. Return a new document`,
     parameters: z.object({
       instructions: z
         .string()
@@ -53,6 +53,8 @@ export const createMakeItRealTool = (
           toolStream,
           abortSignal
         );
+
+        console.log('makeItRealTool content', content);
 
         return await saveDoc(content);
       } catch (err: any) {

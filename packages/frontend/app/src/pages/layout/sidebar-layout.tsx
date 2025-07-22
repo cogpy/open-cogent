@@ -26,7 +26,7 @@ export const SidebarLayout = ({
       </AppSidebar>
 
       {/* main content area */}
-      <main className="w-0 flex-1 flex gap-2">
+      <main className="w-0 flex-1 h-full flex gap-2">
         {/* chat panel */}
         <div
           className={`bg-white rounded-[8px] overflow-hidden transition-all duration-300 ${

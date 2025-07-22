@@ -30,25 +30,29 @@ const ChatPageImpl = ({
   };
 
   return (
-    <div className="flex flex-col justify-center h-full p-4 gap-4 max-w-[900px] mx-auto">
-      <div className="flex-1 overflow-auto rounded p-2 flex flex-col gap-2">
-        {messages.map((m, idx) => {
-          return (
-            <MessageRenderer
-              key={m.id ?? idx}
-              message={m}
-              isStreaming={isStreaming && idx === messages.length - 1}
-            />
-          );
-        })}
+    <div className="flex flex-col justify-center h-full gap-4">
+      <div className="flex-1 rounded p-6 flex flex-col gap-2 h-full overflow-y-auto">
+        <div className="max-w-[900px] mx-auto w-full">
+          {messages.map((m, idx) => {
+            return (
+              <MessageRenderer
+                key={m.id ?? idx}
+                message={m}
+                isStreaming={isStreaming && idx === messages.length - 1}
+              />
+            );
+          })}
+        </div>
       </div>
-      <ChatInput
-        input={input}
-        setInput={setInput}
-        onSend={onSend}
-        sending={isSubmitting}
-        store={store}
-      />
+      <div className="w-full max-w-[900px] mx-auto px-4 pb-4">
+        <ChatInput
+          input={input}
+          setInput={setInput}
+          onSend={onSend}
+          sending={isSubmitting}
+          store={store}
+        />
+      </div>
     </div>
   );
 };
@@ -56,8 +60,6 @@ const ChatPageImpl = ({
 export const ChatPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-
-  const [contexts, setContexts] = useState<ChatContext[]>([]);
 
   // Input state shared between modes
   const [input, setInput] = useState('');
@@ -107,9 +109,6 @@ export const ChatPage = () => {
 
       await newStore.getState().sendMessage({
         content: input.trim(),
-        blobs: contexts
-          .filter(ctx => ctx.type === 'attachment')
-          .map(ctx => ctx.blob),
       });
 
       // Navigate to URL with new session id
@@ -131,13 +130,7 @@ export const ChatPage = () => {
       <div className="text-[26px] font-medium text-center mb-9">
         What can I help you with?
       </div>
-      <ChatInput
-        input={input}
-        setInput={setInput}
-        onSend={onSendPlaceholder}
-        contexts={contexts}
-        setContexts={setContexts}
-      />
+      <ChatInput input={input} setInput={setInput} onSend={onSendPlaceholder} />
     </div>
   );
 };

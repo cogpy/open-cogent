@@ -95,7 +95,7 @@ export const ChatInput = ({
   );
 
   return (
-    <div className={cn(styles.container, 'border rounded-2xl p-4')}>
+    <div className={cn(styles.container, 'border rounded-2xl p-4 w-full')}>
       <ContextPreview store={store} />
       <div className="w-full relative">
         <textarea

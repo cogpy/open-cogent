@@ -187,6 +187,7 @@ export function createChatSessionStore(params: {
       meta: (initialMeta as any) ?? null,
       messages: (initialMeta && (initialMeta as any).messages) ?? [],
       contextId: '',
+      contextFiles: [],
 
       /* ---------- Flags ---------- */
       isInitializing: true,

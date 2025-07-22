@@ -15,6 +15,9 @@ import type {
   Paragraph,
   Root,
   Strong,
+  Table,
+  TableCell,
+  TableRow,
 } from 'mdast';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
@@ -183,6 +186,11 @@ export class MarkdownToSnapshotConverter {
       case 'image':
         const imageBlock = this.createImageBlock(node as Image);
         this.insertBlock(imageBlock, blocks);
+        break;
+
+      case 'table':
+        const tableBlock = this.createTableBlock(node as Table);
+        this.insertBlock(tableBlock, blocks);
         break;
     }
   }
@@ -406,6 +414,106 @@ export class MarkdownToSnapshotConverter {
       },
       children: [],
     };
+  }
+
+  private createTableBlock(node: Table): BlockSnapshot {
+    const tableProps = this.parseTableFromMarkdown(node);
+    return {
+      type: 'block',
+      id: nanoid(),
+      flavour: 'affine:table',
+      props: tableProps,
+      children: [],
+    };
+  }
+
+  private parseTableFromMarkdown(node: Table): any {
+    const rowTextLists: any[][] = [];
+    node.children.forEach(row => {
+      const rowText: any[] = [];
+      row.children.forEach(cell => {
+        rowText.push(this.extractDeltaFromMdastNode(cell));
+      });
+      rowTextLists.push(rowText);
+    });
+    return this.createTableProps(rowTextLists);
+  }
+
+  private createTableProps(deltasLists: any[][]): any {
+    const createIdAndOrder = (count: number) => {
+      const result: { id: string; order: string }[] = Array.from({
+        length: count,
+      });
+      for (let i = 0; i < count; i++) {
+        const id = nanoid();
+        const order = this.generateFractionalIndexingKeyBetween(
+          result[i - 1]?.order ?? null,
+          null
+        );
+        result[i] = { id, order };
+      }
+      return result;
+    };
+
+    const columnCount = Math.max(...deltasLists.map(row => row.length));
+    const rowCount = deltasLists.length;
+
+    const columns = createIdAndOrder(columnCount).map(v => ({
+      columnId: v.id,
+      order: v.order,
+    }));
+    const rows = createIdAndOrder(rowCount).map(v => ({
+      rowId: v.id,
+      order: v.order,
+    }));
+
+    const cells: Record<string, any> = {};
+    for (let i = 0; i < rowCount; i++) {
+      for (let j = 0; j < columnCount; j++) {
+        const row = rows[i];
+        const column = columns[j];
+        if (!row || !column) {
+          continue;
+        }
+        const cellId = `${row.rowId}:${column.columnId}`;
+        const text = deltasLists[i]?.[j];
+        cells[cellId] = {
+          text: {
+            '$blocksuite:internal:text$': true,
+            delta: text ?? [],
+          },
+        };
+      }
+    }
+
+    return {
+      columns: Object.fromEntries(
+        columns.map(column => [column.columnId, column])
+      ),
+      rows: Object.fromEntries(rows.map(row => [row.rowId, row])),
+      cells,
+    };
+  }
+
+  private generateFractionalIndexingKeyBetween(
+    prev: string | null,
+    next: string | null
+  ): string {
+    if (!prev && !next) {
+      return 'a0';
+    }
+    if (!prev) {
+      return 'a0';
+    }
+    if (!next) {
+      const lastChar = prev.charCodeAt(prev.length - 1);
+      if (lastChar < 122) {
+        return prev.slice(0, -1) + String.fromCharCode(lastChar + 1);
+      }
+      return prev + 'a';
+    }
+    // Simple implementation for between two keys
+    return prev + '5';
   }
 
   private extractTextFromMdastNode(node: any): string {
@@ -723,6 +831,9 @@ export class SnapshotToMarkdownConverter {
       case 'affine:image':
         return this.imageToMarkdown(block);
 
+      case 'affine:table':
+        return this.tableToMarkdown(block);
+
       default:
         const text = this.extractTextFromBlock(block);
         return text || '';
@@ -835,6 +946,134 @@ export class SnapshotToMarkdownConverter {
     const caption = block.props?.caption || '';
 
     return `![${caption}](${sourceId})`;
+  }
+
+  private tableToMarkdown(block: BlockSnapshot): string {
+    const { columns, rows, cells } = block.props || {};
+    if (!columns || !rows || !cells) {
+      return '';
+    }
+
+    const table = this.processTableForMarkdown(columns, rows, cells);
+    return this.formatTableAsMarkdown(table.rows);
+  }
+
+  private processTableForMarkdown(columns: any, rows: any, cells: any): any {
+    const sortedColumns = Object.values(columns).sort((a: any, b: any) =>
+      a.order.localeCompare(b.order)
+    );
+    const sortedRows = Object.values(rows).sort((a: any, b: any) =>
+      a.order.localeCompare(b.order)
+    );
+
+    const tableRows: any[] = [];
+    sortedRows.forEach((r: any) => {
+      const row: any[] = [];
+      sortedColumns.forEach((col: any) => {
+        const cell = cells[`${r.rowId}:${col.columnId}`];
+        if (!cell) {
+          row.push('');
+          return;
+        }
+        const cellText = this.extractMarkdownFromCellText(cell.text);
+        row.push(cellText);
+      });
+      tableRows.push(row);
+    });
+
+    return { rows: tableRows };
+  }
+
+  private extractMarkdownFromCellText(text: any): string {
+    if (text && typeof text === 'object' && 'delta' in text) {
+      return (text as any).delta
+        .map((d: any) => {
+          let insert = d.insert || '';
+
+          if (d.attributes) {
+            // 处理链接
+            if (d.attributes.link) {
+              insert = `[${insert}](${d.attributes.link})`;
+            }
+            // 处理标准markdown格式
+            else if (
+              d.attributes.bold &&
+              !d.attributes.color &&
+              !d.attributes.background
+            ) {
+              insert = `**${insert}**`;
+            } else if (
+              d.attributes.italic &&
+              !d.attributes.color &&
+              !d.attributes.background
+            ) {
+              insert = `*${insert}*`;
+            } else if (
+              d.attributes.strike &&
+              !d.attributes.color &&
+              !d.attributes.background
+            ) {
+              insert = `~~${insert}~~`;
+            } else if (
+              d.attributes.code &&
+              !d.attributes.color &&
+              !d.attributes.background
+            ) {
+              insert = `\`${insert}\``;
+            }
+            // 处理自定义语法
+            else {
+              const customAttributes = this.buildCustomAttributes(d.attributes);
+              if (customAttributes) {
+                insert = `[${insert}]{${customAttributes}}`;
+              }
+            }
+          }
+
+          return insert;
+        })
+        .join('');
+    }
+    return '';
+  }
+
+  private formatTableAsMarkdown(rows: string[][]): string {
+    if (rows.length === 0) {
+      return '';
+    }
+
+    const columnWidths = this.calculateColumnWidths(rows);
+    const formattedRows = rows.map((row, index) =>
+      this.formatTableRow(row, columnWidths, index === 0)
+    );
+    return formattedRows.join('\n');
+  }
+
+  private calculateColumnWidths(rows: string[][]): number[] {
+    return (
+      rows[0]?.map((_, colIndex) =>
+        Math.max(...rows.map(row => (row[colIndex] || '').length))
+      ) ?? []
+    );
+  }
+
+  private formatTableRow(
+    row: string[],
+    columnWidths: number[],
+    isHeader: boolean
+  ): string {
+    const cells = row.map((cell, colIndex) =>
+      cell?.padEnd(columnWidths[colIndex] ?? 0, ' ')
+    );
+    const rowString = `| ${cells.join(' | ')} |`;
+    return isHeader
+      ? `${rowString}\n${this.formatTableSeparator(columnWidths)}`
+      : rowString;
+  }
+
+  private formatTableSeparator(columnWidths: number[]): string {
+    const separator = columnWidths.map(width => '-'.repeat(width)).join(' | ');
+    return `| ${separator} |`;
   }
 
   private extractTextFromBlock(block: BlockSnapshot): string {

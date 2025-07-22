@@ -462,7 +462,7 @@ export class TextStreamParser {
             break;
           }
           case 'make_it_real': {
-            result += `\nMaking it real\n`;
+            result += `\nImprove document with make it real\n`;
             break;
           }
         }

@@ -182,10 +182,7 @@ export async function addContextFile(
       'operations',
       JSON.stringify({
         query: addContextFileMutation.query,
-        variables: {
-          content: null,
-          options: { contextId },
-        },
+        variables: { content: null, contextId },
       })
     )
     .field('map', JSON.stringify({ '0': ['variables.content'] }))

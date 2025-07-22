@@ -339,21 +339,27 @@ export class CopilotContextResolver {
 
     try {
       if (content) {
-        const {
-          blobId,
-          file: { fileName, mimeType },
-        } = await this.copilotUser.addFile(user.id, content);
-        const file = await session.addFile(blobId, fileName, mimeType);
+        const { blobId, file } = await this.copilotUser.addFile(
+          user.id,
+          content
+        );
 
         await this.copilotUser.queueFileEmbedding({
           userId: user.id,
           contextId: session.id,
           blobId: file.blobId,
-          fileId: file.id,
-          fileName: file.name,
+          fileId: file.fileId,
+          fileName: file.fileName,
         });
 
-        return file;
+        const finalFile = await session.addFile(
+          blobId,
+          file.fileName,
+          file.mimeType,
+          file.fileId
+        );
+
+        return finalFile;
       } else if (blobId) {
         const existsFile = await this.copilotUser.getFile(user.id, { blobId });
         if (existsFile) {

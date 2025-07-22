@@ -1,6 +1,5 @@
 import {
   Args,
-  Context,
   Field,
   Mutation,
   ObjectType,
@@ -8,13 +7,8 @@ import {
   ResolveField,
   Resolver,
 } from '@nestjs/graphql';
-import type { Request } from 'express';
-import GraphQLUpload, {
-  type FileUpload,
-} from 'graphql-upload/GraphQLUpload.mjs';
 
 import {
-  BlobQuotaExceeded,
   CopilotFailedToAddUserArtifact,
   Mutex,
   paginate,
@@ -25,7 +19,6 @@ import {
 import { CurrentUser } from '../../../core/auth';
 import { UserType } from '../../../core/user';
 import { COPILOT_LOCKER } from '../resolver';
-import { MAX_EMBEDDABLE_SIZE } from '../types';
 import { CopilotUserService } from './service';
 import {
   CopilotUserDocType,

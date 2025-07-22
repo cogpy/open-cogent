@@ -9,13 +9,16 @@ import { AuthGuard } from './components/auth-guard';
 import { ChatPage } from './pages/chats/chat';
 import { ChatsDashboard } from './pages/chats/chats-dashboard';
 import { DocEditTest } from './pages/doc-edit-test';
+import { DocPage } from './pages/doc-page';
 import { HomePage } from './pages/home';
 import { OALayout } from './pages/layout/chat-layout';
 import { LibraryDashboard } from './pages/library-dashboard';
 import { MagicLinkPage } from './pages/magic-link';
+import { OAuthCallbackPage } from './pages/oauth-callback';
+import { oauthLoginLoader, OAuthLoginPage } from './pages/oauth-login';
+import { redirectProxyLoader, RedirectProxyPage } from './pages/redirect';
 import { SignInPage } from './pages/sign-in';
 import { useSidebarStore } from './store/sidebar';
-import { DocPage } from './pages/doc-page';
 
 const ChatsPage = () => {
   return (
@@ -83,6 +86,17 @@ function App() {
             </AuthGuard>
           }
         />
+        <Route
+          path="/redirect-proxy"
+          element={<RedirectProxyPage />}
+          loader={redirectProxyLoader}
+        />
+        <Route
+          path="/oauth/login"
+          element={<OAuthLoginPage />}
+          loader={oauthLoginLoader}
+        />
+        <Route path="/oauth/callback" element={<OAuthCallbackPage />} />
       </Routes>
     </ConfirmModalProvider>
   );

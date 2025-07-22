@@ -1,9 +1,9 @@
-/* eslint-disable @typescript-eslint/no-misused-promises */
-
 import { Button, RowInput } from '@afk/component';
-import { GoogleDuotoneIcon } from '@blocksuite/icons/rc';
+import { OAuthProviderType } from '@afk/graphql';
+import { GithubDuotoneIcon, GoogleDuotoneIcon } from '@blocksuite/icons/rc';
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import ReactCodeInput from 'react-verification-code-input';
 
 import { cn } from '@/lib/utils';
 
@@ -11,12 +11,10 @@ import { useAuthStore } from '../store/auth';
 import { AuthLayout } from './layout/auth-layout';
 import * as styles from './sign-in.css';
 
-import ReactCodeInput from 'react-verification-code-input';
-
 type Step = 'methodSelect' | 'password' | 'magic';
 
 interface OAuthButtonProps {
-  provider: string;
+  provider: OAuthProviderType;
   redirectUrl?: string;
 }
 
@@ -24,27 +22,55 @@ const OAuthButton: React.FC<OAuthButtonProps> = ({ provider, redirectUrl }) => {
   const handleClick = async () => {
     // Call preflight to get redirect URL (fallback to /oauth/login)
     try {
-      const res = await fetch(`/api/oauth/${provider}/preflight`, {
-        method: 'GET',
+      const res = await fetch(`/api/oauth/preflight`, {
+        method: 'POST',
+        body: JSON.stringify({
+          provider,
+          client: 'web',
+          redirect_uri: redirectUrl,
+        }),
+        headers: {
+          'content-type': 'application/json',
+        },
       });
       if (res.ok) {
-        const { redirect } = await res.json();
-        window.location.href = redirect;
+        const { url } = await res.json();
+        window.location.href = url;
       } else {
         // fallback – many providers accept this path directly
         window.location.href = `/api/oauth/${provider}?redirect_uri=${encodeURIComponent(
           redirectUrl || window.location.origin + '/oauth/callback'
         )}`;
       }
+      // const params = new URLSearchParams();
+
+      // params.set('provider', provider);
+
+      // if (redirectUrl) {
+      //   params.set('redirect_uri', redirectUrl);
+      // }
+
+      // const origin = window.location.origin;
+      // const oauthUrl = `${origin}/oauth/login?${params.toString()}`;
+
+      // openPopupWindow(oauthUrl);
     } catch {
       window.location.href = `/api/oauth/${provider}`;
     }
   };
 
+  const icon =
+    (
+      {
+        [OAuthProviderType.Google]: <GoogleDuotoneIcon />,
+        [OAuthProviderType.GitHub]: <GithubDuotoneIcon />,
+      } as any
+    )[provider] ?? null;
+
   return (
     <button onClick={handleClick} className={styles.oauthButton}>
-      <GoogleDuotoneIcon />
-      Continue with {provider.charAt(0).toUpperCase() + provider.slice(1)}
+      {icon}
+      Continue with {provider}
     </button>
   );
 };
@@ -163,7 +189,7 @@ export const SignInPage: React.FC = () => {
               <span className={styles.orText}>OR</span>
               <div className={cn('flex-1', styles.line, 'reverse')} />
             </div>
-            <OAuthButton provider="google" />
+            <OAuthButton provider={OAuthProviderType.Google} />
           </>
         )}
 

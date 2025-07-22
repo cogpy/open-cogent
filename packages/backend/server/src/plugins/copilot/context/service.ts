@@ -9,6 +9,7 @@ import {
 } from '../../../base';
 import {
   ArtifactEmbedStatus,
+  ContextChat,
   ContextConfig,
   ContextConfigSchema,
   ContextFile,
@@ -155,28 +156,56 @@ export class CopilotContextService {
     return await this.embeddingClient.reRank(content, fileChunks, topK, signal);
   }
 
-  @OnEvent('workspace.file.embed.finished')
+  @OnEvent('user.chat.embed.finished')
+  async onChatEmbedFinish({
+    contextId,
+    sessionId,
+    chunkSize,
+  }: Events['user.chat.embed.finished']) {
+    const context = await this.get(contextId);
+    await context.saveItemRecord(sessionId, 'chats', file => ({
+      ...(file as ContextChat),
+      chunkSize,
+      status: ArtifactEmbedStatus.finished,
+    }));
+  }
+
+  @OnEvent('user.chat.embed.failed')
+  async onChatEmbedFailed({
+    contextId,
+    sessionId,
+    error,
+  }: Events['user.chat.embed.failed']) {
+    const context = await this.get(contextId);
+    await context.saveItemRecord(sessionId, 'chats', file => ({
+      ...(file as ContextChat),
+      error,
+      status: ArtifactEmbedStatus.failed,
+    }));
+  }
+
+  @OnEvent('user.file.embed.finished')
   async onFileEmbedFinish({
     contextId,
     fileId,
     chunkSize,
-  }: Events['workspace.file.embed.finished']) {
+  }: Events['user.file.embed.finished']) {
     const context = await this.get(contextId);
-    await context.saveFileRecord(fileId, file => ({
+    await context.saveItemRecord(fileId, 'files', file => ({
       ...(file as ContextFile),
       chunkSize,
       status: ArtifactEmbedStatus.finished,
     }));
   }
 
-  @OnEvent('workspace.file.embed.failed')
+  @OnEvent('user.file.embed.failed')
   async onFileEmbedFailed({
     contextId,
     fileId,
     error,
-  }: Events['workspace.file.embed.failed']) {
+  }: Events['user.file.embed.failed']) {
     const context = await this.get(contextId);
-    await context.saveFileRecord(fileId, file => ({
+    await context.saveItemRecord(fileId, 'files', file => ({
       ...(file as ContextFile),
       error,
       status: ArtifactEmbedStatus.failed,

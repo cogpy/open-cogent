@@ -1433,7 +1433,7 @@ test('should be able to manage context', async t => {
       });
 
       t.deepEqual(handler.lastCall.args, [
-        'workspace.file.embed.finished',
+        'user.file.embed.finished',
         {
           contextId: session.id,
           fileId: file.id,

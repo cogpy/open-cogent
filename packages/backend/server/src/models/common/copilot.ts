@@ -31,6 +31,14 @@ const ArtifactEmbedStatusSchema = z.enum([
   ArtifactEmbedStatus.failed,
 ]);
 
+export const ContextChatSchema = z.object({
+  id: z.string(),
+  chunkSize: z.number(),
+  status: ArtifactEmbedStatusSchema,
+  error: z.string().nullable(),
+  createdAt: z.number(),
+});
+
 export const ContextFileSchema = z.object({
   id: z.string(),
   chunkSize: z.number(),
@@ -44,6 +52,7 @@ export const ContextFileSchema = z.object({
 
 export const ContextConfigSchema = z.object({
   userId: z.string(),
+  chats: ContextChatSchema.array(),
   files: ContextFileSchema.array(),
 });
 
@@ -52,8 +61,9 @@ export const MinimalContextConfigSchema = ContextConfigSchema.pick({
 });
 
 export type ContextConfig = z.infer<typeof ContextConfigSchema>;
+export type ContextChat = z.infer<typeof ContextConfigSchema>['chats'][number];
 export type ContextFile = z.infer<typeof ContextConfigSchema>['files'][number];
-export type ContextList = ContextFile[];
+export type ContextItem = ContextChat | ContextFile;
 
 // embeddings
 

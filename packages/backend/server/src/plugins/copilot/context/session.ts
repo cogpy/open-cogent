@@ -2,9 +2,10 @@ import { nanoid } from 'nanoid';
 
 import {
   ArtifactEmbedStatus,
+  ContextChat,
   ContextConfig,
   ContextFile,
-  ContextList,
+  ContextItem,
   FileChunkSimilarity,
   Models,
 } from '../../../models';
@@ -27,15 +28,15 @@ export class ContextSession implements AsyncDisposable {
     return this.config.userId;
   }
 
-  get files() {
-    return this.config.files.map(f => this.fulfillFile(f));
+  get chats() {
+    return this.config.chats.map(c => ({
+      ...c,
+      createdAt: new Date(c.createdAt),
+    }));
   }
 
-  get sortedList(): ContextList {
-    const { files } = this.config;
-    return [...files].toSorted(
-      (a, b) => a.createdAt - b.createdAt
-    ) as ContextList;
+  get files() {
+    return this.config.files.map(f => this.fulfillFile(f));
   }
 
   private fulfillFile(file: ContextFile): Required<ContextFile> {
@@ -60,7 +61,7 @@ export class ContextSession implements AsyncDisposable {
       }
       fileId = existsBlob.id;
     } else {
-      await this.saveFileRecord(fileId, file => ({
+      await this.saveItemRecord(fileId, 'files', file => ({
         ...file,
         blobId,
         chunkSize: 0,
@@ -140,20 +141,23 @@ export class ContextSession implements AsyncDisposable {
     );
   }
 
-  async saveFileRecord(
-    fileId: string,
+  async saveItemRecord(
+    chatOrFileId: string,
+    type: 'chats' | 'files',
     cb: (
-      record: Pick<ContextFile, 'id' | 'status'> &
-        Partial<Omit<ContextFile, 'id' | 'status'>>
-    ) => ContextFile
+      record: Pick<ContextItem, 'id' | 'status'> &
+        Partial<Omit<ContextItem, 'id' | 'status'>>
+    ) => Partial<typeof type extends 'chats' ? ContextChat : ContextFile>
   ) {
-    const files = this.config.files;
-    const file = files.find(f => f.id === fileId);
-    if (file) {
-      Object.assign(file, cb({ ...file }));
+    const items = this.config[type];
+    const item = items.find(f => f.id === chatOrFileId);
+    if (item) {
+      Object.assign(item, cb({ ...item }));
     } else {
-      const file = { id: fileId, status: ArtifactEmbedStatus.processing };
-      files.push(cb(file));
+      const file = { id: chatOrFileId, status: ArtifactEmbedStatus.processing };
+      items.push(
+        cb(file) as typeof type extends 'chats' ? ContextChat : ContextFile
+      );
     }
     await this.save();
   }

@@ -4,6 +4,7 @@ import { ModuleRef } from '@nestjs/core';
 import {
   BlobNotFound,
   CallMetric,
+  CopilotSessionNotFound,
   EventBus,
   JobQueue,
   mapAnyError,
@@ -59,6 +60,67 @@ export class CopilotEmbeddingJob {
     });
   }
 
+  private async readCopilotChats(userId: string, sessionId: string) {
+    const session = await this.models.copilotSession.getExists(sessionId, {
+      userId: true,
+      title: true,
+    });
+    if (!session || session.userId !== userId) {
+      throw new CopilotSessionNotFound();
+    }
+    const messages = await this.models.copilotSession.getMessages(sessionId, {
+      role: true,
+      content: true,
+    });
+    const content = messages.map(m => `${m.role}: ${m.content}`).join('\n');
+
+    return new File(
+      [content],
+      (session.title && `${session.title}.md`) || 'Untitled.txt'
+    );
+  }
+
+  @OnJob('copilot.embedding.chats')
+  async embedPendingChats({
+    contextId,
+    userId,
+    sessionId,
+  }: Jobs['copilot.embedding.chats']) {
+    if (!this.embeddingClient) return;
+
+    try {
+      const chatMessages = await this.readCopilotChats(userId, sessionId);
+
+      // no need to check if embeddings is empty, will throw internally
+      const chunks = await this.embeddingClient.getFileChunks(chatMessages);
+      const total = chunks.reduce((acc, c) => acc + c.length, 0);
+
+      for (const chunk of chunks) {
+        const embeddings = await this.embeddingClient.generateEmbeddings(chunk);
+        await this.models.copilotUser.insertChatEmbeddings(
+          userId,
+          sessionId,
+          embeddings
+        );
+      }
+
+      this.event.emit('user.chat.embed.finished', {
+        contextId,
+        sessionId,
+        chunkSize: total,
+      });
+    } catch (error: any) {
+      this.event.emit('user.chat.embed.failed', {
+        contextId,
+        sessionId,
+        error: mapAnyError(error).message,
+      });
+
+      // passthrough error to job queue
+      throw error;
+    }
+  }
+
   private async readCopilotBlob(
     userId: string,
     blobId: string,
@@ -107,7 +169,7 @@ export class CopilotEmbeddingJob {
       }
 
       if (contextId) {
-        this.event.emit('workspace.file.embed.finished', {
+        this.event.emit('user.file.embed.finished', {
           contextId,
           fileId,
           chunkSize: total,
@@ -115,7 +177,7 @@ export class CopilotEmbeddingJob {
       }
     } catch (error: any) {
       if (contextId) {
-        this.event.emit('workspace.file.embed.failed', {
+        this.event.emit('user.file.embed.failed', {
           contextId,
           fileId,
           error: mapAnyError(error).message,

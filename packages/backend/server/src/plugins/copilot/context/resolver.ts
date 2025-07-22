@@ -34,6 +34,7 @@ import {
 import { CurrentUser } from '../../../core/auth';
 import {
   ArtifactEmbedStatus,
+  ContextChat,
   ContextFile,
   FileChunkSimilarity,
   Models,
@@ -71,6 +72,24 @@ export class CopilotContextType {
 }
 
 registerEnumType(ArtifactEmbedStatus, { name: 'ContextEmbedStatus' });
+
+@ObjectType()
+class CopilotContextChat implements ContextChat {
+  @Field(() => ID)
+  id!: string;
+
+  @Field(() => SafeIntResolver)
+  chunkSize!: number;
+
+  @Field(() => ArtifactEmbedStatus)
+  status!: ArtifactEmbedStatus;
+
+  @Field(() => String, { nullable: true })
+  error!: string | null;
+
+  @Field(() => SafeIntResolver)
+  createdAt!: number;
+}
 
 @ObjectType()
 class CopilotContextFile implements ContextFile {

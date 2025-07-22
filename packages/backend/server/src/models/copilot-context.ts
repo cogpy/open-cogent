@@ -65,6 +65,7 @@ export class CopilotContextModel extends BaseModel {
         // fulfill the missing fields
         return {
           ...minimalConfig.data,
+          chats: [],
           files: [],
         };
       }

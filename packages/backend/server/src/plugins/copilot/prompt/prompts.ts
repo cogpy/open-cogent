@@ -1831,7 +1831,7 @@ Always use markdown footnote format for citations:
 - Place citations immediately after the relevant sentence or paragraph
 - NO spaces within citation brackets: [^1] is correct, [^ 1] or [ ^1] are incorrect
 - DO NOT linked together like [^1, ^6, ^7] and [^1, ^2], if you need to use multiple citations, use [^1][^2]
- 
+
 Citations must appear in two places:
 1. INLINE: Within your main content as [^reference_index]
 2. REFERENCE LIST: At the end of your response as properly formatted JSON
@@ -1851,7 +1851,7 @@ This sentence contains information from the first source[^1]. This sentence refe
 
 [^1]:{"type":"doc","docId":"abc123"}
 [^2]:{"type":"attachment","blobId":"xyz789","fileName":"example.txt","fileType":"text"}
- 
+
 </citations>
 
 <formatting_guidelines>
@@ -1924,6 +1924,7 @@ Below is the user's query. Please respond in the user's preferred language witho
   ],
   config: {
     tools: [
+      'browserUse',
       'codeArtifact',
       'docCompose',
       'docRead',
@@ -1959,7 +1960,7 @@ You are an expert Markdown layout assistant specializing in creating structured,
   - Keep multi-column blocks focused and well-scoped by including only closely related markdown elements. Each block should be cohesive and self-contained.
 
 1. **Single-Column Optimization**:
-   - If the top-level structure contains only one column and there is no nested layout, do not use \`multi-column\`.  
+   - If the top-level structure contains only one column and there is no nested layout, do not use \`multi-column\`.
      Instead, directly output the content as is. Markdown itself can represent single-column layouts natively.
 
 2. **Multi-Column Layout Syntax**:
@@ -1972,11 +1973,11 @@ You are an expert Markdown layout assistant specializing in creating structured,
    <content>
    <!-- end:content:column -->
    \`\`\`
-   Where the \`<content>\` is the content of the column, you can put any markdown content in it, or another multi-column layout. 
+   Where the \`<content>\` is the content of the column, you can put any markdown content in it, or another multi-column layout.
    Please not that there are not \`end:layout:multi-column\` comment, you should not add it.
 
 5. **Final Output Only**:
-   - Transform the input Markdown into the layout structure where necessary, but do not include the input content or any additional comments.  
+   - Transform the input Markdown into the layout structure where necessary, but do not include the input content or any additional comments.
    - **Only return the transformed Markdown structure**.
 
 
@@ -2005,7 +2006,7 @@ Details that may fit in a nested structure.
 <!-- end:content:column -->
 <!-- end:content:column -->
 \`\`\`
-        
+
         **Now, transform the given Markdown into the appropriate layout format. Use \`multi-column\` only when necessary and omit it for single-column layouts. Return only the transformed Markdown content.**`,
       },
       {
@@ -2118,7 +2119,7 @@ You are an expert Markdown layout assistant specializing in creating structured,
   - Keep multi-column blocks focused and well-scoped by including only closely related markdown elements. Each block should be cohesive and self-contained.
 
 1. **Single-Column Optimization**:
-   - If the top-level structure contains only one column and there is no nested layout, do not use \`multi-column\`.  
+   - If the top-level structure contains only one column and there is no nested layout, do not use \`multi-column\`.
      Instead, directly output the content as is. Markdown itself can represent single-column layouts natively.
 
 2. **Multi-Column Layout Syntax**:
@@ -2131,7 +2132,7 @@ You are an expert Markdown layout assistant specializing in creating structured,
    <content>
    <!-- end:content:column -->
    \`\`\`
-   Where the \`<content>\` is the content of the column, you can put any markdown content in it, or another multi-column layout. 
+   Where the \`<content>\` is the content of the column, you can put any markdown content in it, or another multi-column layout.
    Please not that there are not \`end:layout:multi-column\` comment, you should not add it.
 
 3. **Special delimiter syntax.**：
@@ -2170,7 +2171,7 @@ Details that may fit in a nested structure.
 <!-- note:split{"title":"<title>","backgroundColor":"<backgroundColor>"} -->
 # Another note
 \`\`\`
-        
+
 **Now, transform the given Markdown into the appropriate layout format.
 Use \`multi-column\` only when necessary and omit it for single-column layouts.
 Use \`note:split\` to split the content into different parts when necessary.
@@ -2198,7 +2199,7 @@ You should review each Markdown block and decide whether it should be enhanced w
 - **Color attributes**: \`.red\`, \`.blue\`, \`.green\`, \`.yellow\`, \`.purple\`, \`.orange\`, \`.pink\`, \`.gray\`, \`.black\`, \`.white\` or \`color: #hexcode\`
 - **Background**: \`.highlight\` (yellow background) or \`bg: color\`
 - **Typography**: \`.bold\`, \`.italic\`, \`.strike\`, \`.underline\`, \`.code\`
-- **Combined examples**: 
+- **Combined examples**:
   - \`[Important text]{.red .bold}\`
   - \`[Highlighted note]{.highlight .italic}\`
   - \`[Custom styled]{color: #3366cc, background: #f0f8ff}\`
@@ -2279,14 +2280,14 @@ const artifactActions: Prompt[] = [
         - Use lucide icons for any icons.
         - If you have any images, load them from Unsplash or use solid colored rectangles.
         </generate_guide>
-        
+
         <DO_NOT_USE_COLORS>
         - DO NOT USE ANY COLORS
         </DO_NOT_USE_COLORS>
         <DO_NOT_USE_GRADIENTS>
         - DO NOT USE ANY GRADIENTS
         </DO_NOT_USE_GRADIENTS>
-        
+
         <COLOR_THEME>
           - --affine-blue-300: #93e2fd
           - --affine-blue-400: #60cffa
@@ -2309,7 +2310,7 @@ const artifactActions: Prompt[] = [
         - USE RADIUS 4px or 8px for rounded corners
         - USE 12px or 16px for padding
         - Use the tailwind color gray, zinc, slate, neutral much more.
-        - Use 0.5px border should be better 
+        - Use 0.5px border should be better
         </default_style_guide>
         `,
       },

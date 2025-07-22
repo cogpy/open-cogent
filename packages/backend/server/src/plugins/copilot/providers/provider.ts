@@ -16,6 +16,7 @@ import { PromptService } from '../prompt';
 import {
   buildDocSearchGetter,
   buildSaveDocGetter,
+  createBrowserUseTool,
   createCodeArtifactTool,
   createConversationSummaryTool,
   createDocComposeTool,
@@ -163,6 +164,10 @@ export abstract class CopilotProvider<C = any> {
           continue;
         }
         switch (tool) {
+          case 'browserUse': {
+            tools.browser_use = createBrowserUseTool();
+            break;
+          }
           case 'codeArtifact': {
             tools.code_artifact = createCodeArtifactTool(prompt, this.factory);
             break;

@@ -60,6 +60,7 @@ export const VertexSchema: JSONSchema = {
 export const PromptConfigStrictSchema = z.object({
   tools: z
     .enum([
+      'browserUse',
       'codeArtifact',
       'conversationSummary',
       // artifact tools

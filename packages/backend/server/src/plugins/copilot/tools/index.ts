@@ -1,5 +1,6 @@
 import { ToolSet } from 'ai';
 
+import { createBrowserUseTool } from './browser-use';
 import { createCodeArtifactTool } from './code-artifact';
 import { createConversationSummaryTool } from './conversation-summary';
 import { createDocComposeTool } from './doc-compose';
@@ -10,6 +11,7 @@ import { createMakeItRealTool } from './make-it-real';
 import { createMarkTodoTool, createTodoTool } from './todo';
 
 export interface CustomAITools extends ToolSet {
+  browser_use: ReturnType<typeof createBrowserUseTool>;
   code_artifact: ReturnType<typeof createCodeArtifactTool>;
   conversation_summary: ReturnType<typeof createConversationSummaryTool>;
   doc_semantic_search: ReturnType<typeof createDocSemanticSearchTool>;
@@ -21,6 +23,7 @@ export interface CustomAITools extends ToolSet {
   make_it_real: ReturnType<typeof createMakeItRealTool>;
 }
 
+export * from './browser-use';
 export * from './code-artifact';
 export * from './conversation-summary';
 export * from './doc-compose';

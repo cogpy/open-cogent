@@ -4,6 +4,7 @@ import type { StreamObject } from '@afk/graphql';
 import { MessageCard } from '@/components/ui/card/message-card';
 import { MarkdownText } from '@/components/ui/markdown';
 
+import { BrowserUseResult } from './browser-use-result';
 import { DocComposeResult } from './doc-compose-result';
 import { MakeItRealResult } from './make-it-real-result';
 import { TodoListResult } from './todo-list-result';
@@ -31,6 +32,7 @@ export function ChatContentStreamObjects({
   return (
     <div className="flex flex-col gap-2 max-w-full text-left prose">
       {streamObjects.map((obj, idx) => {
+        console.log(obj);
         switch (obj.type) {
           case 'text-delta':
             return (
@@ -134,6 +136,43 @@ export function ChatContentStreamObjects({
               obj.result?.list
             ) {
               return <TodoListResult key={idx} result={obj.result} />;
+            }
+
+            if (obj.toolName === 'browser_use' && obj.result) {
+              if (obj.result && typeof obj.result === 'object') {
+                return (
+                  <BrowserUseResult key={idx} result={obj.result as any} />
+                );
+              }
+              return (
+                <MessageCard
+                  key={idx}
+                  status="loading"
+                  className="my-5"
+                  title="浏览器任务处理中..."
+                />
+              );
+            }
+
+            // Check if result contains document content (markdown-like text)
+            const resultContent =
+              obj.result?.content || obj.result?.text || obj.result?.markdown;
+            const isDocumentContent =
+              typeof resultContent === 'string' &&
+              resultContent.length > 100 &&
+              (resultContent.includes('#') ||
+                resultContent.includes('```') ||
+                resultContent.includes('\n\n'));
+
+            if (isDocumentContent) {
+              return (
+                <DocCard
+                  key={idx}
+                  content={resultContent}
+                  title={obj.toolName ? `${obj.toolName} Result` : 'Document'}
+                  description="Generated document content"
+                />
+              );
             }
 
             // Default tool result display

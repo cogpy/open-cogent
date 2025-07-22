@@ -19,8 +19,8 @@ permissions:
   packages: 'write'
 
 jobs:
-  build-images:
-    name: Build Images
+  build-image:
+    name: Build Docker Image
     uses: ./.github/workflows/build-images.yml
     secrets: inherit
     with:
@@ -32,7 +32,7 @@ jobs:
     name: Deploy to cluster
     environment: ${{ inputs.build-type }}
     needs:
-      - build-images
+      - build-image
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

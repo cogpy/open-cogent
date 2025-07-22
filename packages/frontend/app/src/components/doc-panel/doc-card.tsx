@@ -6,16 +6,16 @@ import { snapshotHelper } from '@/components/doc-composer/snapshot-helper';
 import { useDocPanelStore } from '@/store/doc-panel';
 
 interface DocCardProps {
-  /** 文档内容（markdown 格式） */
+  /** Document content (markdown format) */
   content: string;
-  /** 文档标题 */
+  /** Document title */
   title?: string;
-  /** 卡片描述 */
+  /** Card description */
   description?: string;
 }
 
 /**
- * 可点击的文档卡片组件
+ * Clickable document card component
  */
 export function DocCard({
   content,
@@ -27,7 +27,7 @@ export function DocCard({
   const { openDoc } = useDocPanelStore();
 
   useEffect(() => {
-    // 从 markdown 内容创建文档
+    // Create document from markdown content
     snapshotHelper
       .createStore(content)
       .then(store => {
@@ -51,7 +51,7 @@ export function DocCard({
       onClick={handleClick}
       className="rounded-lg border border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 p-4 shadow-sm hover:shadow-md transition-all cursor-pointer dark:border-blue-800 dark:from-blue-950/20 dark:to-indigo-950/20 hover:border-blue-300 dark:hover:border-blue-700"
     >
-      {/* 头部 */}
+      {/* Header */}
       <div className="flex items-center gap-3 mb-3">
         <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/50">
           <FileIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
@@ -68,7 +68,7 @@ export function DocCard({
         </div>
       </div>
 
-      {/* 内容预览 */}
+      {/* Content preview */}
       <div className="rounded-md bg-white/70 dark:bg-gray-900/30 p-3 border border-blue-100 dark:border-blue-800/50">
         {isLoading ? (
           <div className="text-gray-500 text-xs">Loading preview...</div>
@@ -79,7 +79,7 @@ export function DocCard({
         )}
       </div>
 
-      {/* 底部提示 */}
+      {/* Bottom hint */}
       <div className="mt-3 text-xs text-blue-600/70 dark:text-blue-400/70">
         📄 Click to open in side panel
       </div>

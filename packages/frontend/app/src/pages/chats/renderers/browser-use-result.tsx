@@ -49,7 +49,7 @@ export function BrowserUseResult({ result }: BrowserUseResultProps) {
           <div className="p-4">
             <img
               src={displayImage}
-              alt="浏览器截图"
+              alt="Browser screenshot"
               className="w-full max-h-96 object-contain rounded-lg border border-gray-200"
             />
           </div>
@@ -58,7 +58,9 @@ export function BrowserUseResult({ result }: BrowserUseResultProps) {
         {/* Markdown Content */}
         {finalMarkdown && (
           <div className="border-t border-gray-100 bg-gray-50 p-4">
-            <h4 className="text-sm font-medium text-gray-900 mb-2">任务结果</h4>
+            <h4 className="text-sm font-medium text-gray-900 mb-2">
+              Task Result
+            </h4>
             <div className="text-sm text-gray-600 bg-white p-3 rounded border max-h-72 overflow-y-auto">
               <MarkdownText
                 text={finalMarkdown}
@@ -75,10 +77,10 @@ export function BrowserUseResult({ result }: BrowserUseResultProps) {
               {stepsInfo.map((step, index) => (
                 <div key={index} className="bg-white p-3 rounded border">
                   <div className="text-sm font-medium text-gray-900 mb-1">
-                    步骤 {index + 1}
+                    Step {index + 1}
                   </div>
                   <div className="text-xs text-gray-600 mb-2">
-                    <strong>目标:</strong> {step.next_goal}
+                    <strong>Goal:</strong> {step.next_goal}
                   </div>
                   <div className="text-xs text-blue-600">
                     <strong>URL:</strong> {step.url}

@@ -36,7 +36,7 @@ class ComposerViewExtensionProvider extends ViewExtensionProvider {
 
   override setup(context: ViewExtensionContext) {
     super.setup(context);
-    // 添加 HTML 代码块预览扩展
+    // Add HTML code block preview extension
     context.register(
       CodeBlockPreviewExtension('html', model => {
         const code = model.props.text.toString();

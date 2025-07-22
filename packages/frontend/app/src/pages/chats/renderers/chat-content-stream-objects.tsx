@@ -149,7 +149,7 @@ export function ChatContentStreamObjects({
                   key={idx}
                   status="loading"
                   className="my-5"
-                  title="浏览器任务处理中..."
+                  title="Browser task processing..."
                 />
               );
             }

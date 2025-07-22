@@ -367,7 +367,7 @@ export class CopilotSessionModel extends BaseModel {
       .filter(({ prompt }) => !!prompt.action)
       .map(({ id }) => id);
 
-    // 标记 action session 为已删除
+    // Mark action session as deleted
     if (actionIds.length > 0) {
       await this.db.aiSession.updateMany({
         where: { id: { in: actionIds } },

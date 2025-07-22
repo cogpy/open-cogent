@@ -69,7 +69,7 @@ export function DocComposeResult({
           {/* Content */}
           <div className="flex-1 min-w-0">
             <div className="text-sm font-medium text-gray-900">
-              {title || '生成的文档'}
+              {title || 'Generated Document'}
             </div>
             {userPrompt && (
               <p className="text-xs text-gray-600 mt-1 line-clamp-2">
@@ -91,7 +91,7 @@ export function DocComposeResult({
                 className="flex items-center gap-1 text-xs px-2 py-1 rounded bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors"
               >
                 <CopyIcon className="w-3 h-3" />
-                {copied ? '已复制' : '复制'}
+                {copied ? 'Copied' : 'Copy'}
               </button>
             </div>
           </div>

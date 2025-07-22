@@ -166,7 +166,7 @@ export const createBrowserUseTool = () => {
           }
 
           const statusData: string = await statusResponse.text();
-          currentStatus = statusData.replace(/"/g, ''); // 去掉双引号
+          currentStatus = statusData.replace(/"/g, ''); // Remove quotes
 
           if (currentStatus === 'stopped' || currentStatus === 'failed') {
             return toolError(
@@ -246,13 +246,13 @@ export const createBrowserUseTool = () => {
               const stepsData: BrowserUseStepsResponse =
                 (await stepsResponse.json()) as BrowserUseStepsResponse;
 
-              // 提取steps中每一项的next_goal和url
+              // Extract next_goal and url from each item in steps
               stepsInfo = stepsData.steps.map(step => ({
                 next_goal: step.next_goal,
                 url: step.url,
               }));
             }
-            // 如果获取steps失败，返回空数组
+            // If getting steps fails, return empty array
             return {
               currentScreenshot,
               finalGif,

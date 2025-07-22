@@ -2,15 +2,15 @@ import { create } from 'zustand';
 import type { Store } from '@blocksuite/affine/store';
 
 interface DocPanelState {
-  /** 是否显示文档面板 */
+  /** Whether to show the document panel */
   isOpen: boolean;
-  /** 当前显示的文档 */
+  /** Currently displayed document */
   currentDoc: Store | null;
-  /** 文档标题 */
+  /** Document title */
   docTitle: string;
-  /** 打开文档面板并显示指定文档 */
+  /** Open document panel and display specified document */
   openDoc: (doc: Store, title?: string) => void;
-  /** 关闭文档面板 */
+  /** Close document panel */
   close: () => void;
 }
 

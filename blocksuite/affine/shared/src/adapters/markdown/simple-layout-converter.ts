@@ -51,7 +51,7 @@ export class MarkdownToSnapshotConverter {
   async convertMarkdownToSnapshot(markdown: string): Promise<BlockSnapshot> {
     this.resetState();
 
-    // 预处理自定义语法
+    // Preprocess custom syntax
     const processedMarkdown = this.preprocessCustomSyntax(markdown);
 
     const processor = unified().use(remarkParse).use(remarkGfm);
@@ -79,7 +79,7 @@ export class MarkdownToSnapshotConverter {
   async convertMarkdownToSnapshotsWithSplit(
     markdown: string
   ): Promise<BlockSnapshot[]> {
-    // 按分割标记分割 markdown，同时提取配置信息
+    // Split markdown by split markers and extract configuration information
     const sectionsWithConfig =
       this.splitMarkdownBySeparatorWithConfig(markdown);
     const noteSnapshots: BlockSnapshot[] = [];
@@ -89,7 +89,7 @@ export class MarkdownToSnapshotConverter {
       if (content.trim()) {
         this.resetState();
 
-        // 预处理自定义语法
+        // Preprocess custom syntax
         const processedMarkdown = this.preprocessCustomSyntax(content);
 
         const processor = unified().use(remarkParse).use(remarkGfm);
@@ -98,7 +98,7 @@ export class MarkdownToSnapshotConverter {
         const children = await this.convertAstToBlocks(ast);
 
         if (children.length > 0) {
-          // 使用配置中的背景颜色，如果没有则使用默认
+          // Use background color from configuration, or default if not specified
           const background =
             config?.backgroundColor || this.getNoteBackground(i);
 
@@ -112,7 +112,7 @@ export class MarkdownToSnapshotConverter {
               index: `a${i}`,
               hidden: false,
               displayMode: 'both',
-              // 如果配置中有标题，添加到 note 的属性中
+              // If there's a title in configuration, add it to note properties
               ...(config?.title && { title: config.title }),
             },
             children,
@@ -127,7 +127,7 @@ export class MarkdownToSnapshotConverter {
   }
 
   private splitMarkdownBySeparator(markdown: string): string[] {
-    // 只支持 <!-- note:split --> 分割标记
+    // Only support <!-- note:split --> split markers
     return markdown
       .split(/<!-- note:split([\s\S]*?)-->/g)
       .filter(section => section.trim().length > 0);
@@ -136,7 +136,7 @@ export class MarkdownToSnapshotConverter {
   private splitMarkdownBySeparatorWithConfig(
     markdown: string
   ): Array<{ content: string; config?: any }> {
-    // 支持 <!-- note:split --> 和 <!-- note:split{"title":"xxx","backgroundColor":"red"} --> 格式
+    // Support <!-- note:split --> and <!-- note:split{"title":"xxx","backgroundColor":"red"} --> formats
     const parts = markdown.split(/<!-- note:split([\s\S]*?)-->/g);
     const result: Array<{ content: string; config?: any }> = [];
 
@@ -144,30 +144,30 @@ export class MarkdownToSnapshotConverter {
       const part = parts[i];
 
       if (i % 2 === 0) {
-        // 这是内容部分
+        // This is content part
         if (part.trim().length > 0) {
           result.push({ content: part, config: null });
         }
       } else {
-        // 这是分割标记中的配置部分
+        // This is configuration part in split marker
         let config = null;
         if (part.trim().length > 0) {
           try {
-            // 尝试解析 JSON 配置
+            // Try to parse JSON configuration
             config = JSON.parse(part.trim());
           } catch (e) {
-            // 如果解析失败，忽略配置
+            // If parsing fails, ignore configuration
             config = null;
           }
         }
 
-        // 获取下一个内容部分
+        // Get next content part
         if (i + 1 < parts.length) {
           const nextContent = parts[i + 1];
           if (nextContent.trim().length > 0) {
             result.push({ content: nextContent, config });
           }
-          i++; // 跳过下一个内容部分，因为我们已经处理了
+          i++; // Skip next content part as we've already processed it
         }
       }
     }
@@ -176,7 +176,7 @@ export class MarkdownToSnapshotConverter {
   }
 
   private mapBackgroundColor(color: string): string {
-    // 将用户指定的颜色映射到 AFFiNE 的背景颜色变量
+    // Map user-specified colors to AFFiNE background color variables
     const colorMap: { [key: string]: string } = {
       red: '--affine-note-background-red',
       blue: '--affine-note-background-blue',
@@ -189,17 +189,17 @@ export class MarkdownToSnapshotConverter {
       grey: '--affine-note-background-gray',
     };
 
-    // 如果是已知的颜色名称，返回对应的 CSS 变量
+    // If it's a known color name, return corresponding CSS variable
     if (colorMap[color.toLowerCase()]) {
       return colorMap[color.toLowerCase()];
     }
 
-    // 如果已经是 CSS 变量格式，直接返回
+    // If it's already in CSS variable format, return directly
     if (color.startsWith('--affine-note-background-')) {
       return color;
     }
 
-    // 如果是其他格式（如十六进制颜色），直接返回
+    // If it's in other format (like hex color), return directly
     return color;
   }
 
@@ -622,11 +622,11 @@ export class MarkdownToSnapshotConverter {
 
   private extractDeltaFromMdastNode(node: any): any[] {
     if (node.type === 'text') {
-      // 处理自定义语法
+      // Process custom syntax
       return this.parseCustomSyntax(node.value || '');
     }
 
-    // 支持加粗
+    // Support bold
     if (node.type === 'strong') {
       const childDeltas = node.children
         ? node.children.flatMap((child: any) =>
@@ -636,7 +636,7 @@ export class MarkdownToSnapshotConverter {
       return this.mergeAttributes(childDeltas, { bold: true });
     }
 
-    // 支持斜体
+    // Support italic
     if (node.type === 'emphasis') {
       const childDeltas = node.children
         ? node.children.flatMap((child: any) =>
@@ -646,7 +646,7 @@ export class MarkdownToSnapshotConverter {
       return this.mergeAttributes(childDeltas, { italic: true });
     }
 
-    // 支持删除线
+    // Support strikethrough
     if (node.type === 'delete') {
       const childDeltas = node.children
         ? node.children.flatMap((child: any) =>
@@ -656,7 +656,7 @@ export class MarkdownToSnapshotConverter {
       return this.mergeAttributes(childDeltas, { strike: true });
     }
 
-    // 支持行内代码
+    // Support inline code
     if (node.type === 'inlineCode') {
       return [{ insert: node.value, attributes: { code: true } }];
     }
@@ -686,7 +686,7 @@ export class MarkdownToSnapshotConverter {
   }
 
   /**
-   * 合并属性到 Delta 数组中
+   * Merge attributes into Delta array
    */
   private mergeAttributes(deltas: any[], newAttributes: any): any[] {
     return deltas.map(delta => ({
@@ -699,17 +699,17 @@ export class MarkdownToSnapshotConverter {
   }
 
   /**
-   * 预处理自定义语法，将其转换为标准markdown
+   * Preprocess custom syntax and convert to standard markdown
    */
   private preprocessCustomSyntax(markdown: string): string {
-    // 处理高亮语法 ==text== -> <mark>text</mark>
+    // Process highlight syntax ==text== -> <mark>text</mark>
     markdown = markdown.replace(/==(.*?)==/g, '<mark>$1</mark>');
 
     return markdown;
   }
 
   /**
-   * 解析自定义语法 [文本]{属性}
+   * Parse custom syntax [text]{attributes}
    */
   private parseCustomSyntax(text: string): any[] {
     const customSyntaxRegex = /\[([^\]]+)\]\{([^}]+)\}/g;
@@ -718,7 +718,7 @@ export class MarkdownToSnapshotConverter {
     let match;
 
     while ((match = customSyntaxRegex.exec(text)) !== null) {
-      // 添加匹配前的普通文本
+      // Add plain text before match
       if (match.index > lastIndex) {
         const beforeText = text.slice(lastIndex, match.index);
         if (beforeText) {
@@ -738,7 +738,7 @@ export class MarkdownToSnapshotConverter {
       lastIndex = match.index + match[0].length;
     }
 
-    // 添加剩余的普通文本
+    // Add remaining plain text
     if (lastIndex < text.length) {
       const remainingText = text.slice(lastIndex);
       if (remainingText) {
@@ -746,7 +746,7 @@ export class MarkdownToSnapshotConverter {
       }
     }
 
-    // 如果没有自定义语法，返回原始文本
+    // If no custom syntax found, return original text
     if (result.length === 0) {
       return [{ insert: text }];
     }
@@ -755,12 +755,12 @@ export class MarkdownToSnapshotConverter {
   }
 
   /**
-   * 解析属性字符串
+   * Parse attribute string
    */
   private parseAttributes(attributesStr: string): any {
     const attributes: any = {};
 
-    // 解析 key: value 格式
+    // Parse key: value format
     const keyValueRegex = /(\w+):\s*([^,;]+)/g;
     let match;
 
@@ -796,7 +796,7 @@ export class MarkdownToSnapshotConverter {
       }
     }
 
-    // 解析简单的类名格式 .red, .bold 等
+    // Parse simple class name format .red, .bold etc
     const classRegex = /\.(\w+)/g;
     while ((match = classRegex.exec(attributesStr)) !== null) {
       const className = match[1];
@@ -881,7 +881,7 @@ export class SnapshotToMarkdownConverter {
       }
     }
 
-    // 使用分割标记连接各个部分
+    // Connect parts using split markers
     return sectionMarkdowns.join('\n\n<!-- note:split -->\n\n');
   }
 
@@ -1068,11 +1068,11 @@ export class SnapshotToMarkdownConverter {
           let insert = d.insert || '';
 
           if (d.attributes) {
-            // 处理链接
+            // Process links
             if (d.attributes.link) {
               insert = `[${insert}](${d.attributes.link})`;
             }
-            // 处理标准markdown格式
+            // Process standard markdown format
             else if (
               d.attributes.bold &&
               !d.attributes.color &&
@@ -1098,7 +1098,7 @@ export class SnapshotToMarkdownConverter {
             ) {
               insert = `\`${insert}\``;
             }
-            // 处理自定义语法
+            // Process custom syntax
             else {
               const customAttributes = this.buildCustomAttributes(d.attributes);
               if (customAttributes) {
@@ -1176,11 +1176,11 @@ export class SnapshotToMarkdownConverter {
           let insert = d.insert || '';
 
           if (d.attributes) {
-            // 处理链接
+            // Process links
             if (d.attributes.link) {
               insert = `[${insert}](${d.attributes.link})`;
             }
-            // 处理标准markdown格式
+            // Process standard markdown format
             else if (
               d.attributes.bold &&
               !d.attributes.color &&
@@ -1206,7 +1206,7 @@ export class SnapshotToMarkdownConverter {
             ) {
               insert = `\`${insert}\``;
             }
-            // 处理自定义语法
+            // Process custom syntax
             else {
               const customAttributes = this.buildCustomAttributes(d.attributes);
               if (customAttributes) {
@@ -1228,12 +1228,12 @@ export class SnapshotToMarkdownConverter {
   }
 
   /**
-   * 构建自定义属性字符串
+   * Build custom attribute string
    */
   private buildCustomAttributes(attributes: any): string {
     const parts: string[] = [];
 
-    // 处理颜色
+    // Process color
     if (attributes.color) {
       if (
         [
@@ -1255,7 +1255,7 @@ export class SnapshotToMarkdownConverter {
       }
     }
 
-    // 处理背景色
+    // Process background color
     if (attributes.background) {
       if (attributes.background === 'yellow') {
         parts.push('.highlight');
@@ -1264,7 +1264,7 @@ export class SnapshotToMarkdownConverter {
       }
     }
 
-    // 处理其他属性
+    // Process other attributes
     if (attributes.bold) {
       parts.push('.bold');
     }
@@ -1281,7 +1281,7 @@ export class SnapshotToMarkdownConverter {
       parts.push('.code');
     }
 
-    // 处理其他自定义属性
+    // Process other custom attributes
     Object.keys(attributes).forEach(key => {
       if (
         ![

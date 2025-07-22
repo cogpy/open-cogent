@@ -7,7 +7,7 @@ import { useDocPanelStore } from '@/store/doc-panel';
 import { PresentationMode } from './presentation-mode';
 
 /**
- * 文档面板组件，显示在聊天面板旁边
+ * Document panel component, displayed next to the chat panel
  */
 export function DocPanel() {
   const { isOpen, currentDoc, docTitle, close } = useDocPanelStore();
@@ -25,7 +25,7 @@ export function DocPanel() {
     setIsPresentationMode(false);
   };
 
-  // 如果处于演示模式，显示演示组件
+  // If in presentation mode, show presentation component
   if (isPresentationMode) {
     return (
       <PresentationMode
@@ -38,7 +38,7 @@ export function DocPanel() {
 
   return (
     <div className="h-full flex flex-col p-4 gap-4">
-      {/* 头部 */}
+      {/* Header */}
       <div className="flex items-center justify-between p-2 rounded">
         <h2 className="text-lg font-medium text-gray-900 truncate">
           {docTitle}
@@ -49,7 +49,7 @@ export function DocPanel() {
             icon={<PresentationIcon />}
             onClick={handleStartPresentation}
             className="text-gray-500 hover:text-blue-600"
-            title="进入演示模式"
+            title="Enter presentation mode"
           />
           <IconButton
             size="24"
@@ -60,7 +60,7 @@ export function DocPanel() {
         </div>
       </div>
 
-      {/* 文档内容 */}
+      {/* Document content */}
       <div className="flex-1 overflow-auto rounded py-2 px-6">
         <DocEditor doc={currentDoc} readonly={true} />
       </div>

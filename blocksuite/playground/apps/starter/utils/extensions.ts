@@ -35,7 +35,7 @@ export function getTestCommonExtensions(
         di.override(DocModeProvider, mockDocModeService(editor));
       },
     },
-    // HTML 代码块预览扩展
+    // HTML code block preview extension
     CodeBlockPreviewExtension('html', model => {
       const code = model.props.text.toString();
       if (!code.trim()) return null;

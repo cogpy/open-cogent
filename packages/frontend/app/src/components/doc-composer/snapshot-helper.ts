@@ -84,11 +84,11 @@ const getMarkdownAdapter = (transformer = getTransformer()) => {
 
 const markDownToDoc = async (markdown: string): Promise<Store | undefined> => {
   try {
-    // 使用 SimpleLayoutConverter 将 markdown 转换为多个 note snapshots（支持分割）
+    // Use SimpleLayoutConverter to convert markdown to multiple note snapshots (supports splitting)
     const noteSnapshots =
       await SimpleLayoutConverter.markdownToMultipleSnapshots(markdown);
 
-    // 创建正确的页面结构，将所有 note 作为 page 的子块
+    // Create correct page structure with all notes as child blocks of page
     const pageSnapshot = {
       type: 'block' as const,
       id: nanoid(),
@@ -102,7 +102,7 @@ const markDownToDoc = async (markdown: string): Promise<Store | undefined> => {
       children: noteSnapshots,
     };
 
-    // 创建 DocSnapshot 结构
+    // Create DocSnapshot structure
     const docSnapshot = {
       type: 'page' as const,
       meta: {
@@ -114,7 +114,7 @@ const markDownToDoc = async (markdown: string): Promise<Store | undefined> => {
       blocks: pageSnapshot,
     };
 
-    // 使用 transformer 将 snapshot 转换为 Store
+    // Use transformer to convert snapshot to Store
     const transformer = getTransformer();
     const doc = await transformer.snapshotToDoc(docSnapshot);
 

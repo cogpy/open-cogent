@@ -13,29 +13,29 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { DocEditor } from '@/components/doc-composer/doc-editor';
 
 interface PresentationModeProps {
-  /** 文档对象 */
+  /** Document object */
   doc: Store;
-  /** 文档标题 */
+  /** Document title */
   title: string;
-  /** 关闭演示模式的回调 */
+  /** Callback to close presentation mode */
   onClose: () => void;
 }
 
 interface NoteBlockContentProps {
-  /** note block 模型 */
+  /** Note block model */
   note: NoteBlockModel;
-  /** 文档对象 */
+  /** Document object */
   doc: Store;
 }
 
 /**
- * 渲染单个 note block 内容的组件
+ * Component for rendering individual note block content
  */
 function NoteBlockContent({ note, doc }: NoteBlockContentProps) {
   const [noteDoc, setNoteDoc] = useState<Store | null>(null);
 
   useEffect(() => {
-    // 为当前 note block 创建临时文档
+    // Create temporary document for current note block
     const createNoteDoc = () => {
       try {
         const _doc = doc.workspace.createDoc();
@@ -83,8 +83,8 @@ function NoteBlockContent({ note, doc }: NoteBlockContentProps) {
 }
 
 /**
- * 演示模式组件
- * 以 note block 为单位进行分页展示，支持全屏和导航
+ * Presentation mode component
+ * Paginated display by note block units, supports fullscreen and navigation
  */
 export function PresentationMode({
   doc,
@@ -97,7 +97,7 @@ export function PresentationMode({
   const containerRef = useRef<HTMLDivElement>(null);
   const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // 获取文档中的所有 note blocks
+  // Get all note blocks from the document
   const getNoteBlocks = useCallback(() => {
     if (!doc?.root) return [];
 
@@ -111,23 +111,23 @@ export function PresentationMode({
     return notes as NoteBlockModel[];
   }, [doc]);
 
-  // 初始化 note blocks
+  // Initialize note blocks
   useEffect(() => {
     const blocks = getNoteBlocks();
     setNoteBlocks(blocks);
   }, [getNoteBlocks]);
 
-  // 鼠标移动监听和工具栏自动隐藏
+  // Mouse movement listener and toolbar auto-hide
   useEffect(() => {
     const handleMouseMove = () => {
       setShowToolbars(true);
 
-      // 清除之前的定时器
+      // Clear previous timer
       if (hideTimeoutRef.current) {
         clearTimeout(hideTimeoutRef.current);
       }
 
-      // 设置新的定时器，2秒后隐藏工具栏
+      // Set new timer to hide toolbar after 2 seconds
       hideTimeoutRef.current = setTimeout(() => {
         setShowToolbars(false);
       }, 2000);
@@ -135,7 +135,7 @@ export function PresentationMode({
 
     document.addEventListener('mousemove', handleMouseMove);
 
-    // 初始设置定时器
+    // Initial timer setup
     hideTimeoutRef.current = setTimeout(() => {
       setShowToolbars(false);
     }, 2000);
@@ -148,7 +148,7 @@ export function PresentationMode({
     };
   }, []);
 
-  // 键盘导航
+  // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       switch (e.key) {
@@ -159,7 +159,7 @@ export function PresentationMode({
           }
           break;
         case 'ArrowRight':
-        case ' ': // 空格键
+        case ' ': // Space key
           e.preventDefault();
           if (currentSlide < noteBlocks.length - 1) {
             setCurrentSlide(currentSlide + 1);
@@ -167,7 +167,7 @@ export function PresentationMode({
           break;
         case 'ArrowUp':
         case 'ArrowDown':
-          // 允许上下箭头键进行页面滚动，不阻止默认行为
+          // Allow up/down arrow keys for page scrolling, don't prevent default behavior
           break;
         case 'Escape':
           e.preventDefault();
@@ -188,24 +188,24 @@ export function PresentationMode({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [currentSlide, noteBlocks.length]);
 
-  // 进入全屏
+  // Enter fullscreen
   useEffect(() => {
     const enterFullscreen = async () => {
       if (containerRef.current && !document.fullscreenElement) {
         try {
           await containerRef.current.requestFullscreen();
         } catch (error) {
-          console.warn('无法进入全屏模式:', error);
+          console.warn('Unable to enter fullscreen mode:', error);
         }
       }
     };
 
     enterFullscreen();
 
-    // 监听全屏状态变化
+    // Listen for fullscreen state changes
     const handleFullscreenChange = () => {
       if (!document.fullscreenElement) {
-        // 退出全屏时关闭演示模式
+        // Close presentation mode when exiting fullscreen
         onClose();
       }
     };
@@ -233,7 +233,7 @@ export function PresentationMode({
       try {
         await document.exitFullscreen();
       } catch (error) {
-        console.warn('退出全屏失败:', error);
+        console.warn('Failed to exit fullscreen:', error);
       }
     }
     onClose();
@@ -252,15 +252,15 @@ export function PresentationMode({
         className="fixed inset-0 bg-white text-gray-800 flex items-center justify-center z-50"
       >
         <div className="text-center">
-          <h2 className="text-2xl mb-4">没有可演示的内容</h2>
+          <h2 className="text-2xl mb-4">No content to present</h2>
           <p className="text-gray-600 mb-6">
-            文档中没有找到可用于演示的 note blocks
+            No note blocks found in the document for presentation
           </p>
           <button
             onClick={exitPresentation}
             className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
           >
-            关闭演示
+            Close Presentation
           </button>
         </div>
       </div>
@@ -269,13 +269,13 @@ export function PresentationMode({
 
   const currentNote = noteBlocks[currentSlide];
 
-  // 获取当前页面应该显示的标题
+  // Get the title that should be displayed for the current page
   const getCurrentTitle = () => {
     if (currentSlide === 0) {
-      // 第一页显示文档标题
+      // First page displays document title
       return title;
     } else {
-      // 其他页显示 note 标题，如果没有则显示文档标题
+      // Other pages display note title, or document title if none
       return currentNote?.props?.title || title;
     }
   };
@@ -285,7 +285,7 @@ export function PresentationMode({
       ref={containerRef}
       className="fixed inset-0 bg-white z-50 flex flex-col"
     >
-      {/* 顶部工具栏 */}
+      {/* Top toolbar */}
       <div
         className={`absolute top-4 left-4 right-4 z-10 flex items-center justify-between backdrop-blur-sm bg-white/30 rounded-lg px-4 py-2 shadow-[0_2px_8px_rgba(0,0,0,0.12)] transition-opacity duration-300 ${
           showToolbars ? 'opacity-100' : 'opacity-0 pointer-events-none'
@@ -301,7 +301,7 @@ export function PresentationMode({
         </div>
 
         <div className="flex items-center gap-2">
-          {/* 导航按钮 */}
+          {/* Navigation buttons */}
           <IconButton
             size="32"
             icon={<ArrowLeftBigIcon />}
@@ -317,7 +317,7 @@ export function PresentationMode({
             className="text-gray-600 hover:text-gray-900 disabled:opacity-50"
           />
 
-          {/* 关闭按钮 */}
+          {/* Close button */}
           <IconButton
             size="32"
             icon={<CloseIcon />}
@@ -327,12 +327,12 @@ export function PresentationMode({
         </div>
       </div>
 
-      {/* 主要内容区域 */}
+      {/* Main content area */}
       <div className="flex-1 overflow-auto">
         <div className="w-full h-full">
           {currentNote && (
             <div className="h-full w-full">
-              {/* 显示当前 note block 的内容 */}
+              {/* Display current note block content */}
               <div className="w-full h-full overflow-auto">
                 <div className="p-16">
                   <NoteBlockContent note={currentNote} doc={doc} />
@@ -343,7 +343,7 @@ export function PresentationMode({
         </div>
       </div>
 
-      {/* 底部页面指示器 */}
+      {/* Bottom page indicator */}
       <div
         className={`absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10 transition-opacity duration-300 ${
           showToolbars ? 'opacity-100' : 'opacity-0 pointer-events-none'
@@ -359,19 +359,19 @@ export function PresentationMode({
                   ? 'bg-blue-600'
                   : 'bg-gray-400 hover:bg-gray-600'
               }`}
-              aria-label={`跳转到第 ${index + 1} 页`}
+              aria-label={`Go to page ${index + 1}`}
             />
           ))}
         </div>
       </div>
 
-      {/* 键盘提示 */}
+      {/* Keyboard shortcuts */}
       <div
         className={`absolute bottom-4 right-4 text-xs text-gray-600 bg-white bg-opacity-90 rounded px-3 py-2 transition-opacity duration-300 shadow-lg border border-gray-200 ${
           showToolbars ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
       >
-        <div>← → 导航 | ESC 退出 | 空格 下一页</div>
+        <div>← → Navigate | ESC Exit | Space Next Page</div>
       </div>
     </div>
   );

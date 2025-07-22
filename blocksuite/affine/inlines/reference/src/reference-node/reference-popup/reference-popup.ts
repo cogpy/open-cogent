@@ -23,10 +23,6 @@ export class ReferencePopup extends SignalWatcher(
   WithDisposable(ShadowlessElement)
 ) {
   static override styles = css`
-    :host {
-      box-sizing: border-box;
-    }
-
     .overlay-mask {
       position: fixed;
       z-index: var(--affine-z-index-popover);
@@ -46,6 +42,22 @@ export class ReferencePopup extends SignalWatcher(
       align-items: center;
       animation: affine-popover-fade-in 0.2s ease;
       z-index: var(--affine-z-index-popover);
+
+      input {
+        display: flex;
+        flex: 1;
+        padding: 0;
+        border: none;
+        background: transparent;
+        color: var(--affine-text-primary-color);
+      }
+      ${fontXSStyle('input')}
+      input::placeholder {
+        color: var(--affine-placeholder-color);
+      }
+      input:focus {
+        outline: none;
+      }
     }
 
     @keyframes affine-popover-fade-in {
@@ -57,22 +69,6 @@ export class ReferencePopup extends SignalWatcher(
         opacity: 1;
         transform: translateY(0);
       }
-    }
-
-    input {
-      display: flex;
-      flex: 1;
-      padding: 0;
-      border: none;
-      background: transparent;
-      color: var(--affine-text-primary-color);
-    }
-    ${fontXSStyle('input')}
-    input::placeholder {
-      color: var(--affine-placeholder-color);
-    }
-    input:focus {
-      outline: none;
     }
 
     ${fontXSStyle('editor-icon-button.save .label')}

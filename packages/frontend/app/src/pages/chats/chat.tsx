@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate, useParams } from 'react-router';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams, useSearchParams } from 'react-router';
 
 import { ChatInterface } from '@/components/chat/chat-interface';
 import {
@@ -15,7 +15,14 @@ import { chatSessionsStore } from '@/store/copilot/sessions-instance';
 
 export const ChatPage = () => {
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
+
   const navigate = useNavigate();
+  useEffect(() => {
+    // delete msg param immediately after mount
+    navigate({ search: '' }, { replace: true });
+  }, [navigate]);
+
   /* ---------------- Existing-session mode ---------------- */
   const sessionStore = useRefCounted(
     id,
@@ -115,6 +122,7 @@ export const ChatPage = () => {
           placeholderTitle="What can I help you with?"
           onPlaceholderSend={onSendPlaceholder}
           isCreating={isCreating}
+          message={searchParams.get('msg') ?? undefined}
         />
       </div>
       {docId && (

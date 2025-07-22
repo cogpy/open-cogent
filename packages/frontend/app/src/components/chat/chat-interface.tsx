@@ -1,5 +1,5 @@
 import { Loading } from '@afk/component';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { type StoreApi, useStore } from 'zustand';
 
 import { ChatInput } from '@/components/chat-input';
@@ -12,6 +12,7 @@ interface ChatPlaceholderProps {
   placeholderTitle?: string;
   onPlaceholderSend?: (input: string) => Promise<void>;
   isCreating?: boolean;
+  message?: string;
 }
 
 const ChatPlaceholder = ({
@@ -19,8 +20,9 @@ const ChatPlaceholder = ({
   placeholderTitle = 'What can I help you with?',
   onPlaceholderSend,
   isCreating = false,
+  message,
 }: ChatPlaceholderProps) => {
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState(message ?? '');
 
   const onSend = async () => {
     if (!input.trim()) return;
@@ -29,6 +31,11 @@ const ChatPlaceholder = ({
       setInput('');
     }
   };
+
+  useEffect(() => {
+    if (message) onSend();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="flex flex-col justify-center h-full p-4 gap-4 max-w-[900px] mx-auto">
@@ -140,6 +147,7 @@ export interface ChatInterfaceProps {
   placeholderTitle?: string;
   onPlaceholderSend?: (input: string) => Promise<void>;
   isCreating?: boolean;
+  message?: string;
 }
 
 /**
@@ -156,6 +164,7 @@ export const ChatInterface = ({
   placeholderTitle = 'What can I help you with?',
   onPlaceholderSend,
   isCreating = false,
+  message,
 }: ChatInterfaceProps) => {
   // If no store is provided, render the placeholder component
   if (!store) {
@@ -165,6 +174,7 @@ export const ChatInterface = ({
         placeholderTitle={placeholderTitle}
         onPlaceholderSend={onPlaceholderSend}
         isCreating={isCreating}
+        message={message}
       />
     );
   }

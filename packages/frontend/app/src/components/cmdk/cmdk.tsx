@@ -43,7 +43,7 @@ export const Cmdk = ({
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // library data
-  const { docs, files, chats, refresh } = useLibraryStore();
+  const { docs, files, chats } = useLibraryStore();
 
   const [filteredDocs, setFilteredDocs] = useState<Doc[]>(docs);
   const [filteredFiles, setFilteredFiles] = useState<File[]>(files);
@@ -54,39 +54,34 @@ export const Cmdk = ({
     key: string;
     label: string;
     icon: React.ReactElement;
-    action: () => void;
+    action: (input: string) => void;
     timestamp: number;
+    /** whether the palette should close after this item executes */
+    closeAfterExecute?: boolean;
   };
 
   /* ---------- actions factory ---------- */
   type Action = {
+    /** display name */
     name: string;
+    /** keywords used for default filter */
     keywords: string[];
-    execute: () => void;
+    /**
+     * execute with the current user input
+     * @param input current search string
+     */
+    execute: (input: string) => void;
+    /** icon rendered in the list */
     icon: React.ReactElement;
+    /** custom filter logic, return true to show in palette */
+    filter: (input: string) => boolean;
+    /** bigger value means higher priority */
+    priority?: number;
+    /** whether to close palette after trigger */
     closeAfterExecute?: boolean;
   };
 
   const navigate = useNavigate();
-
-  const createActions = (nav: NavigateFunction): Action[] => [
-    {
-      name: 'New Chat',
-      keywords: ['chat', 'new', 'conversation'],
-      execute: () => nav('/chats'),
-      icon: <EditIcon />,
-      closeAfterExecute: true,
-    },
-    {
-      name: 'Open Library',
-      keywords: ['library', 'docs', 'files', 'documents'],
-      execute: () => nav('/library'),
-      icon: <AllDocsIcon />,
-      closeAfterExecute: true,
-    },
-  ];
-
-  const predefinedActions: Action[] = createActions(navigate);
 
   const paletteItems: PaletteItem[] = [
     ...filteredChats.map(chat => ({
@@ -118,24 +113,70 @@ export const Cmdk = ({
     })),
   ].sort((a, b) => b.timestamp - a.timestamp) as PaletteItem[];
 
+  const createActions = (nav: NavigateFunction): Action[] => [
+    {
+      name: `Start a new chat with: "${search}"`,
+      keywords: [''],
+      execute: (input: string) => {
+        nav(`/chats/?msg=${input}`);
+      },
+      icon: <EditIcon />,
+      priority: 10,
+      closeAfterExecute: true,
+      filter: () => {
+        return paletteItems.length === 0;
+      },
+    },
+    {
+      name: 'New Chat',
+      keywords: ['chat', 'new', 'conversation'],
+      execute: () => nav('/chats'),
+      icon: <EditIcon />,
+      priority: 10,
+      closeAfterExecute: true,
+      filter: input => {
+        const lower = input.toLowerCase();
+        if (!lower) return false;
+        return (
+          'new chat'.includes(lower) ||
+          ['chat', 'new', 'conversation'].some(k => k.includes(lower))
+        );
+      },
+    },
+    {
+      name: 'Open Library',
+      keywords: ['library', 'docs', 'files', 'documents'],
+      execute: () => nav('/library'),
+      icon: <AllDocsIcon />,
+      priority: 8,
+      closeAfterExecute: true,
+      filter: input => {
+        const lower = input.toLowerCase();
+        if (!lower) return false;
+        return (
+          'open library'.includes(lower) ||
+          ['library', 'docs', 'files', 'documents'].some(k => k.includes(lower))
+        );
+      },
+    },
+  ];
+
+  const predefinedActions: Action[] = createActions(navigate);
+
   /* ---------- action filtering ---------- */
   const lowerSearch = search.toLowerCase();
   const showAllActions = alwaysShowActions && lowerSearch === '';
 
   const actionItems: PaletteItem[] = predefinedActions
-    .filter(
-      a =>
-        showAllActions ||
-        (lowerSearch &&
-          (a.name.toLowerCase().includes(lowerSearch) ||
-            a.keywords.some(k => k.toLowerCase().includes(lowerSearch))))
-    )
+    .filter(a => showAllActions || a.filter(lowerSearch))
+    .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0))
     .map(a => ({
       key: `action-${a.name}`,
       label: a.name,
       icon: a.icon,
-      action: a.execute,
+      action: () => a.execute(search),
       timestamp: Number.MAX_SAFE_INTEGER, // ensure sort position irrelevant
+      closeAfterExecute: a.closeAfterExecute,
     }));
 
   const finalItems: PaletteItem[] = [...actionItems, ...paletteItems];
@@ -272,106 +313,67 @@ export const Cmdk = ({
         persistent={false}
         withoutCloseButton
         overlayOptions={{
-          style: { backgroundColor: 'rgba(0,0,0,0.08)' },
+          style: {
+            backgroundColor: 'rgba(0,0,0,0.01)',
+          },
+        }}
+        contentWrapperStyle={{
+          alignItems: 'flex-start',
         }}
         contentOptions={{
-          style: { padding: 0, width: `calc(100% - 48px)`, maxWidth: 720 },
-          className: 'overflow-hidden',
+          style: {
+            padding: 0,
+            width: `calc(100% - 48px)`,
+            maxHeight: 420,
+            maxWidth: 720,
+            marginTop: 200,
+            minHeight: 80,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'start',
+            boxShadow: `0px 5px 140px 0px rgba(0, 0, 0, 0.15), 0px 2px 6px 0px rgba(0, 0, 0, 0.05)`,
+          },
         }}
       >
-        {/* search bar */}
-        <div
-          className="border-b flex items-center gap-2 pr-6"
-          style={{ borderWidth: 0.5 }}
-        >
-          <RowInput
-            ref={searchInputRef}
-            className="pl-6 w-0 flex-1 h-18 focus:outline-none text-xl"
-            placeholder="Search chats..."
-            value={search}
-            onKeyDown={e => {
-              e.stopPropagation();
-              if (e.key === 'ArrowDown') {
-                e.preventDefault();
-                setActiveIndex(prev =>
-                  Math.min(prev + 1, finalItems.length - 1)
-                );
-              } else if (e.key === 'ArrowUp') {
-                e.preventDefault();
-                setActiveIndex(prev => Math.max(prev - 1, 0));
-              } else if (e.key === 'Enter') {
-                e.preventDefault();
-                finalItems[activeIndex]?.action();
-                setOpen(false);
-              }
-            }}
-            onChange={setSearch}
-          />
-          <IconButton size="24" onClick={() => setOpen(false)}>
-            <CloseIcon />
-          </IconButton>
-        </div>
+        <div className="h-0 flex-1 flex flex-col justify-start" style={{}}>
+          {/* search bar */}
+          <div
+            className="border-b flex items-center gap-2 pr-6"
+            style={{ borderWidth: 0.5 }}
+          >
+            <RowInput
+              ref={searchInputRef}
+              className="pl-6 w-0 flex-1 h-18 focus:outline-none text-xl"
+              placeholder="Search chats..."
+              value={search}
+              onKeyDown={e => {
+                e.stopPropagation();
+                if (e.key === 'ArrowDown') {
+                  e.preventDefault();
+                  setActiveIndex(prev =>
+                    Math.min(prev + 1, finalItems.length - 1)
+                  );
+                } else if (e.key === 'ArrowUp') {
+                  e.preventDefault();
+                  setActiveIndex(prev => Math.max(prev - 1, 0));
+                } else if (e.key === 'Enter') {
+                  e.preventDefault();
+                  finalItems[activeIndex]?.action(search);
+                  setOpen(false);
+                }
+              }}
+              onChange={setSearch}
+            />
+            <IconButton size="24" onClick={() => setOpen(false)}>
+              <CloseIcon />
+            </IconButton>
+          </div>
 
-        <div className="max-h-[70vh] overflow-y-auto">
-          {actionItems.length > 0 && (
-            <div className="flex flex-col gap-[2px] px-2 mb-4">
-              <div className={styles.groupLabel}>Actions</div>
-              {actionItems.map(item => {
-                const globalIndex = finalItems.findIndex(
-                  it => it.key === item.key
-                );
-                const active = globalIndex === activeIndex;
-                return (
-                  <div
-                    key={item.key}
-                    ref={el => {
-                      itemRefs.current[globalIndex] = el;
-                    }}
-                    onMouseEnter={() => setActiveIndex(globalIndex)}
-                    onClick={() => {
-                      item.action();
-                      if ((item as any).closeAfterExecute) {
-                        setOpen(false);
-                      }
-                    }}
-                    data-active={active}
-                    className={cn(
-                      'flex items-center gap-2 px-2 h-8 rounded-md cursor-pointer',
-                      styles.item
-                    )}
-                  >
-                    <div
-                      className="size-6 flex items-center justify-center text-2xl"
-                      style={{ color: cssVarV2.icon.primary }}
-                    >
-                      {item.icon}
-                    </div>
-                    <span className="text-sm truncate flex-1">
-                      {item.label}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
-          {(
-            ['Today', 'Yesterday', 'This Week', 'This Month', 'Older'] as const
-          ).map(groupLabel => {
-            const items = groups[groupLabel];
-            if (!items || items.length === 0) return null;
-            const firstGroup = Object.keys(groups).find(
-              key => groups[key].length > 0
-            );
-            return (
-              <div
-                key={groupLabel}
-                className="flex flex-col gap-[2px] px-2 mb-4"
-              >
-                {/* Divider between groups (skip first) */}
-                {groupLabel !== firstGroup ? <Divider size="thinner" /> : null}
-                <div className={styles.groupLabel}>{groupLabel}</div>
-                {items.map(item => {
+          <div className="max-h-[70vh] overflow-y-auto">
+            {actionItems.length > 0 && (
+              <div className="flex flex-col gap-[2px] px-2 mb-4">
+                <div className={styles.groupLabel}>Actions</div>
+                {actionItems.map(item => {
                   const globalIndex = finalItems.findIndex(
                     it => it.key === item.key
                   );
@@ -383,7 +385,12 @@ export const Cmdk = ({
                         itemRefs.current[globalIndex] = el;
                       }}
                       onMouseEnter={() => setActiveIndex(globalIndex)}
-                      onClick={item.action}
+                      onClick={() => {
+                        item.action(search);
+                        if ((item as any).closeAfterExecute) {
+                          setOpen(false);
+                        }
+                      }}
                       data-active={active}
                       className={cn(
                         'flex items-center gap-2 px-2 h-8 rounded-md cursor-pointer',
@@ -403,14 +410,73 @@ export const Cmdk = ({
                   );
                 })}
               </div>
-            );
-          })}
+            )}
 
-          {finalItems.length === 0 ? (
-            <div className="flex flex-col gap-[2px] px-2 py-8 text-center">
-              <div className={styles.groupLabel}>No results</div>
-            </div>
-          ) : null}
+            {(
+              [
+                'Today',
+                'Yesterday',
+                'This Week',
+                'This Month',
+                'Older',
+              ] as const
+            ).map(groupLabel => {
+              const items = groups[groupLabel];
+              if (!items || items.length === 0) return null;
+              const firstGroup = Object.keys(groups).find(
+                key => groups[key].length > 0
+              );
+              return (
+                <div
+                  key={groupLabel}
+                  className="flex flex-col gap-[2px] px-2 mb-4"
+                >
+                  {/* Divider between groups (skip first) */}
+                  {groupLabel !== firstGroup ? (
+                    <Divider size="thinner" />
+                  ) : null}
+                  <div className={styles.groupLabel}>{groupLabel}</div>
+                  {items.map(item => {
+                    const globalIndex = finalItems.findIndex(
+                      it => it.key === item.key
+                    );
+                    const active = globalIndex === activeIndex;
+                    return (
+                      <div
+                        key={item.key}
+                        ref={el => {
+                          itemRefs.current[globalIndex] = el;
+                        }}
+                        onMouseEnter={() => setActiveIndex(globalIndex)}
+                        onClick={() => item.action(search)}
+                        data-active={active}
+                        className={cn(
+                          'flex items-center gap-2 px-2 h-8 rounded-md cursor-pointer',
+                          styles.item
+                        )}
+                      >
+                        <div
+                          className="size-6 flex items-center justify-center text-2xl"
+                          style={{ color: cssVarV2.icon.primary }}
+                        >
+                          {item.icon}
+                        </div>
+                        <span className="text-sm truncate flex-1">
+                          {item.label}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })}
+
+            {finalItems.length === 0 ? (
+              <div className="flex flex-col gap-[2px] px-2 py-8 text-center">
+                <div className={styles.groupLabel}>No results</div>
+              </div>
+            ) : null}
+          </div>
         </div>
       </Modal>
     </>

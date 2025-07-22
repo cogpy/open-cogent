@@ -4,8 +4,13 @@ import { z } from 'zod';
 
 import { Models } from '../../../models';
 import type { PromptService } from '../prompt';
-import type { CopilotChatOptions, CopilotProviderFactory } from '../providers';
+import type {
+  CopilotChatOptions,
+  CopilotProviderFactory,
+  StreamObjectToolResult,
+} from '../providers';
 import { toolError } from './error';
+import { duplicateToolStream } from './utils';
 
 const logger = new Logger('DocComposeTool');
 
@@ -51,10 +56,14 @@ type Shift<Fn> = Fn extends (arg0: any, ...rest: infer Rest) => infer R
 export type SaveDocFunc = Shift<Awaited<ReturnType<typeof buildSaveDocGetter>>>;
 
 export const createDocComposeTool = (
+  toolStream: ReadableStream<StreamObjectToolResult>[],
   promptService: PromptService,
   factory: CopilotProviderFactory,
   saveDoc: SaveDocFunc
 ) => {
+  let { readable, writable } = new TransformStream<StreamObjectToolResult>();
+  toolStream.push(readable);
+
   return tool({
     description:
       'Write a new document with markdown content. This tool creates structured markdown content for documents including titles, sections, and formatting.',
@@ -66,7 +75,7 @@ export const createDocComposeTool = (
           'The user description of the document, will be used to generate the document'
         ),
     }),
-    execute: async ({ title, userPrompt }) => {
+    execute: async ({ title, userPrompt }, { toolCallId }) => {
       try {
         const prompt = await promptService.get('Write an article about this');
         if (!prompt) {
@@ -78,13 +87,25 @@ export const createDocComposeTool = (
         if (!provider) {
           throw new Error('Provider not found');
         }
-
-        const content = await provider.text(
-          {
-            modelId: prompt.model,
-          },
+        const originalStream = provider.streamObject(
+          { modelId: prompt.model },
           [...prompt.finish({}), { role: 'user', content: userPrompt }]
         );
+        const aiStream = duplicateToolStream(
+          toolCallId,
+          originalStream,
+          writable
+        );
+
+        let content = '';
+
+        for await (const chunk of aiStream) {
+          if (chunk.type === 'text-delta') {
+            content += chunk.textDelta;
+          }
+        }
+
+        await aiStream.cancel();
 
         const ret = await saveDoc(content);
         if (typeof ret === 'string') return ret;

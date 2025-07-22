@@ -10,6 +10,7 @@ import {
   metrics,
   UserFriendlyError,
 } from '../../../../base';
+import { mergeStream } from '../../utils';
 import { CopilotProvider } from '../provider';
 import type {
   CopilotChatOptions,
@@ -161,7 +162,7 @@ export abstract class AnthropicProvider<T> extends CopilotProvider<T> {
     options: CopilotChatOptions = {}
   ) {
     const [system, msgs] = await chatToGPTMessage(messages, true, true);
-    const { tools } = await this.getTools(options, model.id);
+    const { tools, toolOneTimeStream } = await this.getTools(options, model.id);
     const { fullStream } = streamText({
       model: this.instance(model.id),
       system,
@@ -174,7 +175,7 @@ export abstract class AnthropicProvider<T> extends CopilotProvider<T> {
       maxSteps: this.MAX_STEPS,
       experimental_continueSteps: true,
     });
-    return fullStream;
+    return mergeStream(fullStream, toolOneTimeStream);
   }
 
   private getAnthropicOptions(options: CopilotChatOptions, model: string) {

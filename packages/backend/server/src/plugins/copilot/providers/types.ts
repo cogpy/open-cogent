@@ -130,7 +130,7 @@ export const ChatMessageAttachment = z.union([
   }),
 ]);
 
-export const StreamObjectSchema = z.discriminatedUnion('type', [
+const StreamObjectPureSchema = [
   z.object({
     type: z.literal('text-delta'),
     textDelta: z.string(),
@@ -152,6 +152,16 @@ export const StreamObjectSchema = z.discriminatedUnion('type', [
     args: z.record(z.any()),
     result: z.any(),
   }),
+] as const;
+const StreamObjectToolResultSchema = z.object({
+  type: z.literal('tool-incomplete-result'),
+  toolCallId: z.string(),
+  data: z.discriminatedUnion('type', StreamObjectPureSchema),
+});
+
+export const StreamObjectSchema = z.discriminatedUnion('type', [
+  ...StreamObjectPureSchema,
+  StreamObjectToolResultSchema,
 ]);
 
 export const PureMessageSchema = z.object({
@@ -166,6 +176,9 @@ export const PromptMessageSchema = PureMessageSchema.extend({
 }).strict();
 export type PromptMessage = z.infer<typeof PromptMessageSchema>;
 export type PromptParams = NonNullable<PromptMessage['params']>;
+export type StreamObjectToolResult = z.infer<
+  typeof StreamObjectToolResultSchema
+>;
 export type StreamObject = z.infer<typeof StreamObjectSchema>;
 
 // ========== options ==========

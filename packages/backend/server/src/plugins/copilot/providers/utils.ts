@@ -10,7 +10,7 @@ import {
 import { ZodType } from 'zod';
 
 import { CustomAITools } from '../tools';
-import { PromptMessage, StreamObject } from './types';
+import { PromptMessage, StreamObject, StreamObjectToolResult } from './types';
 
 type ChatMessage = CoreUserMessage | CoreAssistantMessage;
 
@@ -407,7 +407,7 @@ export class TextStreamParser {
 
   private readonly docEditFootnotes: DocEditFootnote[] = [];
 
-  public parse(chunk: TextStreamPart<CustomAITools>) {
+  public parse(chunk: TextStreamPart<CustomAITools> | StreamObjectToolResult) {
     let result = '';
     switch (chunk.type) {
       case 'text-delta': {
@@ -475,24 +475,6 @@ export class TextStreamParser {
         );
         result = this.addPrefix(result);
         switch (chunk.toolName) {
-          case 'doc_edit': {
-            if (
-              chunk.result &&
-              typeof chunk.result === 'object' &&
-              Array.isArray(chunk.result.result)
-            ) {
-              result += chunk.result.result
-                .map(item => {
-                  return `\n${item.changedContent}\n`;
-                })
-                .join('');
-              this.docEditFootnotes[this.docEditFootnotes.length - 1].result =
-                result;
-            } else {
-              this.docEditFootnotes.pop();
-            }
-            break;
-          }
           case 'doc_semantic_search': {
             if (Array.isArray(chunk.result)) {
               result += `\nFound ${chunk.result.length} document${chunk.result.length !== 1 ? 's' : ''} related to “${chunk.args.query}”.\n`;
@@ -502,13 +484,6 @@ export class TextStreamParser {
               this.logger.warn(
                 `Unexpected result type for doc_semantic_search: ${chunk.result?.message || 'Unknown error'}`
               );
-            }
-            break;
-          }
-          case 'doc_keyword_search': {
-            if (Array.isArray(chunk.result)) {
-              result += `\nFound ${chunk.result.length} document${chunk.result.length !== 1 ? 's' : ''} related to “${chunk.args.query}”.\n`;
-              result += `\n${this.getKeywordSearchLinks(chunk.result)}\n`;
             }
             break;
           }
@@ -546,7 +521,9 @@ export class TextStreamParser {
         throw toError(chunk.error);
       }
     }
-    this.lastType = chunk.type;
+    if (chunk.type !== 'tool-incomplete-result') {
+      this.lastType = chunk.type;
+    }
     return result;
   }
 
@@ -592,26 +569,17 @@ export class TextStreamParser {
     }, '');
     return links;
   }
-
-  private getKeywordSearchLinks(
-    list: {
-      docId: string;
-      title: string;
-    }[]
-  ): string {
-    const links = list.reduce((acc, result) => {
-      return acc + `\n\n[${result.title}](${result.docId})\n\n`;
-    }, '');
-    return links;
-  }
 }
 
 export class StreamObjectParser {
-  public parse(chunk: TextStreamPart<CustomAITools>) {
+  public parse(
+    chunk: TextStreamPart<CustomAITools> | StreamObjectToolResult
+  ): StreamObject | null {
     switch (chunk.type) {
       case 'reasoning':
       case 'text-delta':
       case 'tool-call':
+      case 'tool-incomplete-result':
       case 'tool-result': {
         return chunk;
       }

@@ -27,6 +27,7 @@ import {
   createMarkTodoTool,
   createTodoTool,
 } from '../tools';
+import { mergeStreams } from '../utils';
 import { CopilotProviderFactory } from './factory';
 import {
   type CopilotChatOptions,
@@ -44,10 +45,11 @@ import {
   type PromptMessage,
   PromptMessageSchema,
   StreamObject,
+  StreamObjectToolResult,
 } from './types';
 
 type GetToolResult = {
-  toolOneTimeStream?: AsyncGenerator<string>;
+  toolOneTimeStream: ReadableStream<StreamObjectToolResult>;
   tools: ToolSet;
 };
 
@@ -139,7 +141,7 @@ export abstract class CopilotProvider<C = any> {
     options: CopilotChatOptions,
     model: string
   ): Promise<GetToolResult> {
-    const toolOneTimeStream = undefined;
+    const toolStreams: ReadableStream<StreamObjectToolResult>[] = [];
     const tools: ToolSet = {};
     if (options?.tools?.length) {
       this.logger.debug(`getTools: ${JSON.stringify(options.tools)}`);
@@ -208,6 +210,7 @@ export abstract class CopilotProvider<C = any> {
           }
           case 'docCompose': {
             tools.doc_compose = createDocComposeTool(
+              toolStreams,
               prompt,
               this.factory,
               saveDoc
@@ -224,9 +227,8 @@ export abstract class CopilotProvider<C = any> {
           }
         }
       }
-      return { tools, toolOneTimeStream };
     }
-    return { tools, toolOneTimeStream };
+    return { tools, toolOneTimeStream: mergeStreams(...toolStreams) };
   }
 
   private handleZodError(ret: z.SafeParseReturnType<any, any>) {

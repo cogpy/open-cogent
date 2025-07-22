@@ -1026,7 +1026,7 @@ export class SnapshotToMarkdownConverter {
             else {
               const customAttributes = this.buildCustomAttributes(d.attributes);
               if (customAttributes) {
-                insert = `[${insert}]{${customAttributes}}`;
+                insert = `[${insert}]${customAttributes}`;
               }
             }
           }

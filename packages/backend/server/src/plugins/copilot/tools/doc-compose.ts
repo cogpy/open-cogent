@@ -10,7 +10,7 @@ import type {
   StreamObjectToolResult,
 } from '../providers';
 import { toolError } from './error';
-import { duplicateToolStream } from './utils';
+import { duplicateStreamObjectStream } from './utils';
 
 const logger = new Logger('DocComposeTool');
 
@@ -91,21 +91,12 @@ export const createDocComposeTool = (
           { modelId: prompt.model },
           [...prompt.finish({}), { role: 'user', content: userPrompt }]
         );
-        const aiStream = duplicateToolStream(
+
+        const content = await duplicateStreamObjectStream(
           toolCallId,
           originalStream,
           writable
         );
-
-        let content = '';
-
-        for await (const chunk of aiStream) {
-          if (chunk.type === 'text-delta') {
-            content += chunk.textDelta;
-          }
-        }
-
-        await aiStream.cancel();
 
         const ret = await saveDoc(content);
         if (typeof ret === 'string') return ret;

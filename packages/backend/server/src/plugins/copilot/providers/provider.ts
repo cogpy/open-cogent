@@ -23,9 +23,9 @@ import {
   createDocSemanticSearchTool,
   createExaCrawlTool,
   createExaSearchTool,
+  createMakeItRealTool,
   createMarkTodoTool,
   createTodoTool,
-  makeItRealTool,
 } from '../tools';
 import { mergeStreams } from '../utils';
 import { CopilotProviderFactory } from './factory';
@@ -218,7 +218,11 @@ export abstract class CopilotProvider<C = any> {
             break;
           }
           case 'makeItReal': {
-            tools.make_it_real = makeItRealTool(prompt, this.factory);
+            tools.make_it_real = createMakeItRealTool(
+              toolStreams,
+              prompt,
+              this.factory
+            );
             break;
           }
         }

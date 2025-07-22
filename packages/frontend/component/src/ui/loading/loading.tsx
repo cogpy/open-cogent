@@ -1,4 +1,3 @@
-import { cssVarV2 } from '@toeverything/theme/v2';
 import { assignInlineVars } from '@vanilla-extract/dynamic';
 import clsx from 'clsx';
 
@@ -50,7 +49,7 @@ export const Loading = ({
         cy={12}
         r={8}
         strokeWidth={strokeWidth}
-        stroke={strokeColor || cssVarV2.loading.foreground}
+        stroke={strokeColor || 'rgba(162, 102, 194, 1)'}
         strokeDasharray={`${2 * Math.PI * 8 * progress} ${
           2 * Math.PI * 8 * (1 - progress)
         }`}

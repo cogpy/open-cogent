@@ -41,7 +41,6 @@ body.sidebar-open {
   width: 0.5em;
   height: 1em;
   background: currentColor;
-  margin-left: 0.25em;
   vertical-align: middle;
   animation: blink-cursor 1s steps(1) infinite;
   transform: translateY(-2px);

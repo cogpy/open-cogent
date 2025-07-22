@@ -9,7 +9,7 @@ import {
   getCopilotSessionQuery,
   getCopilotUserSessionsQuery,
   PaginationInput,
-  removeContextFileMutation,
+  removeContextFileQuery,
   updateCopilotSessionMutation,
 } from '@afk/graphql';
 
@@ -204,11 +204,13 @@ export async function removeContextFile(
   fileId: string
 ): Promise<string> {
   const res = await app.typedGql({
-    query: removeContextFileMutation,
-    variables: { options: { contextId, fileId } },
+    query: removeContextFileQuery,
+    variables: { contextId, fileId },
   });
 
-  return res.removeContextFile ? 'success' : 'failed';
+  return res.currentUser?.copilot.contexts[0].removeContextFile
+    ? 'success'
+    : 'failed';
 }
 
 export async function listContextFiles(

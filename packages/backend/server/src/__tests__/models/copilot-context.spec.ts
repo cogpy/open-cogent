@@ -12,7 +12,6 @@ import {
   UserModel,
 } from '../../models';
 import { createTestingModule, type TestingModule } from '../utils';
-import { cleanObject } from '../utils/copilot';
 
 interface Context {
   config: Config;
@@ -52,6 +51,7 @@ test.beforeEach(async t => {
     title: null,
     promptName: 'prompt-name',
     promptAction: null,
+    metadata: '',
   });
 });
 
@@ -97,44 +97,4 @@ test('should update context', async t => {
 
   const config1 = await copilotContext.getConfig(contextId);
   t.deepEqual(config1, config);
-});
-
-test('should insert embedding', async t => {
-  const { copilotContext } = t.context;
-  const { id: contextId } = await copilotContext.create(sessionId);
-
-  // file embedding
-  {
-    await copilotContext.insertFileEmbedding(contextId, 'file-id', [
-      {
-        index: 0,
-        content: 'content',
-        embedding: Array.from({ length: 1024 }, () => 1),
-      },
-    ]);
-
-    {
-      const ret = await copilotContext.matchFileEmbedding(
-        Array.from({ length: 1024 }, () => 0.9),
-        contextId,
-        1,
-        1
-      );
-      t.snapshot(
-        cleanObject(ret, ['chunk', 'content', 'distance']),
-        'should match file embedding'
-      );
-    }
-
-    {
-      await copilotContext.deleteFileEmbedding(contextId, 'file-id');
-      const ret = await copilotContext.matchFileEmbedding(
-        Array.from({ length: 1024 }, () => 0.9),
-        contextId,
-        1,
-        1
-      );
-      t.snapshot(ret, 'should return empty array when embedding is deleted');
-    }
-  }
 });

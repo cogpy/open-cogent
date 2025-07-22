@@ -140,4 +140,36 @@ test('should insert and search embedding', async t => {
       t.snapshot(ret, 'should return empty array when embedding is deleted');
     }
   }
+
+  // chat embedding
+  {
+    const sessionId = await copilotSession.create({
+      sessionId: 'session2',
+      userId: user.id,
+      title: 'title',
+      promptName: 'prompt-name',
+      promptAction: null,
+      metadata: '',
+    });
+    await copilotUser.insertChatEmbeddings(user.id, sessionId, [
+      {
+        index: 0,
+        content: 'chat content',
+        embedding: Array.from({ length: 1024 }, () => 1),
+      },
+    ]);
+
+    {
+      const ret = await copilotUser.matchChatEmbedding(
+        Array.from({ length: 1024 }, () => 0.9),
+        user.id,
+        1,
+        1
+      );
+      t.snapshot(
+        cleanObject(ret, ['sessionId', 'distance']),
+        'should match chat embedding'
+      );
+    }
+  }
 });

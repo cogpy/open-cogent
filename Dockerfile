@@ -39,17 +39,17 @@ RUN apt-get update && \
   libjemalloc2 \
   && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /app
+WORKDIR /workspace
 
 COPY --from=builder /workspace/packages/backend/server/dist ./packages/backend/server/dist
 COPY --from=builder /workspace/packages/backend/server/package.json ./packages/backend/server/package.json
 COPY --from=builder /workspace/packages/backend/native ./packages/backend/native
 COPY --from=builder /workspace/node_modules ./node_modules
 
-COPY --from=builder /workspace/packages/frontend/app/dist ./static
+COPY --from=builder /workspace/packages/frontend/app/dist ./packages/backend/server/static
 
 ENV LD_PRELOAD=libjemalloc.so.2
 ENV NODE_ENV=production
 EXPOSE 3010
 
-CMD ["node", "/app/packages/backend/server/dist/main.mjs"]
+CMD ["node", "/workspace/packages/backend/server/dist/main.mjs"]

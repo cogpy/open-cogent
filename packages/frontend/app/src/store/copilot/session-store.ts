@@ -408,11 +408,17 @@ export function createChatSessionStore(params: {
         set(state => {
           state.contextFiles = contexts?.files ?? [];
           state.contextChats = contexts?.chats ?? [];
+          state.contextDocs = contexts?.docs ?? [];
         });
       },
       addFileContext: async (file: File) => {
         const contextId = get().contextId;
         await client.addContextFile(file, contextId);
+        get().loadContexts();
+      },
+      addFileContextExists: async (blobId: string) => {
+        const contextId = get().contextId;
+        await client.addContextFileExists(blobId, contextId);
         get().loadContexts();
       },
       removeFileContext: async (fileId: string) => {

@@ -2,6 +2,7 @@ import type { UserFriendlyError } from '@afk/error';
 import {
   addContextChatMutation,
   addContextDocMutation,
+  addContextFileExistsMutation,
   addContextFileMutation,
   cleanupCopilotSessionMutation,
   createCopilotContextMutation,
@@ -260,6 +261,17 @@ export class CopilotClient {
         contextId,
       },
       timeout: 60000,
+    });
+    return res.addContextFile;
+  }
+
+  async addContextFileExists(blobId: string, contextId: string) {
+    const res = await this.gql({
+      query: addContextFileExistsMutation,
+      variables: {
+        blobId,
+        contextId,
+      },
     });
     return res.addContextFile;
   }

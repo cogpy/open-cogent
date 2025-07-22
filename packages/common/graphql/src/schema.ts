@@ -630,8 +630,6 @@ export interface Mutation {
   addContextFile: CopilotContextFile;
   /** Add user embedding doc */
   addUserDocs: CopilotUserDoc;
-  /** Upload user embedding files */
-  addUserFiles: CopilotUserFile;
   /** Ban an user */
   banUser: UserType;
   changeEmail: UserType;
@@ -709,7 +707,8 @@ export interface MutationAddContextDocArgs {
 }
 
 export interface MutationAddContextFileArgs {
-  content: Scalars['Upload']['input'];
+  blobId?: InputMaybe<Scalars['String']['input']>;
+  content?: InputMaybe<Scalars['Upload']['input']>;
   contextId: Scalars['String']['input'];
 }
 
@@ -718,11 +717,6 @@ export interface MutationAddUserDocsArgs {
   metadata?: InputMaybe<Scalars['String']['input']>;
   sessionId: Scalars['String']['input'];
   title: Scalars['String']['input'];
-}
-
-export interface MutationAddUserFilesArgs {
-  blob: Scalars['Upload']['input'];
-  metadata?: InputMaybe<Scalars['String']['input']>;
 }
 
 export interface MutationBanUserArgs {
@@ -1540,6 +1534,26 @@ export type RemoveContextDocQuery = {
   } | null;
 };
 
+export type AddContextFileExistsMutationVariables = Exact<{
+  contextId: Scalars['String']['input'];
+  blobId: Scalars['String']['input'];
+}>;
+
+export type AddContextFileExistsMutation = {
+  __typename?: 'Mutation';
+  addContextFile: {
+    __typename?: 'CopilotContextFile';
+    id: string;
+    createdAt: number;
+    name: string;
+    mimeType: string;
+    chunkSize: number;
+    error: string | null;
+    status: ContextEmbedStatus;
+    blobId: string;
+  };
+};
+
 export type AddContextFileMutationVariables = Exact<{
   contextId: Scalars['String']['input'];
   content: Scalars['Upload']['input'];
@@ -2339,25 +2353,6 @@ export type UpdateUserDocsMutation = {
   };
 };
 
-export type AddUserFilesMutationVariables = Exact<{
-  blob: Scalars['Upload']['input'];
-  metadata?: InputMaybe<Scalars['String']['input']>;
-}>;
-
-export type AddUserFilesMutation = {
-  __typename?: 'Mutation';
-  addUserFiles: {
-    __typename?: 'CopilotUserFile';
-    fileId: string;
-    fileName: string;
-    blobId: string;
-    mimeType: string;
-    size: number;
-    metadata: string;
-    createdAt: string;
-  };
-};
-
 export type GetUserFilesQueryVariables = Exact<{
   pagination: PaginationInput;
 }>;
@@ -3039,6 +3034,11 @@ export type Mutations =
       response: AddContextDocMutation;
     }
   | {
+      name: 'addContextFileExistsMutation';
+      variables: AddContextFileExistsMutationVariables;
+      response: AddContextFileExistsMutation;
+    }
+  | {
       name: 'addContextFileMutation';
       variables: AddContextFileMutationVariables;
       response: AddContextFileMutation;
@@ -3092,11 +3092,6 @@ export type Mutations =
       name: 'updateUserDocsMutation';
       variables: UpdateUserDocsMutationVariables;
       response: UpdateUserDocsMutation;
-    }
-  | {
-      name: 'addUserFilesMutation';
-      variables: AddUserFilesMutationVariables;
-      response: AddUserFilesMutation;
     }
   | {
       name: 'removeUserFilesMutation';

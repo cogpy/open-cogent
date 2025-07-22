@@ -177,7 +177,6 @@ const FileContextPreview = ({
           alt={fileName}
           className="size-full object-cover rounded-md"
         />
-
         <div
           className={cn(
             'absolute size-4 rounded-xs bg-white border border-gray-200 flex items-center justify-center -top-2 -right-2 cursor-pointer',
@@ -263,15 +262,14 @@ export const ContextSelectorMenu = ({
             if (target.blob) {
               return store.getState().addFileContext(target.blob);
             } else if (target.blobId) {
-              // TODO: add file blob id
-              // return store.getState().addFileContext(target.blobId!);
+              return store.getState().addFileContextExists(target.blobId);
             }
           }
           if (target.type === 'chat') {
             return store.getState().addChatContext(target.id);
           }
           if (target.type === 'doc') {
-            return store.getState().addDocContext;
+            return store.getState().addDocContext(target.id);
           }
           return Promise.resolve();
         })
@@ -368,6 +366,7 @@ export const ContextSelectorMenu = ({
                           id: file.fileId,
                           mineType: file.mimeType,
                           name: file.fileName,
+                          blobId: file.blobId,
                         })
                       }
                       key={file.fileId}
@@ -547,7 +546,7 @@ const ContextCloudPreview = ({
     }
   };
 
-  if (!contextFiles.length) return null;
+  if (!contexts.length) return null;
   return <ContextPreviewUI contexts={contexts} handleRemove={handleRemove} />;
 };
 

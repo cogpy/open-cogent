@@ -1,5 +1,5 @@
-mutation addContextFile($contextId: String!, $blobId: String!) {
-  addContextFile(content: $content, blobId: $blobId) {
+mutation addContextFileExists($contextId: String!, $blobId: String!) {
+  addContextFile(contextId: $contextId, blobId: $blobId) {
     id
     createdAt
     name

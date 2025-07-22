@@ -375,6 +375,23 @@ export const removeContextDocQuery = {
 }`,
 };
 
+export const addContextFileExistsMutation = {
+  id: 'addContextFileExistsMutation' as const,
+  op: 'addContextFileExists',
+  query: `mutation addContextFileExists($contextId: String!, $blobId: String!) {
+  addContextFile(contextId: $contextId, blobId: $blobId) {
+    id
+    createdAt
+    name
+    mimeType
+    chunkSize
+    error
+    status
+    blobId
+  }
+}`,
+};
+
 export const addContextFileMutation = {
   id: 'addContextFileMutation' as const,
   op: 'addContextFile',
@@ -829,23 +846,6 @@ export const updateUserDocsMutation = {
     updatedAt
   }
 }`,
-};
-
-export const addUserFilesMutation = {
-  id: 'addUserFilesMutation' as const,
-  op: 'addUserFiles',
-  query: `mutation addUserFiles($blob: Upload!, $metadata: String) {
-  addUserFiles(blob: $blob, metadata: $metadata) {
-    fileId
-    fileName
-    blobId
-    mimeType
-    size
-    metadata
-    createdAt
-  }
-}`,
-  file: true,
 };
 
 export const getUserFilesQuery = {

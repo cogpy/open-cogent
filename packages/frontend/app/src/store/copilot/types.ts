@@ -59,6 +59,7 @@ export interface ChatSessionState extends SessionFlags {
   loadContexts(): Promise<void>;
 
   addFileContext(file: File): Promise<void>;
+  addFileContextExists(blobId: string): Promise<void>;
   removeFileContext(fileId: string): Promise<void>;
 
   addDocContext(docId: string): Promise<void>;

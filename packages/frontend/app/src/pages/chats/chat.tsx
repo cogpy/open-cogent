@@ -128,14 +128,20 @@ export const ChatPage = () => {
       const contextId = newStore.getState().contextId;
       const cacheContexts = (await loadCacheContexts()) as ChatContext[];
 
-      // upload
+      // update cached contexts
       await Promise.all(
         cacheContexts.map(async context => {
           if (context.type === 'file' && context.blob) {
             await copilotClient.addContextFile(context.blob, contextId);
           }
+          if (context.type === 'file' && context.blobId) {
+            await copilotClient.addContextFileExists(context.blobId, contextId);
+          }
           if (context.type === 'chat') {
             await copilotClient.addContextChat(contextId, context.id);
+          }
+          if (context.type === 'doc') {
+            await copilotClient.addContextDoc(contextId, context.id);
           }
         })
       );

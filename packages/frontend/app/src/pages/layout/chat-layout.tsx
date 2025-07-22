@@ -8,7 +8,7 @@ import {
 import { useEffect, useMemo } from 'react';
 import { Link, Outlet, useLocation, useMatch } from 'react-router';
 
-// import { Cmdk } from '@/components/cmdk/cmdk';
+import { Cmdk } from '@/components/cmdk/cmdk';
 import { UserInfo } from '@/components/sidebar/user-info';
 import { ChatIcon } from '@/icons/chat';
 import { cn } from '@/lib/utils';
@@ -81,7 +81,7 @@ const SidebarContent = () => {
       {/* not scroll area */}
       <div className="flex flex-col gap-1 px-2">
         <UserInfo />
-        {/* <Cmdk className="my-2" /> */}
+        <Cmdk className="my-2" />
         <Link to="/chats">
           <li
             className={cn(styles.hoverableItem, inChats && styles.activeItem)}

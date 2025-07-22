@@ -8,9 +8,10 @@
     "run-test": "./scripts/run-test.ts"
   },
   "scripts": {
-    "build": "r oa.ts bundle -p @afk/server",
+    "build": "rspack build",
     "dev": "nodemon ./src/index.ts",
     "dev:mail": "email dev -d src/mails",
+    "prod": "node ./dist/main.mjs",
     "test": "ava --concurrency 1 --serial",
     "test:copilot": "ava \"src/__tests__/copilot-*.spec.ts\"",
     "test:coverage": "c8 ava --concurrency 1 --serial",
@@ -20,7 +21,7 @@
     "data-migration": "cross-env NODE_ENV=development SERVER_FLAVOR=script r ./src/index.ts",
     "init": "yarn prisma migrate dev && yarn data-migration run",
     "seed": "r ./src/seed/index.ts",
-    "cli": "cross-env SERVER_FLAVOR=script node ./dist/main.js",
+    "cli": "cross-env SERVER_FLAVOR=script node ./dist/main.mjs",
     "predeploy": "yarn prisma migrate deploy && yarn cli run",
     "postinstall": "prisma generate"
   },
@@ -124,6 +125,8 @@
     "@afk/graphql": "workspace:*",
     "@faker-js/faker": "^9.6.0",
     "@nestjs/testing": "patch:@nestjs/testing@npm%3A10.4.15#~/.yarn/patches/@nestjs-testing-npm-10.4.15-d591a1705a.patch",
+    "@rspack/cli": "^1.4.8",
+    "@rspack/core": "^1.4.8",
     "@types/cookie-parser": "^1.4.8",
     "@types/express": "^5.0.1",
     "@types/express-serve-static-core": "^5.0.6",

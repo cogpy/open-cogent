@@ -37,7 +37,7 @@ import { UserType } from '../../core/user';
 import type { ListSessionOptions, UpdateChatSession } from '../../models';
 import { CopilotCronJobs } from './cron';
 import { PromptService } from './prompt';
-import { PromptMessage, StreamObject } from './providers';
+import { PromptMessage, StreamObject } from './providers/types';
 import { ChatSessionService } from './session';
 import { CopilotStorage } from './storage';
 import { type ChatHistory, type ChatMessage, SubmittedMessage } from './types';

@@ -6,7 +6,7 @@ import {
   PromptConfigSchema,
   PromptMessage,
   PromptMessageSchema,
-} from '../providers';
+} from '../providers/types';
 import { ChatPrompt } from './chat-prompt';
 import { refreshPrompts } from './prompts';
 

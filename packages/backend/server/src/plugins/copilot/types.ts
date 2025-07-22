@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import { OneMB } from '../../base';
 import type { ChatPrompt } from './prompt';
-import { PromptMessageSchema, PureMessageSchema } from './providers';
+import { PromptMessageSchema, PureMessageSchema } from './providers/types';
 
 const takeFirst = (v: unknown) => (Array.isArray(v) ? v[0] : v);
 

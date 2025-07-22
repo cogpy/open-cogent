@@ -144,7 +144,7 @@ const SidebarContent = () => {
   );
 };
 
-export const ChatLayout = () => {
+export const OALayout = () => {
   return (
     <SidebarLayout sidebar={<SidebarContent />}>
       <Outlet />

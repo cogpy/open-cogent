@@ -10,16 +10,17 @@ import { ChatPage } from './pages/chats/chat';
 import { ChatsDashboard } from './pages/chats/chats-dashboard';
 import { DocEditTest } from './pages/doc-edit-test';
 import { HomePage } from './pages/home';
-import { ChatLayout } from './pages/layout/chat-layout';
+import { OALayout } from './pages/layout/chat-layout';
 import { LibraryDashboard } from './pages/library-dashboard';
 import { MagicLinkPage } from './pages/magic-link';
 import { SignInPage } from './pages/sign-in';
 import { useSidebarStore } from './store/sidebar';
+import { DocPage } from './pages/doc-page';
 
 const ChatsPage = () => {
   return (
     <Routes>
-      <Route element={<ChatLayout />}>
+      <Route element={<OALayout />}>
         <Route index element={<ChatsDashboard />} />
         <Route path=":id" element={<ChatPage />} />
       </Route>
@@ -30,9 +31,9 @@ const ChatsPage = () => {
 const LibraryPage = () => {
   return (
     <Routes>
-      <Route element={<ChatLayout />}>
+      <Route element={<OALayout />}>
         <Route path="/" element={<LibraryDashboard />} />
-        <Route path="/:id" element={<div>Document</div>} />
+        <Route path="/:id" element={<DocPage />} />
       </Route>
     </Routes>
   );

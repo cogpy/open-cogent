@@ -186,6 +186,7 @@ const ChatListItem: MasonryItem['Component'] = ({ itemId }) => {
 
 const DocListItem: MasonryItem['Component'] = ({ itemId }) => {
   const { docsMap } = useLibraryStore();
+  const navigate = useNavigate();
   const doc = docsMap[itemId];
 
   const toggleCollect = useCallback(
@@ -204,13 +205,21 @@ const DocListItem: MasonryItem['Component'] = ({ itemId }) => {
     [doc?.metadata, itemId]
   );
 
+  const handleOpenDoc = useCallback(() => {
+    navigate(`/library/${itemId}`);
+  }, [itemId, navigate]);
+
   return (
-    <div className={styles.listItem}>
+    <div
+      className={styles.listItem}
+      onClick={handleOpenDoc}
+      style={{ cursor: 'pointer' }}
+    >
       <div className={styles.listItemIcon}>
         <PageIcon />
       </div>
       <div className={styles.listItemTitle}>{doc.title}</div>
-      <div>
+      <div onClick={e => e.stopPropagation()}>
         <FavoriteAction
           collected={doc?.metadata?.collected}
           setToggleAsync={toggleCollect}
@@ -338,7 +347,7 @@ export const LibraryDashboard = () => {
   }
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="flex-1 bg-white rounded-[8px] overflow-hidden h-full flex flex-col">
       <header className="h-15 border-b px-6 flex items-center gap-4">
         <div
           style={{ paddingLeft: open ? 0 : 30 }}

@@ -15,8 +15,6 @@ import { DocEditor } from '@/components/doc-composer/doc-editor';
 interface PresentationModeProps {
   /** Document object */
   doc: Store;
-  /** Document title */
-  title: string;
   /** Callback to close presentation mode */
   onClose: () => void;
 }
@@ -86,11 +84,8 @@ function NoteBlockContent({ note, doc }: NoteBlockContentProps) {
  * Presentation mode component
  * Paginated display by note block units, supports fullscreen and navigation
  */
-export function PresentationMode({
-  doc,
-  title,
-  onClose,
-}: PresentationModeProps) {
+export function PresentationMode({ doc, onClose }: PresentationModeProps) {
+  const title = doc.meta?.title;
   const [currentSlide, setCurrentSlide] = useState(0);
   const [noteBlocks, setNoteBlocks] = useState<NoteBlockModel[]>([]);
   const [showToolbars, setShowToolbars] = useState(true);

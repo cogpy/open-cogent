@@ -3,7 +3,7 @@ import { CopyIcon, PageIcon } from '@blocksuite/icons/rc';
 import { useEffect, useState } from 'react';
 
 import { snapshotHelper } from '@/components/doc-composer/snapshot-helper';
-import { useDocPanelStore } from '@/store/doc-panel';
+import { useOpenDocContext } from '@/contexts/doc-panel-context';
 
 interface DocComposeResultProps {
   /** The generated content from doc_compose tool */
@@ -25,7 +25,7 @@ export function DocComposeResult({
 }: DocComposeResultProps) {
   const [copied, setCopied] = useState(false);
   const [doc, setDoc] = useState<Store | null>(null);
-  const { openDoc } = useDocPanelStore();
+  const { openDoc } = useOpenDocContext();
 
   useEffect(() => {
     // Create doc from generated content
@@ -50,7 +50,7 @@ export function DocComposeResult({
   const handleCardClick = () => {
     if (doc) {
       const docTitle = title || 'Generated Document';
-      openDoc(doc, docTitle);
+      openDoc(doc, docTitle, true);
     }
   };
 

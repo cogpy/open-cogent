@@ -1,82 +1,21 @@
-import { Loading } from '@afk/component';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { type StoreApi, useStore } from 'zustand';
 
+import { ChatInterface } from '@/components/chat/chat-interface';
 import {
   type ChatContext,
   clearCacheContexts,
   loadCacheContexts,
 } from '@/components/chat-context';
-import { ChatInput } from '@/components/chat-input';
+import { DocPanelById } from '@/components/doc-panel/doc-panel';
+import { OpenDocProvider } from '@/contexts/doc-panel-context';
 import { useRefCounted } from '@/lib/hooks/use-ref-counted';
 import { copilotClient } from '@/store/copilot/client';
 import { chatSessionsStore } from '@/store/copilot/sessions-instance';
-import type { ChatSessionState } from '@/store/copilot/types';
-
-import { MessageRenderer } from './renderers/message';
-
-const ChatPageImpl = ({
-  store,
-}: {
-  store: StoreApi<ChatSessionState>;
-  referencedDocId?: string;
-}) => {
-  const messages = useStore(store, s => s.messages);
-  const isSubmitting = useStore(store, s => s.isSubmitting);
-  const isStreaming = useStore(store, s => s.isStreaming);
-  const isLoading = useStore(store, s => s.isLoading);
-
-  const [input, setInput] = useState('');
-
-  const onSend = async () => {
-    if (!input.trim()) return;
-    // placeholder: backend expects specific options shape
-    await store.getState().sendMessage({ content: input });
-    setInput('');
-  };
-
-  return (
-    <div className="flex flex-col justify-center h-full gap-4">
-      <div className="flex-1 rounded p-6 flex flex-col gap-2 h-full overflow-y-auto">
-        {messages.length === 0 && isLoading ? (
-          <div className="h-full flex items-center justify-center">
-            <Loading size={24} />
-          </div>
-        ) : (
-          <div className="max-w-[900px] mx-auto w-full">
-            {messages.map((m, idx) => {
-              return (
-                <MessageRenderer
-                  key={m.id ?? idx}
-                  message={m}
-                  isStreaming={isStreaming && idx === messages.length - 1}
-                />
-              );
-            })}
-          </div>
-        )}
-      </div>
-      <div className="w-full max-w-[900px] mx-auto px-4 pb-4">
-        <ChatInput
-          input={input}
-          setInput={setInput}
-          onSend={onSend}
-          sending={isSubmitting}
-          store={store}
-        />
-      </div>
-    </div>
-  );
-};
 
 export const ChatPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-
-  // Input state shared between modes
-  const [input, setInput] = useState('');
-
   /* ---------------- Existing-session mode ---------------- */
   const sessionStore = useRefCounted(
     id,
@@ -92,18 +31,11 @@ export const ChatPage = () => {
     }
   );
 
-  // When sessionStore becomes available, clear input local state so ChatPageImpl controls it
-  useEffect(() => {
-    if (sessionStore) {
-      setInput('');
-    }
-  }, [sessionStore]);
-
   /* ---------------- Placeholder mode handlers ---------------- */
   const [isCreating, setIsCreating] = useState(false);
 
-  const onSendPlaceholder = async () => {
-    if (!input.trim() || isCreating) return;
+  const onSendPlaceholder = async (inputContent: string) => {
+    if (!inputContent.trim() || isCreating) return;
     setIsCreating(true);
 
     try {
@@ -142,7 +74,7 @@ export const ChatPage = () => {
       await clearCacheContexts();
 
       await newStore.getState().sendMessage({
-        content: input.trim(),
+        content: inputContent.trim(),
       });
 
       // Navigate to URL with new session id
@@ -152,19 +84,38 @@ export const ChatPage = () => {
     }
   };
 
-  /* ---------------- Rendering ---------------- */
-  if (id && sessionStore) {
-    // Existing / newly created session mode
-    return <ChatPageImpl store={sessionStore} />;
-  }
+  const [docId, setDocId] = useState<string>();
 
-  // Placeholder mode – no session yet
+  const closeDoc = () => {
+    setDocId(undefined);
+  };
+  const openDoc = (docId: string) => {
+    setDocId(docId);
+  };
+
+  /* ---------------- Rendering ---------------- */
   return (
-    <div className="flex flex-col justify-center h-full p-4 gap-4 max-w-[900px] mx-auto">
-      <div className="text-[26px] font-medium text-center mb-9">
-        What can I help you with?
+    <OpenDocProvider
+      value={{
+        openDoc,
+        closeDoc,
+      }}
+    >
+      <div className="flex-1 bg-white rounded-[8px] overflow-hidden">
+        <ChatInterface
+          store={id && sessionStore ? sessionStore : undefined}
+          placeholder="What can I help you with?"
+          className="flex-1"
+          placeholderTitle="What can I help you with?"
+          onPlaceholderSend={onSendPlaceholder}
+          isCreating={isCreating}
+        />
       </div>
-      <ChatInput input={input} setInput={setInput} onSend={onSendPlaceholder} />
-    </div>
+      {docId && (
+        <div className="flex-1 bg-white rounded-[8px] overflow-hidden">
+          <DocPanelById docId={docId} onClose={closeDoc} />
+        </div>
+      )}
+    </OpenDocProvider>
   );
 };

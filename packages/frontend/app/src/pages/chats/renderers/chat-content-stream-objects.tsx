@@ -1,6 +1,7 @@
 // oxlint-disable no-array-index-key
 import type { StreamObject } from '@afk/graphql';
 
+import { DocCard } from '@/components/doc-panel/doc-card';
 import { MessageCard } from '@/components/ui/card/message-card';
 import { MarkdownText } from '@/components/ui/markdown';
 
@@ -95,24 +96,21 @@ export function ChatContentStreamObjects({
           case 'tool-result': {
             console.log(obj);
             // Special handling for make_it_real tool
-            if (obj.toolName === 'make_it_real' && obj.result?.content) {
+            if (obj.toolName === 'make_it_real' && obj.result) {
               return (
                 <MakeItRealResult
                   key={idx}
-                  content={obj.result.content}
-                  originalContent={obj.result.originalContent}
+                  docId={obj.result.docId}
+                  title={obj.result.title}
                 />
               );
             }
-
-            // Special handling for doc_compose tool
-            if (obj.result?.markdown) {
+            if (obj.toolName === 'doc_compose' && obj.result) {
               return (
-                <DocComposeResult
+                <MakeItRealResult
                   key={idx}
-                  content={obj.result.markdown}
+                  docId={obj.result.docId}
                   title={obj.result.title}
-                  userPrompt={obj.result.userPrompt}
                 />
               );
             }
@@ -150,27 +148,6 @@ export function ChatContentStreamObjects({
                   status="loading"
                   className="my-5"
                   title="Browser task processing..."
-                />
-              );
-            }
-
-            // Check if result contains document content (markdown-like text)
-            const resultContent =
-              obj.result?.content || obj.result?.text || obj.result?.markdown;
-            const isDocumentContent =
-              typeof resultContent === 'string' &&
-              resultContent.length > 100 &&
-              (resultContent.includes('#') ||
-                resultContent.includes('```') ||
-                resultContent.includes('\n\n'));
-
-            if (isDocumentContent) {
-              return (
-                <DocCard
-                  key={idx}
-                  content={resultContent}
-                  title={obj.toolName ? `${obj.toolName} Result` : 'Document'}
-                  description="Generated document content"
                 />
               );
             }

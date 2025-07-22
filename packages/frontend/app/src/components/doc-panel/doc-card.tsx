@@ -3,7 +3,7 @@ import { FileIcon } from '@blocksuite/icons/rc';
 import { useEffect, useState } from 'react';
 
 import { snapshotHelper } from '@/components/doc-composer/snapshot-helper';
-import { useDocPanelStore } from '@/store/doc-panel';
+import { useOpenDocContext } from '@/contexts/doc-panel-context';
 
 interface DocCardProps {
   /** Document content (markdown format) */
@@ -22,9 +22,9 @@ export function DocCard({
   title = 'Document',
   description,
 }: DocCardProps) {
-  const [doc, setDoc] = useState<Store | null>(null);
+  const [docId, setDocId] = useState<string>();
   const [isLoading, setIsLoading] = useState(true);
-  const { openDoc } = useDocPanelStore();
+  const { openDoc } = useOpenDocContext();
 
   useEffect(() => {
     // Create document from markdown content
@@ -32,7 +32,7 @@ export function DocCard({
       .createStore(content)
       .then(store => {
         if (store) {
-          setDoc(store);
+          setDocId(store.id);
         }
       })
       .finally(() => {
@@ -41,8 +41,8 @@ export function DocCard({
   }, [content]);
 
   const handleClick = () => {
-    if (doc) {
-      openDoc(doc, title);
+    if (docId) {
+      openDoc(docId);
     }
   };
 

@@ -1,9 +1,7 @@
 import { IconButton } from '@afk/component';
 import { SidebarIcon } from '@blocksuite/icons/rc';
 
-import { DocPanel } from '@/components/doc-panel/doc-panel';
 import AppSidebar from '@/components/ui/sidebar/sidebar';
-import { useDocPanelStore } from '@/store/doc-panel';
 import { useSidebarStore } from '@/store/sidebar';
 
 export const SidebarLayout = ({
@@ -14,7 +12,6 @@ export const SidebarLayout = ({
   children: React.ReactNode;
 }) => {
   const { toggleSidebar, width, open: sidebarOpen } = useSidebarStore();
-  const { isOpen: isDocPanelOpen } = useDocPanelStore();
 
   return (
     <div className="relative flex size-full justify-end">
@@ -28,22 +25,8 @@ export const SidebarLayout = ({
       </AppSidebar>
 
       {/* main content area */}
-      <main className="w-0 flex-1 h-full flex gap-2">
-        {/* chat panel */}
-        <div
-          className={`bg-white rounded-[8px] overflow-hidden transition-all duration-300 ${
-            isDocPanelOpen ? 'flex-1' : 'w-full'
-          }`}
-        >
-          {children}
-        </div>
-
-        {/* doc panel */}
-        {isDocPanelOpen && (
-          <div className="flex-1 bg-white rounded-[8px] overflow-hidden">
-            <DocPanel />
-          </div>
-        )}
+      <main className="w-0 flex-1 h-full flex gap-2 transition-all duration-300 ease-in-out">
+        {children}
       </main>
 
       {/* actions */}

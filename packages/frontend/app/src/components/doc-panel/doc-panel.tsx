@@ -1,21 +1,136 @@
 import { IconButton } from '@afk/component';
+import { getUserDocsQuery } from '@afk/graphql';
+import type { Store } from '@blocksuite/affine/store';
 import { CloseIcon, PresentationIcon } from '@blocksuite/icons/rc';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { DocEditor } from '@/components/doc-composer/doc-editor';
-import { useDocPanelStore } from '@/store/doc-panel';
+import { snapshotHelper } from '@/components/doc-composer/snapshot-helper';
+import { ChatIcon } from '@/icons/chat';
+import { gql } from '@/lib/gql';
+
 import { PresentationMode } from './presentation-mode';
+
+interface DocPanelProps {
+  onOpenChat?: () => void;
+  onClose?: () => void;
+  doc: Store;
+}
+
+interface DocPanelByIdProps {
+  docId: string;
+  onOpenChat?: () => void;
+  onClose?: () => void;
+}
+
+type DocLoadState =
+  | {
+      status: 'loading';
+    }
+  | {
+      status: 'success';
+      doc: Store;
+    }
+  | {
+      status: 'error';
+      error: string;
+    };
+
+/**
+ * Document panel component that loads document by ID
+ */
+export function DocPanelById({
+  docId,
+  onOpenChat,
+  onClose,
+}: DocPanelByIdProps) {
+  const [state, setState] = useState<DocLoadState>({ status: 'loading' });
+
+  useEffect(() => {
+    const loadDocument = async () => {
+      try {
+        setState({ status: 'loading' });
+
+        // Fetch documents using GraphQL
+        const response = await gql({
+          query: getUserDocsQuery,
+          variables: {
+            pagination: {
+              first: 1000,
+            },
+          },
+        });
+
+        // Find the document with the matching docId
+        const docs = response.currentUser?.embedding.docs.edges || [];
+        const targetDoc = docs.find(edge => edge.node.docId === docId);
+
+        if (!targetDoc) {
+          setState({
+            status: 'error',
+            error: `Document with ID ${docId} not found`,
+          });
+          return;
+        }
+
+        // Create store from the document content
+        const docContent =
+          targetDoc.node.content ||
+          `# ${targetDoc.node.title}\n\nEmpty document`;
+        const store = await snapshotHelper.createStore(docContent);
+
+        if (store) {
+          setState({ status: 'success', doc: store });
+        } else {
+          setState({
+            status: 'error',
+            error: 'Failed to create document',
+          });
+        }
+      } catch (err) {
+        console.error('Error loading document:', err);
+        setState({
+          status: 'error',
+          error: 'Failed to load document',
+        });
+      }
+    };
+
+    loadDocument();
+  }, [docId]);
+
+  if (state.status === 'loading') {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <div className="text-gray-500">Loading document...</div>
+      </div>
+    );
+  }
+
+  if (state.status === 'error') {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <div className="text-red-500">{state.error}</div>
+      </div>
+    );
+  }
+
+  if (!state.doc) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <div className="text-gray-500">No document available</div>
+      </div>
+    );
+  }
+
+  return <DocPanel doc={state.doc} onOpenChat={onOpenChat} onClose={onClose} />;
+}
 
 /**
  * Document panel component, displayed next to the chat panel
  */
-export function DocPanel() {
-  const { isOpen, currentDoc, docTitle, close } = useDocPanelStore();
+export function DocPanel({ doc, onOpenChat, onClose }: DocPanelProps) {
   const [isPresentationMode, setIsPresentationMode] = useState(false);
-
-  if (!isOpen || !currentDoc) {
-    return null;
-  }
 
   const handleStartPresentation = () => {
     setIsPresentationMode(true);
@@ -25,25 +140,30 @@ export function DocPanel() {
     setIsPresentationMode(false);
   };
 
+  const docTitle = doc?.meta?.title;
   // If in presentation mode, show presentation component
   if (isPresentationMode) {
-    return (
-      <PresentationMode
-        doc={currentDoc}
-        title={docTitle}
-        onClose={handleClosePresentation}
-      />
-    );
+    return <PresentationMode doc={doc} onClose={handleClosePresentation} />;
   }
 
   return (
     <div className="h-full flex flex-col p-4 gap-4">
       {/* Header */}
-      <div className="flex items-center justify-between p-2 rounded">
-        <h2 className="text-lg font-medium text-gray-900 truncate">
+      <div className="flex items-center justify-between p-4 border-b border-gray-200">
+        <h2 className="text-xl font-semibold text-gray-900 truncate">
           {docTitle}
         </h2>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          {/* Chat button - only show when not opened from chat */}
+          {onOpenChat && (
+            <IconButton
+              size="24"
+              icon={<ChatIcon />}
+              onClick={onOpenChat}
+              className="text-gray-500 hover:text-blue-600"
+              title="Open chat panel"
+            />
+          )}
           <IconButton
             size="24"
             icon={<PresentationIcon />}
@@ -54,15 +174,16 @@ export function DocPanel() {
           <IconButton
             size="24"
             icon={<CloseIcon />}
-            onClick={close}
+            onClick={onClose}
             className="text-gray-500 hover:text-gray-700"
+            title="Close document"
           />
         </div>
       </div>
 
       {/* Document content */}
       <div className="flex-1 overflow-auto rounded py-2 px-6">
-        <DocEditor doc={currentDoc} readonly={true} />
+        <DocEditor doc={doc} readonly={true} />
       </div>
     </div>
   );

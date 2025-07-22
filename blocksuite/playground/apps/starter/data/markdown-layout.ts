@@ -79,6 +79,88 @@ console.log(text);
 - ✅ **双向转换** Markdown ↔ BlockSuite
 `;
 
+// 文档分割功能测试内容
+const docSplitTestContent = `
+# 📄 文档分割功能测试
+
+这是第一个 note block 的内容，包含 **加粗文本** 和 *斜体文本*。
+
+## 功能介绍
+
+文档分割功能允许你使用特殊的注释标记来将一个 Markdown 文档分割成多个独立的 note block。
+
+支持的分割标记：
+- \`<!-- note:split -->\` - 基本分割
+
+<!-- note:split -->
+
+# 🎨 第二个 Note Block
+
+这是第二个 note block，具有 [蓝色背景]{background: #f0f9ff}。
+
+## 特色功能
+
+- **自动分割**: 根据注释标记自动分割文档
+- **自定义背景**: 为每个 note block 设置不同的背景色
+- **保持格式**: 完整保留富文本格式
+- **双向转换**: 支持 Markdown ↔ BlockSuite 双向转换
+
+### 代码示例
+
+\`\`\`javascript
+// 使用分割功能
+const snapshots = await SimpleLayoutConverter.markdownToMultipleSnapshots(markdown);
+console.log('分割后的 note blocks:', snapshots.length);
+\`\`\`
+
+<!-- note:split -->
+
+# 🚀 第三个 Note Block
+
+这是第三个 note block，具有 [黄色背景]{background: #fef3c7}。
+
+## 实际应用场景
+
+1. **文档章节分离**: 将长文档按章节分割成独立的 note block
+2. **内容分类展示**: 不同类型的内容使用不同背景色区分
+3. **模块化编辑**: 每个 note block 可以独立编辑和管理
+4. **视觉层次**: 通过背景色和标题创建清晰的视觉层次
+
+### 高级用法
+
+你可以在分割标记中使用 JSON 格式来指定更多属性：
+
+\`\`\`html
+<!-- note:split -->
+\`\`\`
+
+<!-- note:split -->
+
+# 📊 第四个 Note Block
+
+这是第四个 note block，使用默认样式。
+
+## 测试总结
+
+文档分割功能测试包括：
+
+- ✅ **基本分割**: 使用 \`<!-- note:split -->\` 分割文档
+- ✅ **自动背景**: 为每个 note block 自动设置不同背景色
+- ✅ **富文本支持**: 完整支持所有富文本格式
+- ✅ **多列布局兼容**: 与现有多列布局功能完全兼容
+- ✅ **双向转换**: 支持分割后的 note blocks 转换回 Markdown
+
+### 转换 API
+
+\`\`\`typescript
+// 分割转换
+const snapshots = await SimpleLayoutConverter.markdownToMultipleSnapshots(markdown);
+
+// 合并转换
+const markdown = await SimpleLayoutConverter.multipleSnapshotsToMarkdown(snapshots);
+\`\`\`
+`;
+
 const testMarkdownContent = `
 <!-- layout:multi-column {"id":"container-5","columns":[{"id":"col-1","width":25},{"id":"col-2","width":50},{"id":"col-3","width":25}]} -->
 
@@ -325,6 +407,69 @@ const testMarkdownContent = `
 
 <!-- end:content:column -->`;
 
+// 文档分割功能测试函数
+const testDocumentSplit = async (
+  store: any,
+  rootId: string,
+  collection: Workspace
+) => {
+  console.log('🔄 开始测试文档分割功能...');
+
+  try {
+    // 使用文档分割测试内容
+    const snapshots =
+      await SimpleLayoutConverter.markdownToMultipleSnapshots(
+        docSplitTestContent
+      );
+    console.log(`✅ 文档分割成功！生成了 ${snapshots.length} 个 note blocks`);
+
+    // 创建 Transformer 实例
+    const schema = new Schema();
+    schema.register(AffineSchemas);
+
+    const transformer = new Transformer({
+      schema,
+      blobCRUD: {
+        get: async () => null,
+        set: async () => '',
+        delete: async () => {},
+        list: async () => [],
+      },
+      docCRUD: {
+        create: (id: string) => collection.createDoc(id).getStore(),
+        get: (id: string) => collection.getDoc(id)?.getStore() || null,
+        delete: async () => {},
+      },
+    });
+
+    // 将每个分割后的 snapshot 添加到页面
+    for (const snapshot of snapshots) {
+      await transformer.snapshotToBlock(snapshot, store, rootId);
+    }
+
+    console.log('✅ 文档分割测试完成！');
+
+    // 测试合并转换
+    setTimeout(async () => {
+      try {
+        console.log('🔄 开始测试分割文档合并转换...');
+        const mergedMarkdown =
+          await SimpleLayoutConverter.multipleSnapshotsToMarkdown(snapshots);
+        console.log('✅ 分割文档合并转换测试成功！');
+        console.log(
+          '📄 合并后的 Markdown 长度:',
+          mergedMarkdown.length,
+          '字符'
+        );
+      } catch (error) {
+        console.error('❌ 分割文档合并转换测试失败:', error);
+      }
+    }, 3000);
+  } catch (error) {
+    console.error('❌ 文档分割测试失败:', error);
+  }
+};
+
 export const markdownLayout: InitFn = async (
   collection: Workspace,
   id: string
@@ -338,14 +483,13 @@ export const markdownLayout: InitFn = async (
   const testTitle = '🎨 富文本 + 多列布局混合测试';
   const testDescription = '富文本语法扩展与多列布局解析';
 
-  // 先创建基本的页面结构，确保 root 存在
-  const rootId = store.addBlock('affine:page', {
-    title: new Text(testTitle),
-  });
-  store.addBlock('affine:surface', {}, rootId);
-
   // 然后异步加载内容
   doc.load(async () => {
+    // 先创建基本的页面结构，确保 root 存在
+    const rootId = store.addBlock('affine:page', {
+      title: new Text(testTitle),
+    });
+    store.addBlock('affine:surface', {}, rootId);
     console.log(`🚀 开始测试 ${testDescription} 功能...`);
     console.log(`📋 测试内容: 富文本语法 + 复杂多列布局 + HTML 组件`);
     console.log(
@@ -403,6 +547,11 @@ export const markdownLayout: InitFn = async (
           console.error('❌ 双向转换测试失败:', error);
         }
       }, 2000);
+
+      // 测试文档分割功能
+      setTimeout(() => {
+        testDocumentSplit(store, rootId, collection);
+      }, 4000);
     } catch (error) {
       console.error('❌ Markdown 解析失败:', error);
 

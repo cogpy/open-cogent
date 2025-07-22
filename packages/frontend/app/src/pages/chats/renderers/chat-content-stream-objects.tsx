@@ -5,7 +5,6 @@ import { MessageCard } from '@/components/ui/card/message-card';
 import { MarkdownText } from '@/components/ui/markdown';
 
 import { DocComposeResult } from './doc-compose-result';
-
 import { MakeItRealResult } from './make-it-real-result';
 import { TodoListResult } from './todo-list-result';
 import { WebSearchResult } from './web-search-result';
@@ -66,7 +65,6 @@ export function ChatContentStreamObjects({
             console.log(obj);
             // Special handling for make_it_real tool
             if (obj.toolName === 'make_it_real' && obj.result?.content) {
-              console.log(obj);
               return (
                 <MakeItRealResult
                   key={idx}

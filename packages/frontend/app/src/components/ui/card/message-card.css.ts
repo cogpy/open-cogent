@@ -30,8 +30,9 @@ export const title = style({
   fontWeight: 500,
   lineHeight: '24px',
   overflow: 'hidden',
-  textOverflow: 'ellipsis',
   whiteSpace: 'nowrap',
+  display: 'flex',
+  justifyContent: 'flex-end',
 });
 
 export const subTitle = style({

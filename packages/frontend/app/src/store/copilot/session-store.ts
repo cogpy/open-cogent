@@ -35,6 +35,11 @@ export const StreamObjectSchema = z.discriminatedUnion('type', [
     args: z.record(z.any()),
     result: z.any(),
   }),
+  z.object({
+    type: z.literal('tool-incomplete-result'),
+    toolCallId: z.string(),
+    data: z.any(),
+  }),
 ]);
 
 export function mergeStreamObjects(chunks: StreamObject[] = []) {
@@ -49,6 +54,25 @@ export function mergeStreamObjects(chunks: StreamObject[] = []) {
             textDelta: (prev.textDelta ?? '') + (curr.textDelta ?? ''),
           };
         } else {
+          acc.push(curr);
+        }
+        break;
+      }
+      case 'tool-incomplete-result': {
+        // Find the corresponding tool-call and update it with streaming data
+        const index = acc.findIndex(
+          item =>
+            item.type === 'tool-call' && item.toolCallId === curr.toolCallId
+        );
+        if (index !== -1) {
+          const toolCall = acc[index];
+          // Add or append streaming data to the tool call
+          acc[index] = {
+            ...toolCall,
+            textDelta: (toolCall.textDelta ?? '') + (curr.data.textDelta ?? ''),
+          };
+        } else {
+          // If no matching tool-call found, just add it
           acc.push(curr);
         }
         break;

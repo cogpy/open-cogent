@@ -55,6 +55,19 @@ export function ChatContentStreamObjects({
             );
 
           case 'tool-call':
+            if (
+              obj.toolName === 'doc_compose' ||
+              obj.toolName === 'make_it_real'
+            ) {
+              return (
+                <MessageCard
+                  key={idx}
+                  status="loading"
+                  className="my-5"
+                  title={obj.textDelta}
+                />
+              );
+            }
             // Specialized handling for web_search_exa placeholder
             if (obj.toolName === 'web_search_exa') {
               // Attempt to extract query from args (GraphQL returns JSON string or object)
@@ -94,7 +107,6 @@ export function ChatContentStreamObjects({
             );
 
           case 'tool-result': {
-            console.log(obj);
             // Special handling for make_it_real tool
             if (obj.toolName === 'make_it_real' && obj.result) {
               return (

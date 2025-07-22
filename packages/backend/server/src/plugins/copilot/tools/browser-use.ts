@@ -3,6 +3,7 @@ import { tool } from 'ai';
 import { z } from 'zod';
 
 import { toolError } from './error';
+import { StreamObjectToolResult } from '../providers';
 
 const logger = new Logger('BrowserUseTool');
 
@@ -105,14 +106,16 @@ async function downloadMarkdownContent(url: string): Promise<string | null> {
  * A copilot tool that uses browser-use API to accomplish web tasks.
  * It creates a task, polls for status, and returns screenshots and markdown results.
  */
-export const createBrowserUseTool = () => {
+export const createBrowserUseTool = (
+  toolStream: WritableStream<StreamObjectToolResult>
+) => {
   return tool({
     description:
       'Use the browser to accomplish a task, return the markdown file and the screenshot of the browser',
     parameters: z.object({
       task_description: z.string().describe('The task to accomplish'),
     }),
-    execute: async ({ task_description }) => {
+    execute: async ({ task_description }, { toolCallId, abortSignal }) => {
       try {
         // Step 1: Create the task
         const taskResponse = await fetch(`${BROWSER_USE_API_URL}/run-task`, {
@@ -153,6 +156,7 @@ export const createBrowserUseTool = () => {
           url: string;
         }[] = [];
         let internalScreenshots: string[] = [];
+        const writer = toolStream.getWriter();
 
         while (
           currentStatus === BROWSER_USE_TASK_STATUS.CREATED ||
@@ -195,9 +199,8 @@ export const createBrowserUseTool = () => {
             currentStatus === BROWSER_USE_TASK_STATUS.CREATED ||
             currentStatus === BROWSER_USE_TASK_STATUS.RUNNING
           ) {
-            // Get screenshots
-            const screenshotsResponse = await fetch(
-              `${BROWSER_USE_API_URL}/task/${taskId}/screenshots`,
+            const stepsResponse = await fetch(
+              `${BROWSER_USE_API_URL}/task/${taskId}`,
               {
                 headers: {
                   Authorization: `Bearer ${BROWSER_USE_API_KEY}`,
@@ -205,19 +208,64 @@ export const createBrowserUseTool = () => {
               }
             );
 
-            if (screenshotsResponse.ok) {
-              const screenshotsData: BrowserUseScreenshotsResponse =
-                (await screenshotsResponse.json()) as BrowserUseScreenshotsResponse;
-              // Only update internal array if the returned screenshotsData has more elements than the internal array
-              if (
-                screenshotsData.screenshots &&
-                screenshotsData.screenshots.length > 0 &&
-                screenshotsData.screenshots.length > internalScreenshots.length
-              ) {
-                internalScreenshots = [...screenshotsData.screenshots];
-                // Return the URL of the last screenshot in the array
-                currentScreenshot =
-                  internalScreenshots[internalScreenshots.length - 1];
+            if (stepsResponse.ok) {
+              const stepsData: BrowserUseStepsResponse =
+                (await stepsResponse.json()) as BrowserUseStepsResponse;
+              const screenshotsResponse = await fetch(
+                `${BROWSER_USE_API_URL}/task/${taskId}/screenshots`,
+                {
+                  headers: {
+                    Authorization: `Bearer ${BROWSER_USE_API_KEY}`,
+                  },
+                }
+              );
+
+              if (screenshotsResponse.ok) {
+                const screenshotsData: BrowserUseScreenshotsResponse =
+                  (await screenshotsResponse.json()) as BrowserUseScreenshotsResponse;
+                // Only update internal array if the returned screenshotsData has more elements than the internal array
+                if (
+                  screenshotsData.screenshots &&
+                  screenshotsData.screenshots.length > 0 &&
+                  screenshotsData.screenshots.length >
+                    internalScreenshots.length
+                ) {
+                  internalScreenshots = [...screenshotsData.screenshots];
+
+                  // Return the URL of the last screenshot in the array
+
+                  currentScreenshot =
+                    internalScreenshots[internalScreenshots.length - 1];
+                }
+              }
+
+              if (stepsInfo.length < stepsData.steps.length) {
+                const temp = stepsData.steps.slice(
+                  stepsInfo.length,
+                  stepsInfo.length + 1
+                );
+                for (const step of temp) {
+                  const data = {
+                    next_goal: step.next_goal,
+                    url: step.url,
+                  };
+                  stepsInfo.push(data);
+
+                  const deltaData = {
+                    step: data,
+                    currentStatus,
+                    currentScreenshot,
+                  };
+                  logger.log(JSON.stringify(deltaData));
+                  await writer.write({
+                    type: 'tool-incomplete-result',
+                    toolCallId,
+                    data: {
+                      type: 'text-delta',
+                      textDelta: `${JSON.stringify(deltaData)},`,
+                    },
+                  });
+                }
               }
             }
           }
@@ -277,12 +325,31 @@ export const createBrowserUseTool = () => {
               const stepsData: BrowserUseStepsResponse =
                 (await stepsResponse.json()) as BrowserUseStepsResponse;
 
-              // Extract next_goal and url from each item in steps
-              stepsInfo = stepsData.steps.map(step => ({
-                next_goal: step.next_goal,
-                url: step.url,
-              }));
+              if (stepsInfo.length < stepsData.steps.length) {
+                const temp = stepsData.steps.slice(
+                  stepsInfo.length,
+                  stepsInfo.length + 1
+                );
+                for (const step of temp) {
+                  const data = {
+                    next_goal: step.next_goal,
+                    url: step.url,
+                  };
+                  stepsInfo.push(data);
+                  await writer.write({
+                    type: 'tool-incomplete-result',
+                    toolCallId,
+                    data: {
+                      type: 'text-delta',
+                      textDelta: JSON.stringify(data),
+                    },
+                  });
+                }
+              }
             }
+
+            writer.releaseLock();
+
             // If getting steps fails, return empty array
             return {
               currentStatus,

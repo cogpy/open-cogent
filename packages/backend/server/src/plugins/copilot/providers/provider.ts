@@ -167,7 +167,7 @@ export abstract class CopilotProvider<C = any> {
         }
         switch (tool) {
           case 'browserUse': {
-            tools.browser_use = createBrowserUseTool();
+            tools.browser_use = createBrowserUseTool(writable);
             break;
           }
           case 'codeArtifact': {

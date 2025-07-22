@@ -27,13 +27,10 @@ const loadingIcon = <Loading size={20} />;
 interface BrowserUseResultProps {
   /** The browser-use tool result */
   result: {
-    taskId: string;
-    status: string;
     currentStatus: string;
     currentScreenshot: string | null;
     finalGif: string | null;
     finalMarkdown: string | null;
-    taskDescription: string;
     stepsInfo: Array<{
       next_goal: string;
       url: string;
@@ -47,9 +44,7 @@ interface BrowserUseResultProps {
  */
 export function BrowserUseResult({ result }: BrowserUseResultProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [currentImage, setCurrentImage] = useState<string | null>(
-    result.finalGif || result.currentScreenshot || null
-  );
+  const currentImage = result.finalGif || result.currentScreenshot || null;
 
   const toggleExpanded = () => {
     setIsExpanded(!isExpanded);
@@ -63,8 +58,6 @@ export function BrowserUseResult({ result }: BrowserUseResultProps) {
     stepsInfo,
   } = result;
 
-  console.log('currentStatus', currentStatus);
-
   // Determine display image and status text
   let displayImage = currentImage;
 
@@ -77,10 +70,19 @@ export function BrowserUseResult({ result }: BrowserUseResultProps) {
       >
         <div className="flex items-center gap-2">
           <WebIcon className="w-4 h-4 text-gray-500" />
-          <span className="text-sm text-gray-600">
-            The browser task has been completed. Below are the steps and
-            results.
-          </span>
+          {currentStatus === BROWSER_USE_TASK_STATUS.FINISHED ||
+          currentStatus === BROWSER_USE_TASK_STATUS.STOPPED ||
+          currentStatus === BROWSER_USE_TASK_STATUS.FAILED ||
+          currentStatus === BROWSER_USE_TASK_STATUS.PAUSED ? (
+            <span className="text-sm text-gray-600">
+              The browser task has been completed. Below are the steps and
+              results.
+            </span>
+          ) : (
+            <span className="text-sm text-gray-600">
+              The browser task is running. Below are the steps and results.
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-2">
           {isExpanded ? (
@@ -195,4 +197,33 @@ export function BrowserUseResult({ result }: BrowserUseResultProps) {
       )}
     </div>
   );
+}
+
+export function transfromStep(
+  middleResult: string
+): BrowserUseResultProps['result'] | null {
+  let parsedResult = null;
+  try {
+    parsedResult = JSON.parse(
+      `[${middleResult.slice(0, middleResult.length - 1)}]`
+    );
+  } catch (err) {
+    console.error('Failed to parse middleResult', err);
+    return null;
+  }
+
+  const currentStatus = parsedResult[parsedResult.length - 1].currentStatus;
+
+  const currentScreenshot =
+    parsedResult[parsedResult.length - 1].currentScreenshot;
+  // 合并所有步骤信息
+  const stepsInfo = parsedResult.map((item: any) => item.step);
+
+  return {
+    currentStatus,
+    currentScreenshot,
+    finalGif: null,
+    finalMarkdown: null,
+    stepsInfo,
+  };
 }

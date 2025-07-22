@@ -5,7 +5,7 @@ import type { StreamObject } from '@afk/graphql';
 import { MessageCard } from '@/components/ui/card/message-card';
 import { MarkdownText } from '@/components/ui/markdown';
 
-import { BrowserUseResult } from './browser-use-result';
+import { BrowserUseResult, transfromStep } from './browser-use-result';
 import { GeneratingCard } from './generating-card';
 import { MakeItRealResult } from './make-it-real-result';
 import { TodoListResult } from './todo-list-result';
@@ -36,9 +36,8 @@ export function ChatContentStreamObjects({
     <div className="flex flex-col gap-2 max-w-full text-left prose w-full">
       {streamObjects.map((obj, idx) => {
         const loading = isStreaming && idx === streamObjects.length - 1;
-        console.log(obj);
         switch (obj.type) {
-          case 'text-delta':
+          case 'text-delta': {
             return (
               <MarkdownText
                 key={idx}
@@ -47,6 +46,7 @@ export function ChatContentStreamObjects({
                 className={isAssistant ? 'min-w-full' : undefined}
               />
             );
+          }
 
           case 'reasoning':
             return (
@@ -100,6 +100,15 @@ export function ChatContentStreamObjects({
                   }
                 />
               );
+            }
+
+            if (obj.toolName === 'browser_use' && obj.textDelta) {
+              const result = transfromStep(obj.textDelta as any);
+              if (result) {
+                return <BrowserUseResult key={idx} result={result} />;
+              } else {
+                return 'Error';
+              }
             }
 
             return (

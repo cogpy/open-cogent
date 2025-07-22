@@ -14,7 +14,7 @@ export const createMakeItRealTool = (
   saveDoc: SaveDocFunc
 ) => {
   return tool({
-    description: `This tool(make-it-real) is used to enhance a document layout and visual effects.`,
+    description: `This tool(make-it-real) is used to enhance a document layout and visual effects. You should use this tool before create a document. (before you use doc_compose tool)`,
     parameters: z.object({
       markdown: z.string().describe('The markdown content'),
     }),

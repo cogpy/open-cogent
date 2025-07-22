@@ -1,0 +1,105 @@
+FROM rust:1.88.0-bookworm AS rust-builder
+
+# Install cross-compilation dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    gcc-aarch64-linux-gnu \
+    gcc-armv7l-linux-gnueabihf \
+    libc6-dev-arm64-cross \
+    libc6-dev-armhf-cross \
+    clang \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Node.js for building native modules
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | sh -
+RUN apt-get install -y nodejs
+
+WORKDIR /workspace
+COPY . .
+
+RUN corepack enable yarn
+RUN yarn config set --json supportedArchitectures.cpu '["x64", "arm64", "arm"]'
+RUN yarn config set --json supportedArchitectures.libc '["glibc"]'
+
+# Install dependencies
+RUN yarn install --immutable
+
+# Build native modules for all target architectures
+# This will be replaced by pre-built artifacts in multi-arch builds
+ARG TARGETARCH
+ENV TARGETARCH=${TARGETARCH}
+
+# Map Docker TARGETARCH to our native module file naming
+RUN case "${TARGETARCH}" in \
+    amd64) NATIVE_FILE="server-native.x64.node" ;; \
+    arm64) NATIVE_FILE="server-native.arm64.node" ;; \
+    arm) NATIVE_FILE="server-native.armv7.node" ;; \
+    *) echo "Unsupported architecture: ${TARGETARCH}" && exit 1 ;; \
+    esac && \
+    if [ -f "./packages/backend/native/${NATIVE_FILE}" ]; then \
+    echo "Using pre-built native module: ${NATIVE_FILE}"; \
+    cp "./packages/backend/native/${NATIVE_FILE}" "./packages/backend/native/server-native.node"; \
+    else \
+    echo "Pre-built native module not found: ${NATIVE_FILE}"; \
+    echo "Building native module for current platform"; \
+    yarn workspace @afk/server-native build; \
+    fi
+
+FROM node:22-bookworm AS frontend-builder
+
+WORKDIR /workspace
+COPY . .
+
+RUN corepack enable yarn
+RUN yarn install --immutable
+
+# Build frontend
+RUN yarn workspace @afk/app build
+
+FROM node:22-bookworm AS backend-builder
+
+WORKDIR /workspace
+COPY . .
+COPY --from=rust-builder /workspace/packages/backend/native/server-native.node ./packages/backend/native/
+
+RUN corepack enable yarn
+RUN yarn install --immutable
+
+# Generate Prisma client and build backend
+RUN yarn oa server prisma generate
+RUN yarn workspace @afk/server build
+
+FROM node:22-bookworm AS deps
+
+WORKDIR /app
+COPY . .
+COPY --from=rust-builder /workspace/packages/backend/native/server-native.node ./packages/backend/native/
+
+RUN corepack enable yarn
+RUN yarn config set --json supportedArchitectures.cpu '["x64", "arm64", "arm"]'
+RUN yarn config set --json supportedArchitectures.libc '["glibc"]'
+RUN yarn workspaces focus @afk/server --production
+
+FROM node:22-bookworm-slim AS production
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    openssl \
+    libjemalloc2 \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy built application
+COPY --from=backend-builder /workspace/packages/backend/server/dist ./dist
+COPY --from=backend-builder /workspace/packages/backend/server/package.json ./package.json
+COPY --from=frontend-builder /workspace/packages/frontend/app/dist ./static
+
+# Copy production dependencies
+COPY --from=deps /workspace/node_modules ./node_modules
+
+ENV LD_PRELOAD=libjemalloc.so.2
+ENV NODE_ENV=production
+EXPOSE 3010
+
+CMD ["node", "dist/main.mjs"]

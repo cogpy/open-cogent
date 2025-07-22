@@ -82,14 +82,24 @@ export class CopilotUserService {
     ]);
   }
 
+  async queueChatEmbedding(chat: Jobs['copilot.embedding.chats']) {
+    const { contextId, userId, sessionId } = chat;
+    await this.queue.add('copilot.embedding.chats', {
+      contextId,
+      userId,
+      sessionId,
+    });
+  }
+
   async queueDocEmbedding(doc: Jobs['copilot.embedding.doc']) {
     const { userId, docId } = doc;
     await this.queue.add('copilot.embedding.doc', { userId, docId });
   }
 
   async queueFileEmbedding(file: Jobs['copilot.embedding.files']) {
-    const { userId, blobId, fileId, fileName } = file;
+    const { contextId, userId, blobId, fileId, fileName } = file;
     await this.queue.add('copilot.embedding.files', {
+      contextId,
       userId,
       blobId,
       fileId,

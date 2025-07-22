@@ -1,5 +1,5 @@
-mutation addContextFile($content: Upload!, $options: AddContextFileInput!) {
-  addContextFile(content: $content, options: $options) {
+mutation addContextFile($contextId: String!, $content: Upload!) {
+  addContextFile(content: $content, contextId: $contextId) {
     id
     createdAt
     name

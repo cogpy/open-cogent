@@ -2,6 +2,12 @@ query matchContext($contextId: String, $workspaceId: String, $content: String!, 
   currentUser {
     copilot {
       contexts(contextId: $contextId) {
+        matchChat(content: $content, limit: $limit, threshold: $scopedThreshold) {
+          sessionId
+          chunk
+          content
+          distance
+        }
         matchFiles(content: $content, limit: $limit, scopedThreshold: $scopedThreshold, threshold: $threshold) {
           fileId
           blobId

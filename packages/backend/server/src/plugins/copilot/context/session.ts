@@ -2,6 +2,7 @@ import { nanoid } from 'nanoid';
 
 import {
   ArtifactEmbedStatus,
+  ChatChunkSimilarity,
   ContextChat,
   ContextConfig,
   ContextFile,
@@ -29,10 +30,7 @@ export class ContextSession implements AsyncDisposable {
   }
 
   get chats() {
-    return this.config.chats.map(c => ({
-      ...c,
-      createdAt: new Date(c.createdAt),
-    }));
+    return this.config.chats;
   }
 
   get files() {
@@ -44,6 +42,24 @@ export class ContextSession implements AsyncDisposable {
       ...file,
       mimeType: file.mimeType || 'application/octet-stream',
     };
+  }
+
+  async addChat(sessionId: string): Promise<Required<ContextChat>> {
+    const existsChat = this.config.chats.find(f => f.id === sessionId);
+    if (existsChat) {
+      // use exists session id if exists
+      if (existsChat.status === ArtifactEmbedStatus.finished) {
+        return existsChat;
+      }
+    } else {
+      await this.saveItemRecord(sessionId, 'chats', chat => ({
+        ...chat,
+        chunkSize: 0,
+        error: null,
+        createdAt: Date.now(),
+      }));
+    }
+    return this.getChat(sessionId) as ContextChat;
   }
 
   async addFile(
@@ -74,8 +90,18 @@ export class ContextSession implements AsyncDisposable {
     return this.fulfillFile(this.getFile(fileId) as ContextFile);
   }
 
+  getChat(sessionId: string): ContextChat | undefined {
+    return this.config.chats.find(f => f.id === sessionId);
+  }
+
   getFile(fileId: string): ContextFile | undefined {
     return this.config.files.find(f => f.id === fileId);
+  }
+
+  async removeChat(sessionId: string): Promise<boolean> {
+    this.config.chats = this.config.chats.filter(f => f.id !== sessionId);
+    await this.save();
+    return true;
   }
 
   async removeFile(fileId: string): Promise<boolean> {
@@ -86,6 +112,41 @@ export class ContextSession implements AsyncDisposable {
     this.config.files = this.config.files.filter(f => f.id !== fileId);
     await this.save();
     return true;
+  }
+
+  /**
+   * Match the input text with the chat chunks
+   * @param content input text to match
+   * @param topK number of similar chunks to return, default 5
+   * @param signal abort signal
+   * @param threshold relevance threshold for the similarity score, higher threshold means more similar chunks, default 0.7, good enough based on prior experiments
+   * @returns list of similar chunks
+   */
+  async matchChats(
+    content: string,
+    topK: number = 5,
+    signal?: AbortSignal,
+    threshold: number = 0.85
+  ): Promise<ChatChunkSimilarity[]> {
+    if (!this.client) return [];
+    const embedding = await this.client.getEmbedding(content, signal);
+    if (!embedding) return [];
+
+    const context = await this.models.copilotUser.matchChatEmbedding(
+      embedding,
+      this.userId,
+      topK * 2,
+      threshold
+    );
+
+    const chats = new Set(this.chats.map(c => c.id));
+
+    return this.client.reRank(
+      content,
+      context.filter(c => chats.has(c.sessionId)),
+      topK,
+      signal
+    );
   }
 
   /**

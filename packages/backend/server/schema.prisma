@@ -208,10 +208,11 @@ model AiSession {
   // client custom metadata
   metadata String  @db.VarChar
 
-  user     User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  prompt   AiPrompt           @relation(fields: [promptName], references: [name], onDelete: Cascade)
-  messages AiSessionMessage[]
-  context  AiContext[]
+  user                User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  prompt              AiPrompt              @relation(fields: [promptName], references: [name], onDelete: Cascade)
+  messages            AiSessionMessage[]
+  context             AiContext[]
+  AiUserChatEmbedding AiUserChatEmbedding[]
 
   @@index([promptName])
   @@index([userId])
@@ -251,6 +252,23 @@ model AiContextEmbedding {
   @@map("ai_context_embeddings")
 }
 
+model AiUserChatEmbedding {
+  userId    String                      @map("user_id") @db.VarChar
+  sessionId String                      @map("session_id") @db.VarChar
+  // a document can be divided into multiple chunks and embedded separately.
+  chunk     Int                         @db.Integer
+  content   String                      @db.VarChar
+  embedding Unsupported("vector(1024)")
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  session AiSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@id([userId, sessionId, chunk])
+  @@index([embedding], map: "ai_user_chat_embeddings_idx")
+  @@map("ai_user_chat_embeddings")
+}
+
 model AiUserDocs {
   docId     String @default(uuid()) @map("doc_id") @db.VarChar
   userId    String @map("user_id") @db.VarChar
@@ -286,7 +304,7 @@ model AiUserDocEmbedding {
   doc AiUserDocs @relation(fields: [userId, docId], references: [userId, docId], onDelete: Cascade)
 
   @@id([userId, docId, chunk])
-  @@index([embedding], map: "ai_workspace_doc_embeddings_idx")
+  @@index([embedding], map: "ai_user_doc_embeddings_idx")
   @@map("ai_user_doc_embeddings")
 }
 
@@ -324,7 +342,7 @@ model AiUserFileEmbedding {
   file AiUserFiles @relation(fields: [userId, fileId], references: [userId, fileId], onDelete: Cascade)
 
   @@id([userId, fileId, chunk])
-  @@index([embedding], map: "ai_workspace_file_embeddings_idx")
+  @@index([embedding], map: "ai_user_file_embeddings_idx")
   @@map("ai_user_file_embeddings")
 }
 

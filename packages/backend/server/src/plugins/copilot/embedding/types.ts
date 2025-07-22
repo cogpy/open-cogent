@@ -33,14 +33,14 @@ declare global {
     };
   }
   interface Jobs {
-    'copilot.embedding.doc': {
-      userId: string;
-      docId: string;
-    };
     'copilot.embedding.chats': {
       contextId: string;
       userId: string;
       sessionId: string;
+    };
+    'copilot.embedding.doc': {
+      userId: string;
+      docId: string;
     };
     'copilot.embedding.files': {
       contextId?: string;

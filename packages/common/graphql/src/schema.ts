@@ -37,10 +37,6 @@ export interface Scalars {
   Upload: { input: File; output: File };
 }
 
-export interface AddContextFileInput {
-  contextId: Scalars['String']['input'];
-}
-
 export enum AiJobStatus {
   claimed = 'claimed',
   failed = 'failed',
@@ -84,6 +80,14 @@ export enum ContextEmbedStatus {
   failed = 'failed',
   finished = 'finished',
   processing = 'processing',
+}
+
+export interface ContextMatchedChatChunk {
+  __typename?: 'ContextMatchedChatChunk';
+  chunk: Scalars['SafeInt']['output'];
+  content: Scalars['String']['output'];
+  distance: Maybe<Scalars['Float']['output']>;
+  sessionId: Scalars['String']['output'];
 }
 
 export interface ContextMatchedFileChunk {
@@ -140,11 +144,21 @@ export interface CopilotSessionArgs {
 export interface CopilotContext {
   __typename?: 'CopilotContext';
   /** list files in context */
+  chats: Array<CopilotContextChat>;
+  /** list files in context */
   files: Array<CopilotContextFile>;
   id: Maybe<Scalars['ID']['output']>;
   /** match file in context */
+  matchChat: Array<ContextMatchedChatChunk>;
+  /** match file in context */
   matchFiles: Array<ContextMatchedFileChunk>;
   userId: Scalars['ID']['output'];
+}
+
+export interface CopilotContextMatchChatArgs {
+  content: Scalars['String']['input'];
+  limit?: InputMaybe<Scalars['SafeInt']['input']>;
+  threshold?: InputMaybe<Scalars['Float']['input']>;
 }
 
 export interface CopilotContextMatchFilesArgs {
@@ -152,6 +166,15 @@ export interface CopilotContextMatchFilesArgs {
   limit?: InputMaybe<Scalars['SafeInt']['input']>;
   scopedThreshold?: InputMaybe<Scalars['Float']['input']>;
   threshold?: InputMaybe<Scalars['Float']['input']>;
+}
+
+export interface CopilotContextChat {
+  __typename?: 'CopilotContextChat';
+  chunkSize: Scalars['SafeInt']['output'];
+  createdAt: Scalars['SafeInt']['output'];
+  error: Maybe<Scalars['String']['output']>;
+  id: Scalars['ID']['output'];
+  status: ContextEmbedStatus;
 }
 
 export interface CopilotContextFile {
@@ -615,6 +638,8 @@ export interface MissingOauthQueryParameterDataType {
 
 export interface Mutation {
   __typename?: 'Mutation';
+  /** add a chat to context */
+  addContextChat: CopilotContextChat;
   /** add a file to context */
   addContextFile: CopilotContextFile;
   /** Add user embedding doc */
@@ -649,6 +674,8 @@ export interface Mutation {
   importUsers: Array<UserImportResultType>;
   /** Remove user avatar */
   removeAvatar: RemoveAvatar;
+  /** remove a file from context */
+  removeContextChat: Scalars['Boolean']['output'];
   /** remove a file from context */
   removeContextFile: Scalars['Boolean']['output'];
   /** Remove user embedding doc */
@@ -689,9 +716,14 @@ export interface Mutation {
   verifyEmail: Scalars['Boolean']['output'];
 }
 
+export interface MutationAddContextChatArgs {
+  contextId: Scalars['String']['input'];
+  sessionId: Scalars['String']['input'];
+}
+
 export interface MutationAddContextFileArgs {
   content: Scalars['Upload']['input'];
-  options: AddContextFileInput;
+  contextId: Scalars['String']['input'];
 }
 
 export interface MutationAddUserDocsArgs {
@@ -764,6 +796,10 @@ export interface MutationEnableUserArgs {
 
 export interface MutationImportUsersArgs {
   input: ImportUsersInput;
+}
+
+export interface MutationRemoveContextChatArgs {
+  options: RemoveContextChatInput;
 }
 
 export interface MutationRemoveContextFileArgs {
@@ -1001,6 +1037,11 @@ export interface QueryTooLongDataType {
 export interface RemoveAvatar {
   __typename?: 'RemoveAvatar';
   success: Scalars['Boolean']['output'];
+}
+
+export interface RemoveContextChatInput {
+  contextId: Scalars['String']['input'];
+  sessionId: Scalars['String']['input'];
 }
 
 export interface RemoveContextFileInput {
@@ -1449,6 +1490,32 @@ export type ChangePasswordMutation = {
   changePassword: boolean;
 };
 
+export type AddContextChatMutationVariables = Exact<{
+  contextId: Scalars['String']['input'];
+  sessionId: Scalars['String']['input'];
+}>;
+
+export type AddContextChatMutation = {
+  __typename?: 'Mutation';
+  addContextChat: {
+    __typename?: 'CopilotContextChat';
+    id: string;
+    createdAt: number;
+    chunkSize: number;
+    error: string | null;
+    status: ContextEmbedStatus;
+  };
+};
+
+export type RemoveContextChatMutationVariables = Exact<{
+  options: RemoveContextChatInput;
+}>;
+
+export type RemoveContextChatMutation = {
+  __typename?: 'Mutation';
+  removeContextChat: boolean;
+};
+
 export type CreateCopilotContextMutationVariables = Exact<{
   sessionId: Scalars['String']['input'];
 }>;
@@ -1459,8 +1526,8 @@ export type CreateCopilotContextMutation = {
 };
 
 export type AddContextFileMutationVariables = Exact<{
+  contextId: Scalars['String']['input'];
   content: Scalars['Upload']['input'];
-  options: AddContextFileInput;
 }>;
 
 export type AddContextFileMutation = {
@@ -1500,6 +1567,14 @@ export type ListContextObjectQuery = {
       __typename?: 'Copilot';
       contexts: Array<{
         __typename?: 'CopilotContext';
+        chats: Array<{
+          __typename?: 'CopilotContextChat';
+          id: string;
+          chunkSize: number;
+          error: string | null;
+          status: ContextEmbedStatus;
+          createdAt: number;
+        }>;
         files: Array<{
           __typename?: 'CopilotContextFile';
           id: string;
@@ -1548,6 +1623,13 @@ export type MatchContextQuery = {
       __typename?: 'Copilot';
       contexts: Array<{
         __typename?: 'CopilotContext';
+        matchChat: Array<{
+          __typename?: 'ContextMatchedChatChunk';
+          sessionId: string;
+          chunk: number;
+          content: string;
+          distance: number | null;
+        }>;
         matchFiles: Array<{
           __typename?: 'ContextMatchedFileChunk';
           fileId: string;
@@ -2936,6 +3018,16 @@ export type Mutations =
       name: 'changePasswordMutation';
       variables: ChangePasswordMutationVariables;
       response: ChangePasswordMutation;
+    }
+  | {
+      name: 'addContextChatMutation';
+      variables: AddContextChatMutationVariables;
+      response: AddContextChatMutation;
+    }
+  | {
+      name: 'removeContextChatMutation';
+      variables: RemoveContextChatMutationVariables;
+      response: RemoveContextChatMutation;
     }
   | {
       name: 'createCopilotContextMutation';

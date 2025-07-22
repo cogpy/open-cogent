@@ -7,6 +7,7 @@ import { Prisma } from '@prisma/client';
 import { BadRequest, PaginationInput } from '../base';
 import { BaseModel } from './base';
 import type {
+  ChatChunkSimilarity,
   CopilotUserDoc,
   CopilotUserFile,
   CopilotUserFileMetadata,
@@ -233,12 +234,13 @@ export class CopilotUserConfigModel extends BaseModel {
 
     const values = this.processEmbeddings(userId, sessionId, embeddings);
     await this.db.$executeRaw`
-          INSERT INTO "ai_user_file_embeddings"
-          ("user_id", "file_id", "chunk", "content", "embedding") VALUES ${values}
-          ON CONFLICT (user_id, file_id, chunk) DO NOTHING;
+          INSERT INTO "ai_user_chat_embeddings"
+          ("user_id", "session_id", "chunk", "content", "embedding") VALUES ${values}
+          ON CONFLICT (user_id, session_id, chunk) DO NOTHING;
       `;
   }
 
+  @Transactional()
   async insertDocEmbedding(
     userId: string,
     docId: string,
@@ -282,6 +284,42 @@ export class CopilotUserConfigModel extends BaseModel {
       `;
   }
 
+  async matchChatEmbedding(
+    embedding: number[],
+    userId: string,
+    topK: number,
+    threshold: number
+  ): Promise<ChatChunkSimilarity[]> {
+    const similarityChunks = await this.db.$queryRaw<
+      Array<ChatChunkSimilarity>
+    >`
+      SELECT "session_id" as "sessionId", "chunk", "content", "embedding" <=> ${embedding}::vector as "distance" 
+      FROM "ai_user_chat_embeddings"
+      WHERE user_id = ${userId}
+      ORDER BY "distance" ASC
+      LIMIT ${topK};
+    `;
+    return similarityChunks.filter(c => Number(c.distance) <= threshold);
+  }
+
+  async matchDocEmbedding(
+    embedding: number[],
+    userId: string,
+    topK: number,
+    threshold: number
+  ): Promise<Omit<DocChunkSimilarity, 'title'>[]> {
+    const similarityChunks = await this.db.$queryRaw<
+      Array<Omit<DocChunkSimilarity, 'title'>>
+    >`
+      SELECT "doc_id" as "docId", "chunk", "content", "embedding" <=> ${embedding}::vector as "distance" 
+      FROM "ai_user_doc_embeddings"
+      WHERE user_id = ${userId}
+      ORDER BY "distance" ASC
+      LIMIT ${topK};
+    `;
+    return similarityChunks.filter(c => Number(c.distance) <= threshold);
+  }
+
   async matchFileEmbedding(
     embedding: number[],
     userId: string,
@@ -304,24 +342,6 @@ export class CopilotUserConfigModel extends BaseModel {
         ON e."user_id" = f."user_id"
         AND e."file_id" = f."file_id"
       WHERE e."user_id" = ${userId}
-      ORDER BY "distance" ASC
-      LIMIT ${topK};
-    `;
-    return similarityChunks.filter(c => Number(c.distance) <= threshold);
-  }
-
-  async matchDocEmbedding(
-    embedding: number[],
-    userId: string,
-    topK: number,
-    threshold: number
-  ): Promise<Omit<DocChunkSimilarity, 'title'>[]> {
-    const similarityChunks = await this.db.$queryRaw<
-      Array<Omit<DocChunkSimilarity, 'title'>>
-    >`
-      SELECT "doc_id" as "docId", "chunk", "content", "embedding" <=> ${embedding}::vector as "distance" 
-      FROM "ai_user_doc_embeddings"
-      WHERE user_id = ${userId}
       ORDER BY "distance" ASC
       LIMIT ${topK};
     `;

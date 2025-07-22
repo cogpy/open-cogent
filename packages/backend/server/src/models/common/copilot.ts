@@ -82,16 +82,20 @@ export type ChunkSimilarity = {
   distance: number | null;
 };
 
-export type FileChunkSimilarity = ChunkSimilarity & {
-  fileId: string;
-  blobId: string;
-  name: string;
-  mimeType: string;
+export type ChatChunkSimilarity = ChunkSimilarity & {
+  sessionId: string;
 };
 
 export type DocChunkSimilarity = ChunkSimilarity & {
   docId: string;
   title: string;
+};
+
+export type FileChunkSimilarity = ChunkSimilarity & {
+  fileId: string;
+  blobId: string;
+  name: string;
+  mimeType: string;
 };
 
 export const CopilotUserDocSchema = z.object({

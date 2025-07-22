@@ -5,6 +5,13 @@ query listContextObject(
   currentUser {
     copilot {
       contexts(sessionId: $sessionId, contextId: $contextId) {
+        chats {
+          id
+          chunkSize
+          error
+          status
+          createdAt
+        }
         files {
           id
           name

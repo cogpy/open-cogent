@@ -2,10 +2,6 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-input AddContextFileInput {
-  contextId: String!
-}
-
 enum AiJobStatus {
   claimed
   failed
@@ -48,6 +44,13 @@ enum ContextEmbedStatus {
   processing
 }
 
+type ContextMatchedChatChunk {
+  chunk: SafeInt!
+  content: String!
+  distance: Float
+  sessionId: String!
+}
+
 type ContextMatchedFileChunk {
   blobId: String!
   chunk: SafeInt!
@@ -83,12 +86,26 @@ type Copilot {
 
 type CopilotContext {
   """list files in context"""
+  chats: [CopilotContextChat!]!
+
+  """list files in context"""
   files: [CopilotContextFile!]!
   id: ID
 
   """match file in context"""
+  matchChat(content: String!, limit: SafeInt, threshold: Float): [ContextMatchedChatChunk!]!
+
+  """match file in context"""
   matchFiles(content: String!, limit: SafeInt, scopedThreshold: Float, threshold: Float): [ContextMatchedFileChunk!]!
   userId: ID!
+}
+
+type CopilotContextChat {
+  chunkSize: SafeInt!
+  createdAt: SafeInt!
+  error: String
+  id: ID!
+  status: ContextEmbedStatus!
 }
 
 type CopilotContextFile {
@@ -495,8 +512,11 @@ type MissingOauthQueryParameterDataType {
 }
 
 type Mutation {
+  """add a chat to context"""
+  addContextChat(contextId: String!, sessionId: String!): CopilotContextChat!
+
   """add a file to context"""
-  addContextFile(content: Upload!, options: AddContextFileInput!): CopilotContextFile!
+  addContextFile(content: Upload!, contextId: String!): CopilotContextFile!
 
   """Add user embedding doc"""
   addUserDocs(content: String!, metadata: String, sessionId: String!, title: String!): CopilotUserDoc!
@@ -543,6 +563,9 @@ type Mutation {
 
   """Remove user avatar"""
   removeAvatar: RemoveAvatar!
+
+  """remove a file from context"""
+  removeContextChat(options: RemoveContextChatInput!): Boolean!
 
   """remove a file from context"""
   removeContextFile(options: RemoveContextFileInput!): Boolean!
@@ -706,6 +729,11 @@ type QueryTooLongDataType {
 
 type RemoveAvatar {
   success: Boolean!
+}
+
+input RemoveContextChatInput {
+  contextId: String!
+  sessionId: String!
 }
 
 input RemoveContextFileInput {

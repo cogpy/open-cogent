@@ -184,6 +184,18 @@ CREATE TABLE "ai_context_embeddings" (
 );
 
 -- CreateTable
+CREATE TABLE "ai_user_chat_embeddings" (
+    "user_id" VARCHAR NOT NULL,
+    "session_id" VARCHAR NOT NULL,
+    "chunk" INTEGER NOT NULL,
+    "content" VARCHAR NOT NULL,
+    "embedding" vector(1024) NOT NULL,
+    "created_at" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "ai_user_chat_embeddings_pkey" PRIMARY KEY ("user_id","session_id","chunk")
+);
+
+-- CreateTable
 CREATE TABLE "ai_user_docs" (
     "doc_id" VARCHAR NOT NULL,
     "user_id" VARCHAR NOT NULL,
@@ -332,10 +344,13 @@ CREATE INDEX "ai_context_embeddings_idx" ON "ai_context_embeddings" USING hnsw (
 CREATE UNIQUE INDEX "ai_context_embeddings_context_id_file_id_chunk_key" ON "ai_context_embeddings"("context_id", "file_id", "chunk");
 
 -- CreateIndex
-CREATE INDEX "ai_workspace_doc_embeddings_idx" ON "ai_user_doc_embeddings" USING hnsw (embedding vector_cosine_ops);
+CREATE INDEX "ai_user_chat_embeddings_idx" ON "ai_user_chat_embeddings" USING hnsw (embedding vector_cosine_ops);
 
 -- CreateIndex
-CREATE INDEX "ai_workspace_file_embeddings_idx" ON "ai_user_file_embeddings" USING hnsw (embedding vector_cosine_ops);
+CREATE INDEX "ai_user_doc_embeddings_idx" ON "ai_user_doc_embeddings" USING hnsw (embedding vector_cosine_ops);
+
+-- CreateIndex
+CREATE INDEX "ai_user_file_embeddings_idx" ON "ai_user_file_embeddings" USING hnsw (embedding vector_cosine_ops);
 
 -- CreateIndex
 CREATE UNIQUE INDEX "ai_jobs_created_by_blob_id_key" ON "ai_jobs"("created_by", "blob_id");
@@ -375,6 +390,9 @@ ALTER TABLE "ai_contexts" ADD CONSTRAINT "ai_contexts_session_id_fkey" FOREIGN K
 
 -- AddForeignKey
 ALTER TABLE "ai_context_embeddings" ADD CONSTRAINT "ai_context_embeddings_context_id_fkey" FOREIGN KEY ("context_id") REFERENCES "ai_contexts"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ai_user_chat_embeddings" ADD CONSTRAINT "ai_user_chat_embeddings_session_id_fkey" FOREIGN KEY ("session_id") REFERENCES "ai_sessions_metadata"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "ai_user_docs" ADD CONSTRAINT "ai_user_docs_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;

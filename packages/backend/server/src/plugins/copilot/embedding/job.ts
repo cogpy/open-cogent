@@ -3,10 +3,8 @@ import { ModuleRef } from '@nestjs/core';
 
 import {
   BlobNotFound,
-  CallMetric,
   CopilotSessionNotFound,
   EventBus,
-  JobQueue,
   mapAnyError,
   OnEvent,
   OnJob,
@@ -25,7 +23,6 @@ export class CopilotEmbeddingJob {
     private readonly moduleRef: ModuleRef,
     private readonly event: EventBus,
     private readonly models: Models,
-    private readonly queue: JobQueue,
     private readonly storage: CopilotStorage
   ) {}
 
@@ -46,18 +43,6 @@ export class CopilotEmbeddingJob {
   // public this client to allow overriding in tests
   get embeddingClient() {
     return this.client as EmbeddingClient;
-  }
-
-  @CallMetric('ai', 'addFileEmbeddingQueue')
-  async addFileEmbeddingQueue(file: Jobs['copilot.embedding.files']) {
-    const { userId, contextId, blobId, fileId, fileName } = file;
-    await this.queue.add('copilot.embedding.files', {
-      userId,
-      contextId,
-      blobId,
-      fileId,
-      fileName,
-    });
   }
 
   private async readCopilotChats(userId: string, sessionId: string) {

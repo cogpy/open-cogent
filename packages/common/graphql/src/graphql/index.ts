@@ -311,6 +311,28 @@ export const changePasswordMutation = {
 }`,
 };
 
+export const addContextChatMutation = {
+  id: 'addContextChatMutation' as const,
+  op: 'addContextChat',
+  query: `mutation addContextChat($contextId: String!, $sessionId: String!) {
+  addContextChat(contextId: $contextId, sessionId: $sessionId) {
+    id
+    createdAt
+    chunkSize
+    error
+    status
+  }
+}`,
+};
+
+export const removeContextChatMutation = {
+  id: 'removeContextChatMutation' as const,
+  op: 'removeContextChat',
+  query: `mutation removeContextChat($options: RemoveContextChatInput!) {
+  removeContextChat(options: $options)
+}`,
+};
+
 export const createCopilotContextMutation = {
   id: 'createCopilotContextMutation' as const,
   op: 'createCopilotContext',
@@ -322,8 +344,8 @@ export const createCopilotContextMutation = {
 export const addContextFileMutation = {
   id: 'addContextFileMutation' as const,
   op: 'addContextFile',
-  query: `mutation addContextFile($content: Upload!, $options: AddContextFileInput!) {
-  addContextFile(content: $content, options: $options) {
+  query: `mutation addContextFile($contextId: String!, $content: Upload!) {
+  addContextFile(content: $content, contextId: $contextId) {
     id
     createdAt
     name
@@ -352,6 +374,13 @@ export const listContextObjectQuery = {
   currentUser {
     copilot {
       contexts(sessionId: $sessionId, contextId: $contextId) {
+        chats {
+          id
+          chunkSize
+          error
+          status
+          createdAt
+        }
         files {
           id
           name
@@ -389,6 +418,12 @@ export const matchContextQuery = {
   currentUser {
     copilot {
       contexts(contextId: $contextId) {
+        matchChat(content: $content, limit: $limit, threshold: $scopedThreshold) {
+          sessionId
+          chunk
+          content
+          distance
+        }
         matchFiles(
           content: $content
           limit: $limit

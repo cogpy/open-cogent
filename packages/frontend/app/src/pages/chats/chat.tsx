@@ -131,7 +131,7 @@ export const ChatPage = () => {
       // upload
       await Promise.all(
         cacheContexts.map(async context => {
-          if (context.type === 'attachment' && context.blob) {
+          if (context.type === 'file' && context.blob) {
             await copilotClient.addContextFile(context.blob, contextId);
           }
           if (context.type === 'chat') {

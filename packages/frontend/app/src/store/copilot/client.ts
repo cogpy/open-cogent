@@ -1,6 +1,7 @@
 import type { UserFriendlyError } from '@afk/error';
 import {
   addContextChatMutation,
+  addContextDocMutation,
   addContextFileMutation,
   cleanupCopilotSessionMutation,
   createCopilotContextMutation,
@@ -18,6 +19,7 @@ import {
   type QueryOptions,
   type QueryResponse,
   removeContextChatQuery,
+  removeContextDocQuery,
   removeContextFileQuery,
   type RequestOptions,
   updateCopilotSessionMutation,
@@ -392,6 +394,28 @@ export class CopilotClient {
       variables: {
         contextId,
         sessionId,
+      },
+    });
+    return res.currentUser?.copilot?.contexts?.[0];
+  }
+
+  async addContextDoc(contextId: string, docId: string) {
+    const res = await this.gql({
+      query: addContextDocMutation,
+      variables: {
+        contextId,
+        docId,
+      },
+    });
+    return res.addContextDoc;
+  }
+
+  async removeContextDoc(contextId: string, docId: string) {
+    const res = await this.gql({
+      query: removeContextDocQuery,
+      variables: {
+        contextId,
+        docId,
       },
     });
     return res.currentUser?.copilot?.contexts?.[0];

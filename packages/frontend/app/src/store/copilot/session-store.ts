@@ -189,6 +189,7 @@ export function createChatSessionStore(params: {
       contextId: '',
       contextFiles: [],
       contextChats: [],
+      contextDocs: [],
 
       /* ---------- Flags ---------- */
       isInitializing: true,
@@ -429,6 +430,18 @@ export function createChatSessionStore(params: {
       removeChatContext: async (chatId: string) => {
         const contextId = get().contextId;
         await client.removeContextChat(contextId, chatId);
+        get().loadContexts();
+      },
+
+      addDocContext: async (docId: string) => {
+        const contextId = get().contextId;
+        await client.addContextDoc(contextId, docId);
+        get().loadContexts();
+      },
+
+      removeDocContext: async (docId: string) => {
+        const contextId = get().contextId;
+        await client.removeContextDoc(contextId, docId);
         get().loadContexts();
       },
     }))

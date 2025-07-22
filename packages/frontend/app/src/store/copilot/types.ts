@@ -1,5 +1,5 @@
 import type {
-  CopilotContextChat,
+  CopilotContextChatOrDoc,
   CopilotContextFile,
   StreamObject,
 } from '@afk/graphql';
@@ -44,8 +44,8 @@ export interface ChatSessionState extends SessionFlags {
   meta: SessionMeta | null;
   messages: ChatMessage[];
   contextFiles: CopilotContextFile[];
-  contextChats: CopilotContextChat[];
-  // contextDocs: CopilotContextDoc[];
+  contextChats: CopilotContextChatOrDoc[];
+  contextDocs: CopilotContextChatOrDoc[];
 
   /* ---------------- Actions -------------- */
   init(): Promise<void>;
@@ -60,6 +60,9 @@ export interface ChatSessionState extends SessionFlags {
 
   addFileContext(file: File): Promise<void>;
   removeFileContext(fileId: string): Promise<void>;
+
+  addDocContext(docId: string): Promise<void>;
+  removeDocContext(docId: string): Promise<void>;
 
   addChatContext(sessionId: string): Promise<void>;
   removeChatContext(chatId: string): Promise<void>;

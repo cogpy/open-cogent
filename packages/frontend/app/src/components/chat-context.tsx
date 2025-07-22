@@ -1,4 +1,5 @@
 import { Divider, IconButton, Menu, MenuItem, RowInput } from '@afk/component';
+import type { CopilotContextChatOrDoc, CopilotContextFile } from '@afk/graphql';
 import {
   AttachmentIcon,
   CloseIcon,
@@ -8,7 +9,7 @@ import {
 } from '@blocksuite/icons/rc';
 import { cssVarV2 } from '@toeverything/theme/v2';
 import { type IDBPDatabase, openDB } from 'idb';
-import { startTransition, useEffect, useRef, useState } from 'react';
+import { startTransition, useEffect, useMemo, useRef, useState } from 'react';
 import { create, type StoreApi, useStore } from 'zustand';
 
 import { ChatIcon } from '@/icons/chat';
@@ -30,21 +31,13 @@ export type ChatContextDoc = {
 export type ChatContextFile = {
   type: 'file';
   id: string;
-};
-export type ChatContextAttachment = {
-  type: 'attachment';
-  id: string;
   blob?: File;
   blobId?: string;
   mineType: string;
   name: string;
 };
 
-export type ChatContext =
-  | ChatContextChat
-  | ChatContextDoc
-  | ChatContextFile
-  | ChatContextAttachment;
+export type ChatContext = ChatContextChat | ChatContextDoc | ChatContextFile;
 
 let db: IDBPDatabase<{ cache: ChatContext[] }> | null = null;
 async function initDB() {
@@ -153,28 +146,6 @@ const FileContextPreview = ({
   context: ChatContextFile;
   onRemove: () => void;
 }) => {
-  const { filesMap } = useLibraryStore();
-  const file = filesMap[context.id];
-  if (!file) return null;
-
-  return (
-    <div className={styles.contextPreview}>
-      <div className={styles.contextPreviewIcon}>
-        <FileIcon />
-      </div>
-      <div className={styles.contextPreviewTitle}>{file.fileName}</div>
-      <IconButton icon={<CloseIcon />} variant="plain" onClick={onRemove} />
-    </div>
-  );
-};
-
-const AttachmentContextPreview = ({
-  context,
-  onRemove,
-}: {
-  context: ChatContextAttachment;
-  onRemove: () => void;
-}) => {
   const { user } = useAuthStore();
   const file = context.blob;
   const mineType = context.mineType ?? file?.type;
@@ -200,10 +171,10 @@ const AttachmentContextPreview = ({
 
   if (imgUrl) {
     return (
-      <div className="w-10 h-10 relative group">
+      <div className="w-10 h-10 relative group shrink-0">
         <img
           src={imgUrl}
-          alt="Attachment"
+          alt={fileName}
           className="size-full object-cover rounded-md"
         />
 
@@ -288,17 +259,19 @@ export const ContextSelectorMenu = ({
     if (store) {
       await Promise.all(
         targets.map(target => {
-          if (target.type === 'attachment') {
-            return store.getState().addFileContext(target.blob!);
-          }
           if (target.type === 'file') {
-            // TODO: add file blob id
+            if (target.blob) {
+              return store.getState().addFileContext(target.blob);
+            } else if (target.blobId) {
+              // TODO: add file blob id
+              // return store.getState().addFileContext(target.blobId!);
+            }
           }
           if (target.type === 'chat') {
             return store.getState().addChatContext(target.id);
           }
           if (target.type === 'doc') {
-            // TODO: add doc doc id
+            return store.getState().addDocContext;
           }
           return Promise.resolve();
         })
@@ -390,7 +363,12 @@ export const ContextSelectorMenu = ({
                   return (
                     <MenuItem
                       onClick={() =>
-                        handleAdd({ type: 'file', id: file.fileId })
+                        handleAdd({
+                          type: 'file',
+                          id: file.fileId,
+                          mineType: file.mimeType,
+                          name: file.fileName,
+                        })
                       }
                       key={file.fileId}
                       prefixIcon={<FileIcon />}
@@ -415,7 +393,7 @@ export const ContextSelectorMenu = ({
           {/* Upload */}
           <div
             style={{ borderWidth: 0.5 }}
-            className="h-[46px] border-t sticky bottom-0 bg-white px-2 flex items-center mt-2 relative"
+            className="h-[46px] border-t sticky bottom-0 bg-white px-2 flex items-center mt-2"
           >
             <input
               type="file"
@@ -425,10 +403,10 @@ export const ContextSelectorMenu = ({
               onChange={e => {
                 const files = e.target.files;
                 if (!files) return;
-                const newContexts: ChatContextAttachment[] = [];
+                const newContexts: ChatContextFile[] = [];
                 for (const file of files) {
                   newContexts.push({
-                    type: 'attachment',
+                    type: 'file',
                     id: Math.random().toString(36).substring(2, 15),
                     blob: file,
                     mineType: file.type,
@@ -488,13 +466,6 @@ const ContextPreviewUI = ({
                 onRemove={() => handleRemove(context.id)}
               />
             );
-          case 'attachment':
-            return (
-              <AttachmentContextPreview
-                context={context}
-                onRemove={() => handleRemove(context.id)}
-              />
-            );
         }
       })}
     </div>
@@ -522,32 +493,58 @@ const ContextCloudPreview = ({
   store: StoreApi<ChatSessionState>;
 }) => {
   const contextFiles = useStore(store, s => s.contextFiles);
+  const contextChats = useStore(store, s => s.contextChats);
+  const contextDocs = useStore(store, s => s.contextDocs);
 
-  const contexts = contextFiles.map(file => {
-    return {
-      type: 'attachment',
-      id: file.id,
-      blobId: file.blobId,
-      mineType: file.mimeType,
-      name: file.name,
-    } satisfies ChatContextAttachment;
-  });
+  const contexts = useMemo(() => {
+    return [
+      ...contextFiles.map(file => ({ type: 'file', value: file })),
+      ...contextChats.map(chat => ({ type: 'chat', value: chat })),
+      ...contextDocs.map(doc => ({ type: 'doc', value: doc })),
+    ]
+      .sort((a, b) => {
+        return a.value.createdAt - b.value.createdAt;
+      })
+      .map(({ type, value }) => {
+        if (type === 'file') {
+          const file = value as CopilotContextFile;
+          return {
+            type: 'file',
+            id: value.id,
+            blobId: file.blobId,
+            mineType: file.mimeType,
+            name: file.name,
+          } satisfies ChatContextFile;
+        }
+        if (type === 'chat') {
+          const chat = value as CopilotContextChatOrDoc;
+          return {
+            type: 'chat',
+            id: chat.id,
+          } satisfies ChatContextChat;
+        }
+        if (type === 'doc') {
+          const doc = value as CopilotContextChatOrDoc;
+          return {
+            type: 'doc',
+            id: doc.id,
+          } satisfies ChatContextDoc;
+        }
+        return null;
+      }) as ChatContext[];
+  }, [contextChats, contextDocs, contextFiles]);
 
   const handleRemove = async (id: string) => {
     const context = contexts.find(c => c.id === id);
-    if (context?.type === 'attachment') {
+    if (context?.type === 'file') {
       return await store.getState().removeFileContext(context.id);
     }
     if (context?.type === 'chat') {
       return await store.getState().removeChatContext(context.id);
     }
     if (context?.type === 'doc') {
-      // TODO: remove doc doc id
+      return await store.getState().removeDocContext(context.id);
     }
-    if (context?.type === 'file') {
-      // TODO: remove file blob id
-    }
-    // TODO: remove other context types
   };
 
   if (!contextFiles.length) return null;

@@ -1182,7 +1182,6 @@ export const PackageList = [
     location: 'packages/backend/server',
     name: '@afk/server',
     workspaceDependencies: [
-      'packages/common/reader',
       'packages/backend/native',
       'tools/cli',
       'tools/utils',

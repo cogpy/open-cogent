@@ -13,7 +13,7 @@ export const SidebarLayout = ({
   sidebar: React.ReactNode;
   children: React.ReactNode;
 }) => {
-  const { toggleSidebar } = useSidebarStore();
+  const { toggleSidebar, width, open: sidebarOpen } = useSidebarStore();
   const { isOpen: isDocPanelOpen } = useDocPanelStore();
 
   return (
@@ -21,7 +21,9 @@ export const SidebarLayout = ({
       {/* sidebar */}
       <AppSidebar className="flex flex-col">
         {/* Head spacer */}
-        <header className="w-full h-15"></header>
+        <header className="w-full h-15 p-4 flex items-center">
+          <img src="/logo.svg" alt="logo" className="w-6 h-6" />
+        </header>
         <div className="flex-1 h-0">{sidebar}</div>
       </AppSidebar>
 
@@ -49,7 +51,12 @@ export const SidebarLayout = ({
         size="24"
         className="absolute"
         icon={<SidebarIcon />}
-        style={{ position: 'absolute', left: 14, top: 14 }}
+        style={{
+          position: 'absolute',
+          left: sidebarOpen ? width - 36 : 12,
+          top: 14,
+          transition: 'all 0.2s ease',
+        }}
         onClick={toggleSidebar}
       />
     </div>

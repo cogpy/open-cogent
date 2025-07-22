@@ -7,6 +7,8 @@ export interface SidebarState {
   setOpen: (open: boolean) => void;
   width: number;
   setWidth: (width: number) => void;
+  resizing: boolean;
+  setResizing: (resizing: boolean) => void;
 }
 
 export const useSidebarStore = create<SidebarState>()(
@@ -17,6 +19,8 @@ export const useSidebarStore = create<SidebarState>()(
       toggleSidebar: () => set(state => ({ open: !state.open })),
       setOpen: (open: boolean) => set({ open }),
       setWidth: (width: number) => set({ width }),
+      resizing: false,
+      setResizing: (resizing: boolean) => set({ resizing }),
     }),
     {
       name: 'sidebar-storage',

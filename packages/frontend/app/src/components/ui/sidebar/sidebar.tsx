@@ -41,17 +41,21 @@ export default function AppSidebar({
 
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const { width, setWidth, open } = useSidebarStore();
+  const { width, setWidth, open, setResizing } = useSidebarStore();
 
   const initailWidthRef = useRef(0);
   const initialClientXRef = useRef(0);
   const prevClientXRef = useRef(0);
 
-  const onDragStart = useCallback((clientX: number) => {
-    initailWidthRef.current = containerRef.current?.offsetWidth ?? 0;
-    initialClientXRef.current = clientX;
-    containerRef.current?.classList.toggle(styles.resizing, true);
-  }, []);
+  const onDragStart = useCallback(
+    (clientX: number) => {
+      initailWidthRef.current = containerRef.current?.offsetWidth ?? 0;
+      initialClientXRef.current = clientX;
+      containerRef.current?.classList.toggle(styles.resizing, true);
+      setResizing(true);
+    },
+    [setResizing]
+  );
 
   const onDragMove = useCallback((clientX: number) => {
     const delta = clientX - initialClientXRef.current;
@@ -76,7 +80,8 @@ export default function AppSidebar({
     );
     containerRef.current?.classList.toggle(styles.resizing, false);
     setWidth(newWidth);
-  }, [setWidth]);
+    setResizing(false);
+  }, [setResizing, setWidth]);
 
   const onMouseDown = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {

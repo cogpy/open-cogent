@@ -1,6 +1,7 @@
 import './index.css';
 import '@afk/component/theme';
 
+import { ConfirmModalProvider } from '@afk/component';
 import { useEffect } from 'react';
 import { Route, Routes } from 'react-router';
 
@@ -44,43 +45,45 @@ function App() {
   }, [open]);
 
   return (
-    <Routes>
-      <Route path="/sign-in" element={<SignInPage />} />
-      <Route path="/magic-link" element={<MagicLinkPage />} />
-      <Route
-        path="/chats/*"
-        element={
-          <AuthGuard>
-            <ChatsPage />
-          </AuthGuard>
-        }
-      />
-      <Route
-        path="/library/*"
-        element={
-          <AuthGuard>
-            <LibraryPage />
-          </AuthGuard>
-        }
-      />
-      <Route
-        path="/settings"
-        element={
-          <AuthGuard>
-            <div className="p-8">Settings (coming soon)</div>
-          </AuthGuard>
-        }
-      />
-      <Route path="/doc-edit-test" element={<DocEditTest />} />
-      <Route
-        path="/"
-        element={
-          <AuthGuard>
-            <HomePage />
-          </AuthGuard>
-        }
-      />
-    </Routes>
+    <ConfirmModalProvider>
+      <Routes>
+        <Route path="/sign-in" element={<SignInPage />} />
+        <Route path="/magic-link" element={<MagicLinkPage />} />
+        <Route
+          path="/chats/*"
+          element={
+            <AuthGuard>
+              <ChatsPage />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/library/*"
+          element={
+            <AuthGuard>
+              <LibraryPage />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <AuthGuard>
+              <div className="p-8">Settings (coming soon)</div>
+            </AuthGuard>
+          }
+        />
+        <Route path="/doc-edit-test" element={<DocEditTest />} />
+        <Route
+          path="/"
+          element={
+            <AuthGuard>
+              <HomePage />
+            </AuthGuard>
+          }
+        />
+      </Routes>
+    </ConfirmModalProvider>
   );
 }
 

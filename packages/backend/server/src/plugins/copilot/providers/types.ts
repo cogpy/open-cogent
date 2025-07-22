@@ -176,6 +176,7 @@ export const PromptMessageSchema = PureMessageSchema.extend({
 }).strict();
 export type PromptMessage = z.infer<typeof PromptMessageSchema>;
 export type PromptParams = NonNullable<PromptMessage['params']>;
+export type StreamObjectPure = z.infer<(typeof StreamObjectPureSchema)[number]>;
 export type StreamObjectToolResult = z.infer<
   typeof StreamObjectToolResultSchema
 >;

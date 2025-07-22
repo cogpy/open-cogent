@@ -276,29 +276,15 @@ export class CopilotClient {
     return res.removeContextFile;
   }
 
-  async getContextDocsAndFiles(
-    workspaceId: string,
-    sessionId: string,
-    contextId: string
-  ) {
+  async getContextFiles(sessionId: string, contextId: string) {
     const res = await this.gql({
       query: listContextObjectQuery,
       variables: {
-        workspaceId,
         sessionId,
         contextId,
       },
     });
     return res.currentUser?.copilot?.contexts?.[0];
-  }
-
-  async getContextFiles(sessionId: string) {
-    return await this.gql({
-      query: listContextQuery,
-      variables: {
-        sessionId,
-      },
-    });
   }
 
   async matchContext(

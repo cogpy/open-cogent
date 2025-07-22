@@ -1,5 +1,4 @@
 query listContextObject(
-  $workspaceId: String!
   $sessionId: String!
   $contextId: String!
 ) {

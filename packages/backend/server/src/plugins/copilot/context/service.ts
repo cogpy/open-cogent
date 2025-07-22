@@ -9,7 +9,7 @@ import {
 } from '../../../base';
 import {
   ArtifactEmbedStatus,
-  ContextChat,
+  ContextChatOrDoc,
   ContextConfig,
   ContextConfigSchema,
   ContextFile,
@@ -156,29 +156,31 @@ export class CopilotContextService {
     return await this.embeddingClient.reRank(content, fileChunks, topK, signal);
   }
 
-  @OnEvent('user.chat.embed.finished')
-  async onChatEmbedFinish({
+  @OnEvent('user.chatOrDoc.embed.finished')
+  async onChatOrDocEmbedFinish({
+    type,
     contextId,
-    sessionId,
+    sessionOrDocId,
     chunkSize,
-  }: Events['user.chat.embed.finished']) {
+  }: Events['user.chatOrDoc.embed.finished']) {
     const context = await this.get(contextId);
-    await context.saveItemRecord(sessionId, 'chats', file => ({
-      ...(file as ContextChat),
+    await context.saveItemRecord(sessionOrDocId, type, chatOrDoc => ({
+      ...(chatOrDoc as ContextChatOrDoc),
       chunkSize,
       status: ArtifactEmbedStatus.finished,
     }));
   }
 
-  @OnEvent('user.chat.embed.failed')
-  async onChatEmbedFailed({
+  @OnEvent('user.chatOrDoc.embed.failed')
+  async onChatOrDocEmbedFailed({
+    type,
     contextId,
-    sessionId,
+    sessionOrDocId,
     error,
-  }: Events['user.chat.embed.failed']) {
+  }: Events['user.chatOrDoc.embed.failed']) {
     const context = await this.get(contextId);
-    await context.saveItemRecord(sessionId, 'chats', file => ({
-      ...(file as ContextChat),
+    await context.saveItemRecord(sessionOrDocId, type, chatOrDoc => ({
+      ...(chatOrDoc as ContextChatOrDoc),
       error,
       status: ArtifactEmbedStatus.failed,
     }));

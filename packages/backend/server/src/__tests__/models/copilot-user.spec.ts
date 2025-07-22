@@ -57,6 +57,7 @@ test('should insert and search embedding', async t => {
       blobId: 'blob1',
       mimeType: 'text/plain',
       size: 1,
+      metadata: '',
     });
     await copilotUser.insertFileEmbeddings(user.id, fileId, [
       {
@@ -88,13 +89,12 @@ test('should insert and search embedding', async t => {
       title: 'title',
       promptName: 'prompt-name',
       promptAction: null,
+      metadata: '',
     });
-    const { docId } = await copilotUser.addDoc(
-      user.id,
-      sessionId,
-      'title',
-      'content'
-    );
+    const { docId } = await copilotUser.addDoc(user.id, sessionId, {
+      title: 'title',
+      content: 'content',
+    });
     await copilotUser.insertDocEmbedding(user.id, docId, [
       {
         index: 0,

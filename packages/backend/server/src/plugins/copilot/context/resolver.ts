@@ -4,7 +4,6 @@ import {
   Args,
   Context,
   Field,
-  Float,
   ID,
   Mutation,
   ObjectType,
@@ -20,8 +19,6 @@ import GraphQLUpload from 'graphql-upload/GraphQLUpload.mjs';
 import {
   BlobQuotaExceeded,
   CallMetric,
-  CopilotFailedToMatchContext,
-  CopilotFailedToMatchGlobalContext,
   CopilotFailedToModifyContext,
   CopilotInvalidContext,
   CopilotSessionNotFound,
@@ -34,17 +31,15 @@ import {
 import { CurrentUser } from '../../../core/auth';
 import {
   ArtifactEmbedStatus,
-  ChatChunkSimilarity,
-  ContextChat,
+  ContextChatOrDoc,
   ContextFile,
-  FileChunkSimilarity,
   Models,
 } from '../../../models';
 import { COPILOT_LOCKER, CopilotType } from '../resolver';
 import { ChatSessionService } from '../session';
 import { CopilotStorage } from '../storage';
 import { MAX_EMBEDDABLE_SIZE } from '../types';
-import { getSignal, readStream } from '../utils';
+import { readStream } from '../utils';
 import { CopilotUserService } from '../workspace';
 import { CopilotContextService } from './service';
 
@@ -60,7 +55,7 @@ export class CopilotContextType {
 registerEnumType(ArtifactEmbedStatus, { name: 'ContextEmbedStatus' });
 
 @ObjectType()
-class CopilotContextChat implements ContextChat {
+class CopilotContextChatOrDoc implements ContextChatOrDoc {
   @Field(() => ID)
   id!: string;
 
@@ -102,45 +97,6 @@ class CopilotContextFile implements ContextFile {
 
   @Field(() => SafeIntResolver)
   createdAt!: number;
-}
-
-@ObjectType()
-class ContextMatchedChatChunk implements ChatChunkSimilarity {
-  @Field(() => String)
-  sessionId!: string;
-
-  @Field(() => SafeIntResolver)
-  chunk!: number;
-
-  @Field(() => String)
-  content!: string;
-
-  @Field(() => Float, { nullable: true })
-  distance!: number | null;
-}
-
-@ObjectType()
-class ContextMatchedFileChunk implements FileChunkSimilarity {
-  @Field(() => String)
-  fileId!: string;
-
-  @Field(() => String)
-  blobId!: string;
-
-  @Field(() => String)
-  name!: string;
-
-  @Field(() => String)
-  mimeType!: string;
-
-  @Field(() => SafeIntResolver)
-  chunk!: number;
-
-  @Field(() => String)
-  content!: string;
-
-  @Field(() => Float, { nullable: true })
-  distance!: number | null;
 }
 
 @ObjectType()
@@ -245,18 +201,32 @@ export class CopilotContextResolver {
     private readonly storage: CopilotStorage
   ) {}
 
-  @ResolveField(() => [CopilotContextChat], {
+  @ResolveField(() => [CopilotContextChatOrDoc], {
     description: 'list files in context',
   })
   @CallMetric('ai', 'context_file_list')
   async chats(
     @Parent() context: CopilotContextType
-  ): Promise<CopilotContextChat[]> {
+  ): Promise<CopilotContextChatOrDoc[]> {
     if (!context.id) {
       return [];
     }
     const session = await this.context.get(context.id);
     return session.chats;
+  }
+
+  @ResolveField(() => [CopilotContextChatOrDoc], {
+    description: 'list files in context',
+  })
+  @CallMetric('ai', 'context_file_list')
+  async docs(
+    @Parent() context: CopilotContextType
+  ): Promise<CopilotContextChatOrDoc[]> {
+    if (!context.id) {
+      return [];
+    }
+    const session = await this.context.get(context.id);
+    return session.docs;
   }
 
   @ResolveField(() => [CopilotContextFile], {
@@ -273,7 +243,7 @@ export class CopilotContextResolver {
     return session.files;
   }
 
-  @Mutation(() => CopilotContextChat, {
+  @Mutation(() => CopilotContextChatOrDoc, {
     description: 'add a chat to context',
   })
   @CallMetric('ai', 'context_file_add')
@@ -281,7 +251,7 @@ export class CopilotContextResolver {
     @CurrentUser() user: CurrentUser,
     @Args({ name: 'contextId' }) contextId: string,
     @Args({ name: 'sessionId' }) sessionId: string
-  ): Promise<CopilotContextChat> {
+  ): Promise<CopilotContextChatOrDoc> {
     const lockFlag = `${COPILOT_LOCKER}:context:${contextId}`;
     await using lock = await this.mutex.acquire(lockFlag);
     if (!lock) {
@@ -300,6 +270,42 @@ export class CopilotContextResolver {
       });
 
       return chat;
+    } catch (e: any) {
+      // passthrough user friendly error
+      if (e instanceof UserFriendlyError) {
+        throw e;
+      }
+      throw new CopilotFailedToModifyContext({ contextId, message: e.message });
+    }
+  }
+
+  @Mutation(() => CopilotContextChatOrDoc, {
+    description: 'add a chat to context',
+  })
+  @CallMetric('ai', 'context_file_add')
+  async addContextDoc(
+    @CurrentUser() user: CurrentUser,
+    @Args({ name: 'contextId' }) contextId: string,
+    @Args({ name: 'docId' }) docId: string
+  ): Promise<CopilotContextChatOrDoc> {
+    const lockFlag = `${COPILOT_LOCKER}:context:${contextId}`;
+    await using lock = await this.mutex.acquire(lockFlag);
+    if (!lock) {
+      throw new TooManyRequest('Server is busy');
+    }
+
+    const context = await this.context.get(contextId);
+
+    try {
+      const doc = await context.addDoc(docId);
+
+      await this.copilotUser.queueDocEmbedding({
+        userId: user.id,
+        contextId: context.id,
+        docId: doc.id,
+      });
+
+      return doc;
     } catch (e: any) {
       // passthrough user friendly error
       if (e instanceof UserFriendlyError) {
@@ -360,9 +366,9 @@ export class CopilotContextResolver {
   }
 
   @ResolveField(() => Boolean, {
-    description: 'remove a file from context',
+    description: 'remove a chat from context',
   })
-  @CallMetric('ai', 'context_file_remove')
+  @CallMetric('ai', 'context_chat_remove')
   async removeContextChat(
     @Parent() context: CopilotContextType,
     @Args({ name: 'sessionId' }) sessionId: string
@@ -379,6 +385,34 @@ export class CopilotContextResolver {
 
     try {
       return await session.removeChat(sessionId);
+    } catch (e: any) {
+      throw new CopilotFailedToModifyContext({
+        contextId: context.id,
+        message: e.message,
+      });
+    }
+  }
+
+  @ResolveField(() => Boolean, {
+    description: 'remove a doc from context',
+  })
+  @CallMetric('ai', 'context_doc_remove')
+  async removeContextDoc(
+    @Parent() context: CopilotContextType,
+    @Args({ name: 'docId' }) docId: string
+  ): Promise<boolean> {
+    if (!context.id) {
+      throw new CopilotInvalidContext({ contextId: context.id || 'undefined' });
+    }
+    const lockFlag = `${COPILOT_LOCKER}:context:${context.id}`;
+    await using lock = await this.mutex.acquire(lockFlag);
+    if (!lock) {
+      throw new TooManyRequest('Server is busy');
+    }
+    const session = await this.context.get(context.id);
+
+    try {
+      return await session.removeDoc(docId);
     } catch (e: any) {
       throw new CopilotFailedToModifyContext({
         contextId: context.id,
@@ -412,115 +446,6 @@ export class CopilotContextResolver {
         contextId: context.id,
         message: e.message,
       });
-    }
-  }
-
-  @ResolveField(() => [ContextMatchedChatChunk], {
-    description: 'match file in context',
-  })
-  @CallMetric('ai', 'context_chat_match')
-  async matchChat(
-    @Context() ctx: { req: Request },
-    @Parent() context: CopilotContextType,
-    @Args('content') content: string,
-    @Args('limit', { type: () => SafeIntResolver, nullable: true })
-    limit?: number,
-    @Args('threshold', { type: () => Float, nullable: true })
-    threshold?: number
-  ): Promise<ContextMatchedChatChunk[]> {
-    try {
-      if (!context.id) {
-        throw new CopilotInvalidContext({
-          contextId: context.id || 'undefined',
-        });
-      }
-
-      const session = await this.context.get(context.id);
-      return await session.matchChats(
-        content,
-        limit,
-        getSignal(ctx.req).signal,
-        threshold
-      );
-    } catch (e: any) {
-      // passthrough user friendly error
-      if (e instanceof UserFriendlyError) {
-        throw e;
-      }
-
-      if (context.id) {
-        throw new CopilotFailedToMatchContext({
-          contextId: context.id,
-          // don't record the large content
-          content: content.slice(0, 512),
-          message: e.message,
-        });
-      } else {
-        throw new CopilotFailedToMatchGlobalContext({
-          userId: context.userId,
-          // don't record the large content
-          content: content.slice(0, 512),
-          message: e.message,
-        });
-      }
-    }
-  }
-
-  @ResolveField(() => [ContextMatchedFileChunk], {
-    description: 'match file in context',
-  })
-  @CallMetric('ai', 'context_file_match')
-  async matchFiles(
-    @Context() ctx: { req: Request },
-    @Parent() context: CopilotContextType,
-    @Args('content') content: string,
-    @Args('limit', { type: () => SafeIntResolver, nullable: true })
-    limit?: number,
-    @Args('scopedThreshold', { type: () => Float, nullable: true })
-    scopedThreshold?: number,
-    @Args('threshold', { type: () => Float, nullable: true })
-    threshold?: number
-  ): Promise<ContextMatchedFileChunk[]> {
-    try {
-      if (!context.id) {
-        return await this.context.matchFiles(
-          content,
-          context.userId,
-          limit,
-          getSignal(ctx.req).signal,
-          threshold
-        );
-      }
-
-      const session = await this.context.get(context.id);
-      return await session.matchFiles(
-        content,
-        limit,
-        getSignal(ctx.req).signal,
-        scopedThreshold,
-        threshold
-      );
-    } catch (e: any) {
-      // passthrough user friendly error
-      if (e instanceof UserFriendlyError) {
-        throw e;
-      }
-
-      if (context.id) {
-        throw new CopilotFailedToMatchContext({
-          contextId: context.id,
-          // don't record the large content
-          content: content.slice(0, 512),
-          message: e.message,
-        });
-      } else {
-        throw new CopilotFailedToMatchGlobalContext({
-          userId: context.userId,
-          // don't record the large content
-          content: content.slice(0, 512),
-          message: e.message,
-        });
-      }
     }
   }
 }

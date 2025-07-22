@@ -91,9 +91,13 @@ export class CopilotUserService {
     });
   }
 
-  async queueDocEmbedding(doc: Jobs['copilot.embedding.doc']) {
-    const { userId, docId } = doc;
-    await this.queue.add('copilot.embedding.doc', { userId, docId });
+  async queueDocEmbedding(doc: Jobs['copilot.embedding.docs']) {
+    const { contextId, userId, docId } = doc;
+    await this.queue.add('copilot.embedding.docs', {
+      contextId,
+      userId,
+      docId,
+    });
   }
 
   async queueFileEmbedding(file: Jobs['copilot.embedding.files']) {

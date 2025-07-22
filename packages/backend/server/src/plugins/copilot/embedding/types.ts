@@ -8,16 +8,18 @@ import { parseDoc } from '../../../native';
 
 declare global {
   interface Events {
-    'user.chat.embed.finished': {
+    'user.chatOrDoc.embed.finished': {
       contextId: string;
-      sessionId: string;
+      sessionOrDocId: string;
       chunkSize: number;
+      type: 'chats' | 'docs';
     };
 
-    'user.chat.embed.failed': {
+    'user.chatOrDoc.embed.failed': {
       contextId: string;
-      sessionId: string;
+      sessionOrDocId: string;
       error: string;
+      type: 'chats' | 'docs';
     };
 
     'user.file.embed.finished': {
@@ -38,12 +40,13 @@ declare global {
       userId: string;
       sessionId: string;
     };
-    'copilot.embedding.doc': {
+    'copilot.embedding.docs': {
+      contextId: string;
       userId: string;
       docId: string;
     };
     'copilot.embedding.files': {
-      contextId?: string;
+      contextId: string;
       userId: string;
       blobId: string;
       fileId: string;

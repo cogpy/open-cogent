@@ -82,25 +82,6 @@ export enum ContextEmbedStatus {
   processing = 'processing',
 }
 
-export interface ContextMatchedChatChunk {
-  __typename?: 'ContextMatchedChatChunk';
-  chunk: Scalars['SafeInt']['output'];
-  content: Scalars['String']['output'];
-  distance: Maybe<Scalars['Float']['output']>;
-  sessionId: Scalars['String']['output'];
-}
-
-export interface ContextMatchedFileChunk {
-  __typename?: 'ContextMatchedFileChunk';
-  blobId: Scalars['String']['output'];
-  chunk: Scalars['SafeInt']['output'];
-  content: Scalars['String']['output'];
-  distance: Maybe<Scalars['Float']['output']>;
-  fileId: Scalars['String']['output'];
-  mimeType: Scalars['String']['output'];
-  name: Scalars['String']['output'];
-}
-
 export interface ContextUserEmbeddingStatus {
   __typename?: 'ContextUserEmbeddingStatus';
   embedded: Scalars['SafeInt']['output'];
@@ -144,44 +125,35 @@ export interface CopilotSessionArgs {
 export interface CopilotContext {
   __typename?: 'CopilotContext';
   /** list files in context */
-  chats: Array<CopilotContextChat>;
+  chats: Array<CopilotContextChatOrDoc>;
+  /** list files in context */
+  docs: Array<CopilotContextChatOrDoc>;
   /** list files in context */
   files: Array<CopilotContextFile>;
   id: Maybe<Scalars['ID']['output']>;
-  /** match file in context */
-  matchChat: Array<ContextMatchedChatChunk>;
-  /** match file in context */
-  matchFiles: Array<ContextMatchedFileChunk>;
-  /** remove a file from context */
+  /** remove a chat from context */
   removeContextChat: Scalars['Boolean']['output'];
+  /** remove a doc from context */
+  removeContextDoc: Scalars['Boolean']['output'];
   /** remove a file from context */
   removeContextFile: Scalars['Boolean']['output'];
   userId: Scalars['ID']['output'];
-}
-
-export interface CopilotContextMatchChatArgs {
-  content: Scalars['String']['input'];
-  limit?: InputMaybe<Scalars['SafeInt']['input']>;
-  threshold?: InputMaybe<Scalars['Float']['input']>;
-}
-
-export interface CopilotContextMatchFilesArgs {
-  content: Scalars['String']['input'];
-  limit?: InputMaybe<Scalars['SafeInt']['input']>;
-  scopedThreshold?: InputMaybe<Scalars['Float']['input']>;
-  threshold?: InputMaybe<Scalars['Float']['input']>;
 }
 
 export interface CopilotContextRemoveContextChatArgs {
   sessionId: Scalars['String']['input'];
 }
 
+export interface CopilotContextRemoveContextDocArgs {
+  docId: Scalars['String']['input'];
+}
+
 export interface CopilotContextRemoveContextFileArgs {
   fileId: Scalars['String']['input'];
 }
 
-export interface CopilotContextChat {
-  __typename?: 'CopilotContextChat';
+export interface CopilotContextChatOrDoc {
+  __typename?: 'CopilotContextChatOrDoc';
   chunkSize: Scalars['SafeInt']['output'];
   createdAt: Scalars['SafeInt']['output'];
   error: Maybe<Scalars['String']['output']>;
@@ -651,7 +623,9 @@ export interface MissingOauthQueryParameterDataType {
 export interface Mutation {
   __typename?: 'Mutation';
   /** add a chat to context */
-  addContextChat: CopilotContextChat;
+  addContextChat: CopilotContextChatOrDoc;
+  /** add a chat to context */
+  addContextDoc: CopilotContextChatOrDoc;
   /** add a file to context */
   addContextFile: CopilotContextFile;
   /** Add user embedding doc */
@@ -727,6 +701,11 @@ export interface Mutation {
 export interface MutationAddContextChatArgs {
   contextId: Scalars['String']['input'];
   sessionId: Scalars['String']['input'];
+}
+
+export interface MutationAddContextDocArgs {
+  contextId: Scalars['String']['input'];
+  docId: Scalars['String']['input'];
 }
 
 export interface MutationAddContextFileArgs {
@@ -1488,7 +1467,7 @@ export type AddContextChatMutationVariables = Exact<{
 export type AddContextChatMutation = {
   __typename?: 'Mutation';
   addContextChat: {
-    __typename?: 'CopilotContextChat';
+    __typename?: 'CopilotContextChatOrDoc';
     id: string;
     createdAt: number;
     chunkSize: number;
@@ -1523,6 +1502,42 @@ export type CreateCopilotContextMutationVariables = Exact<{
 export type CreateCopilotContextMutation = {
   __typename?: 'Mutation';
   createCopilotContext: string;
+};
+
+export type AddContextDocMutationVariables = Exact<{
+  contextId: Scalars['String']['input'];
+  docId: Scalars['String']['input'];
+}>;
+
+export type AddContextDocMutation = {
+  __typename?: 'Mutation';
+  addContextDoc: {
+    __typename?: 'CopilotContextChatOrDoc';
+    id: string;
+    createdAt: number;
+    chunkSize: number;
+    error: string | null;
+    status: ContextEmbedStatus;
+  };
+};
+
+export type RemoveContextDocQueryVariables = Exact<{
+  contextId: Scalars['String']['input'];
+  docId: Scalars['String']['input'];
+}>;
+
+export type RemoveContextDocQuery = {
+  __typename?: 'Query';
+  currentUser: {
+    __typename?: 'UserType';
+    copilot: {
+      __typename?: 'Copilot';
+      contexts: Array<{
+        __typename?: 'CopilotContext';
+        removeContextDoc: boolean;
+      }>;
+    };
+  } | null;
 };
 
 export type AddContextFileMutationVariables = Exact<{
@@ -1578,7 +1593,7 @@ export type ListContextObjectQuery = {
       contexts: Array<{
         __typename?: 'CopilotContext';
         chats: Array<{
-          __typename?: 'CopilotContextChat';
+          __typename?: 'CopilotContextChatOrDoc';
           id: string;
           chunkSize: number;
           error: string | null;
@@ -1612,45 +1627,6 @@ export type ListContextQuery = {
     copilot: {
       __typename?: 'Copilot';
       contexts: Array<{ __typename?: 'CopilotContext'; id: string | null }>;
-    };
-  } | null;
-};
-
-export type MatchContextQueryVariables = Exact<{
-  contextId?: InputMaybe<Scalars['String']['input']>;
-  workspaceId?: InputMaybe<Scalars['String']['input']>;
-  content: Scalars['String']['input'];
-  limit?: InputMaybe<Scalars['SafeInt']['input']>;
-  scopedThreshold?: InputMaybe<Scalars['Float']['input']>;
-  threshold?: InputMaybe<Scalars['Float']['input']>;
-}>;
-
-export type MatchContextQuery = {
-  __typename?: 'Query';
-  currentUser: {
-    __typename?: 'UserType';
-    copilot: {
-      __typename?: 'Copilot';
-      contexts: Array<{
-        __typename?: 'CopilotContext';
-        matchChat: Array<{
-          __typename?: 'ContextMatchedChatChunk';
-          sessionId: string;
-          chunk: number;
-          content: string;
-          distance: number | null;
-        }>;
-        matchFiles: Array<{
-          __typename?: 'ContextMatchedFileChunk';
-          fileId: string;
-          blobId: string;
-          name: string;
-          mimeType: string;
-          chunk: number;
-          content: string;
-          distance: number | null;
-        }>;
-      }>;
     };
   } | null;
 };
@@ -2838,6 +2814,11 @@ export type Queries =
       response: RemoveContextChatQuery;
     }
   | {
+      name: 'removeContextDocQuery';
+      variables: RemoveContextDocQueryVariables;
+      response: RemoveContextDocQuery;
+    }
+  | {
       name: 'removeContextFileQuery';
       variables: RemoveContextFileQueryVariables;
       response: RemoveContextFileQuery;
@@ -2851,11 +2832,6 @@ export type Queries =
       name: 'listContextQuery';
       variables: ListContextQueryVariables;
       response: ListContextQuery;
-    }
-  | {
-      name: 'matchContextQuery';
-      variables: MatchContextQueryVariables;
-      response: MatchContextQuery;
     }
   | {
       name: 'getEmbeddingStatusQuery';
@@ -3048,6 +3024,11 @@ export type Mutations =
       name: 'createCopilotContextMutation';
       variables: CreateCopilotContextMutationVariables;
       response: CreateCopilotContextMutation;
+    }
+  | {
+      name: 'addContextDocMutation';
+      variables: AddContextDocMutationVariables;
+      response: AddContextDocMutation;
     }
   | {
       name: 'addContextFileMutation';

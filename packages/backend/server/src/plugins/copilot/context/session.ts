@@ -3,10 +3,11 @@ import { nanoid } from 'nanoid';
 import {
   ArtifactEmbedStatus,
   ChatChunkSimilarity,
-  ContextChat,
+  ContextChatOrDoc,
   ContextConfig,
   ContextFile,
   ContextItem,
+  DocChunkSimilarity,
   FileChunkSimilarity,
   Models,
 } from '../../../models';
@@ -33,6 +34,10 @@ export class ContextSession implements AsyncDisposable {
     return this.config.chats;
   }
 
+  get docs() {
+    return this.config.docs;
+  }
+
   get files() {
     return this.config.files.map(f => this.fulfillFile(f));
   }
@@ -44,7 +49,7 @@ export class ContextSession implements AsyncDisposable {
     };
   }
 
-  async addChat(sessionId: string): Promise<Required<ContextChat>> {
+  async addChat(sessionId: string): Promise<Required<ContextChatOrDoc>> {
     const existsChat = this.config.chats.find(f => f.id === sessionId);
     if (existsChat) {
       // use exists session id if exists
@@ -59,7 +64,25 @@ export class ContextSession implements AsyncDisposable {
         createdAt: Date.now(),
       }));
     }
-    return this.getChat(sessionId) as ContextChat;
+    return this.getChat(sessionId) as ContextChatOrDoc;
+  }
+
+  async addDoc(docId: string): Promise<Required<ContextChatOrDoc>> {
+    const existsDoc = this.config.docs.find(f => f.id === docId);
+    if (existsDoc) {
+      // use exists session id if exists
+      if (existsDoc.status === ArtifactEmbedStatus.finished) {
+        return existsDoc;
+      }
+    } else {
+      await this.saveItemRecord(docId, 'docs', chat => ({
+        ...chat,
+        chunkSize: 0,
+        error: null,
+        createdAt: Date.now(),
+      }));
+    }
+    return this.getDoc(docId) as ContextChatOrDoc;
   }
 
   async addFile(
@@ -90,8 +113,12 @@ export class ContextSession implements AsyncDisposable {
     return this.fulfillFile(this.getFile(fileId) as ContextFile);
   }
 
-  getChat(sessionId: string): ContextChat | undefined {
+  getChat(sessionId: string): ContextChatOrDoc | undefined {
     return this.config.chats.find(f => f.id === sessionId);
+  }
+
+  getDoc(docId: string): ContextChatOrDoc | undefined {
+    return this.config.docs.find(f => f.id === docId);
   }
 
   getFile(fileId: string): ContextFile | undefined {
@@ -104,11 +131,13 @@ export class ContextSession implements AsyncDisposable {
     return true;
   }
 
+  async removeDoc(docId: string): Promise<boolean> {
+    this.config.docs = this.config.docs.filter(f => f.id !== docId);
+    await this.save();
+    return true;
+  }
+
   async removeFile(fileId: string): Promise<boolean> {
-    await this.models.copilotContext.deleteFileEmbedding(
-      this.contextId,
-      fileId
-    );
     this.config.files = this.config.files.filter(f => f.id !== fileId);
     await this.save();
     return true;
@@ -150,6 +179,41 @@ export class ContextSession implements AsyncDisposable {
   }
 
   /**
+   * Match the input text with the doc chunks
+   * @param content input text to match
+   * @param topK number of similar chunks to return, default 5
+   * @param signal abort signal
+   * @param threshold relevance threshold for the similarity score, higher threshold means more similar chunks, default 0.7, good enough based on prior experiments
+   * @returns list of similar chunks
+   */
+  async matchDocs(
+    content: string,
+    topK: number = 5,
+    signal?: AbortSignal,
+    threshold: number = 0.85
+  ): Promise<DocChunkSimilarity[]> {
+    if (!this.client) return [];
+    const embedding = await this.client.getEmbedding(content, signal);
+    if (!embedding) return [];
+
+    const context = await this.models.copilotUser.matchDocEmbedding(
+      embedding,
+      this.userId,
+      topK * 2,
+      threshold
+    );
+
+    const docs = new Set(this.docs.map(d => d.id));
+
+    return this.client.reRank(
+      content,
+      context.filter(d => docs.has(d.docId)),
+      topK,
+      signal
+    );
+  }
+
+  /**
    * Match the input text with the file chunks
    * @param content input text to match
    * @param topK number of similar chunks to return, default 5
@@ -161,27 +225,18 @@ export class ContextSession implements AsyncDisposable {
     content: string,
     topK: number = 5,
     signal?: AbortSignal,
-    scopedThreshold: number = 0.85,
-    threshold: number = 0.5
+    threshold: number = 0.85
   ): Promise<FileChunkSimilarity[]> {
     if (!this.client) return [];
     const embedding = await this.client.getEmbedding(content, signal);
     if (!embedding) return [];
 
-    const [context, user] = await Promise.all([
-      this.models.copilotContext.matchFileEmbedding(
-        embedding,
-        this.id,
-        topK * 2,
-        scopedThreshold
-      ),
-      this.models.copilotUser.matchFileEmbedding(
-        embedding,
-        this.userId,
-        topK * 2,
-        threshold
-      ),
-    ]);
+    const context = await this.models.copilotUser.matchFileEmbedding(
+      embedding,
+      this.userId,
+      topK * 2,
+      threshold
+    );
     const files = new Map(this.files.map(f => [f.id, f]));
 
     return this.client.reRank(
@@ -195,7 +250,6 @@ export class ContextSession implements AsyncDisposable {
             ) as Required<ContextFile>;
             return { ...c, blobId, name, mimeType };
           }),
-        ...user,
       ],
       topK,
       signal
@@ -204,11 +258,11 @@ export class ContextSession implements AsyncDisposable {
 
   async saveItemRecord(
     chatOrFileId: string,
-    type: 'chats' | 'files',
+    type: 'chats' | 'docs' | 'files',
     cb: (
       record: Pick<ContextItem, 'id' | 'status'> &
         Partial<Omit<ContextItem, 'id' | 'status'>>
-    ) => Partial<typeof type extends 'chats' ? ContextChat : ContextFile>
+    ) => Partial<typeof type extends 'chats' ? ContextChatOrDoc : ContextFile>
   ) {
     const items = this.config[type];
     const item = items.find(f => f.id === chatOrFileId);
@@ -217,7 +271,7 @@ export class ContextSession implements AsyncDisposable {
     } else {
       const file = { id: chatOrFileId, status: ArtifactEmbedStatus.processing };
       items.push(
-        cb(file) as typeof type extends 'chats' ? ContextChat : ContextFile
+        cb(file) as typeof type extends 'chats' ? ContextChatOrDoc : ContextFile
       );
     }
     await this.save();

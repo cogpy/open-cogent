@@ -44,23 +44,6 @@ enum ContextEmbedStatus {
   processing
 }
 
-type ContextMatchedChatChunk {
-  chunk: SafeInt!
-  content: String!
-  distance: Float
-  sessionId: String!
-}
-
-type ContextMatchedFileChunk {
-  blobId: String!
-  chunk: SafeInt!
-  content: String!
-  distance: Float
-  fileId: String!
-  mimeType: String!
-  name: String!
-}
-
 type ContextUserEmbeddingStatus {
   embedded: SafeInt!
   total: SafeInt!
@@ -86,27 +69,27 @@ type Copilot {
 
 type CopilotContext {
   """list files in context"""
-  chats: [CopilotContextChat!]!
+  chats: [CopilotContextChatOrDoc!]!
+
+  """list files in context"""
+  docs: [CopilotContextChatOrDoc!]!
 
   """list files in context"""
   files: [CopilotContextFile!]!
   id: ID
 
-  """match file in context"""
-  matchChat(content: String!, limit: SafeInt, threshold: Float): [ContextMatchedChatChunk!]!
-
-  """match file in context"""
-  matchFiles(content: String!, limit: SafeInt, scopedThreshold: Float, threshold: Float): [ContextMatchedFileChunk!]!
-
-  """remove a file from context"""
+  """remove a chat from context"""
   removeContextChat(sessionId: String!): Boolean!
+
+  """remove a doc from context"""
+  removeContextDoc(docId: String!): Boolean!
 
   """remove a file from context"""
   removeContextFile(fileId: String!): Boolean!
   userId: ID!
 }
 
-type CopilotContextChat {
+type CopilotContextChatOrDoc {
   chunkSize: SafeInt!
   createdAt: SafeInt!
   error: String
@@ -519,7 +502,10 @@ type MissingOauthQueryParameterDataType {
 
 type Mutation {
   """add a chat to context"""
-  addContextChat(contextId: String!, sessionId: String!): CopilotContextChat!
+  addContextChat(contextId: String!, sessionId: String!): CopilotContextChatOrDoc!
+
+  """add a chat to context"""
+  addContextDoc(contextId: String!, docId: String!): CopilotContextChatOrDoc!
 
   """add a file to context"""
   addContextFile(content: Upload!, contextId: String!): CopilotContextFile!

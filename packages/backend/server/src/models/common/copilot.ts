@@ -31,7 +31,7 @@ const ArtifactEmbedStatusSchema = z.enum([
   ArtifactEmbedStatus.failed,
 ]);
 
-export const ContextChatSchema = z.object({
+export const ContextChatOrDocSchema = z.object({
   id: z.string(),
   chunkSize: z.number(),
   status: ArtifactEmbedStatusSchema,
@@ -52,7 +52,8 @@ export const ContextFileSchema = z.object({
 
 export const ContextConfigSchema = z.object({
   userId: z.string(),
-  chats: ContextChatSchema.array(),
+  chats: ContextChatOrDocSchema.array(),
+  docs: ContextChatOrDocSchema.array(),
   files: ContextFileSchema.array(),
 });
 
@@ -61,9 +62,9 @@ export const MinimalContextConfigSchema = ContextConfigSchema.pick({
 });
 
 export type ContextConfig = z.infer<typeof ContextConfigSchema>;
-export type ContextChat = z.infer<typeof ContextConfigSchema>['chats'][number];
-export type ContextFile = z.infer<typeof ContextConfigSchema>['files'][number];
-export type ContextItem = ContextChat | ContextFile;
+export type ContextChatOrDoc = z.infer<typeof ContextChatOrDocSchema>;
+export type ContextFile = z.infer<typeof ContextFileSchema>;
+export type ContextItem = ContextChatOrDoc | ContextFile;
 
 // embeddings
 
@@ -88,7 +89,6 @@ export type ChatChunkSimilarity = ChunkSimilarity & {
 
 export type DocChunkSimilarity = ChunkSimilarity & {
   docId: string;
-  title: string;
 };
 
 export type FileChunkSimilarity = ChunkSimilarity & {

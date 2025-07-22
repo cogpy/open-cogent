@@ -3,6 +3,7 @@ import { ModuleRef } from '@nestjs/core';
 
 import {
   BlobNotFound,
+  CopilotDocNotFound,
   CopilotSessionNotFound,
   EventBus,
   mapAnyError,
@@ -89,15 +90,67 @@ export class CopilotEmbeddingJob {
         );
       }
 
-      this.event.emit('user.chat.embed.finished', {
+      this.event.emit('user.chatOrDoc.embed.finished', {
+        type: 'chats',
         contextId,
-        sessionId,
+        sessionOrDocId: sessionId,
         chunkSize: total,
       });
     } catch (error: any) {
-      this.event.emit('user.chat.embed.failed', {
+      this.event.emit('user.chatOrDoc.embed.failed', {
+        type: 'chats',
         contextId,
-        sessionId,
+        sessionOrDocId: sessionId,
+        error: mapAnyError(error).message,
+      });
+
+      // passthrough error to job queue
+      throw error;
+    }
+  }
+
+  @OnJob('copilot.embedding.docs')
+  async embedPendingDocs({
+    contextId,
+    userId,
+    docId,
+  }: Jobs['copilot.embedding.docs']) {
+    if (!this.embeddingClient) return;
+
+    try {
+      const doc = await this.models.copilotUser.getDoc(userId, docId);
+      if (!doc) {
+        throw new CopilotDocNotFound({ docId });
+      }
+      const docFile = new File(
+        [doc.content],
+        (doc.title && `${doc.title}.md`) || 'Untitled.txt'
+      );
+
+      // no need to check if embeddings is empty, will throw internally
+      const chunks = await this.embeddingClient.getFileChunks(docFile);
+      const total = chunks.reduce((acc, c) => acc + c.length, 0);
+
+      for (const chunk of chunks) {
+        const embeddings = await this.embeddingClient.generateEmbeddings(chunk);
+        await this.models.copilotUser.insertDocEmbedding(
+          userId,
+          docId,
+          embeddings
+        );
+      }
+
+      this.event.emit('user.chatOrDoc.embed.finished', {
+        type: 'chats',
+        contextId,
+        sessionOrDocId: docId,
+        chunkSize: total,
+      });
+    } catch (error: any) {
+      this.event.emit('user.chatOrDoc.embed.failed', {
+        type: 'chats',
+        contextId,
+        sessionOrDocId: docId,
         error: mapAnyError(error).message,
       });
 
@@ -136,21 +189,11 @@ export class CopilotEmbeddingJob {
 
       for (const chunk of chunks) {
         const embeddings = await this.embeddingClient.generateEmbeddings(chunk);
-        if (contextId) {
-          // for context files
-          await this.models.copilotContext.insertFileEmbedding(
-            contextId,
-            fileId,
-            embeddings
-          );
-        } else {
-          // for user files
-          await this.models.copilotUser.insertFileEmbeddings(
-            userId,
-            fileId,
-            embeddings
-          );
-        }
+        await this.models.copilotUser.insertFileEmbeddings(
+          userId,
+          fileId,
+          embeddings
+        );
       }
 
       if (contextId) {

@@ -347,6 +347,34 @@ export const createCopilotContextMutation = {
 }`,
 };
 
+export const addContextDocMutation = {
+  id: 'addContextDocMutation' as const,
+  op: 'addContextDoc',
+  query: `mutation addContextDoc($contextId: String!, $docId: String!) {
+  addContextDoc(contextId: $contextId, docId: $docId) {
+    id
+    createdAt
+    chunkSize
+    error
+    status
+  }
+}`,
+};
+
+export const removeContextDocQuery = {
+  id: 'removeContextDocQuery' as const,
+  op: 'removeContextDoc',
+  query: `query removeContextDoc($contextId: String!, $docId: String!) {
+  currentUser {
+    copilot {
+      contexts(contextId: $contextId) {
+        removeContextDoc(docId: $docId)
+      }
+    }
+  }
+}`,
+};
+
 export const addContextFileMutation = {
   id: 'addContextFileMutation' as const,
   op: 'addContextFile',
@@ -417,39 +445,6 @@ export const listContextQuery = {
     copilot {
       contexts(sessionId: $sessionId) {
         id
-      }
-    }
-  }
-}`,
-};
-
-export const matchContextQuery = {
-  id: 'matchContextQuery' as const,
-  op: 'matchContext',
-  query: `query matchContext($contextId: String, $workspaceId: String, $content: String!, $limit: SafeInt, $scopedThreshold: Float, $threshold: Float) {
-  currentUser {
-    copilot {
-      contexts(contextId: $contextId) {
-        matchChat(content: $content, limit: $limit, threshold: $scopedThreshold) {
-          sessionId
-          chunk
-          content
-          distance
-        }
-        matchFiles(
-          content: $content
-          limit: $limit
-          scopedThreshold: $scopedThreshold
-          threshold: $threshold
-        ) {
-          fileId
-          blobId
-          name
-          mimeType
-          chunk
-          content
-          distance
-        }
       }
     }
   }

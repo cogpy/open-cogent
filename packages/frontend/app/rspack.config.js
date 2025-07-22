@@ -153,6 +153,14 @@ export default defineConfig({
       template: './index.html',
       inject: true,
     }),
+    new rspack.CopyRspackPlugin({
+      patterns: [
+        {
+          from: 'public',
+          to: '.',
+        },
+      ],
+    }),
     process.env.RSDOCTOR &&
       new RsdoctorRspackPlugin({
         experiments: { enableNativePlugin: true },

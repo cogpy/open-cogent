@@ -140,19 +140,23 @@ export class CopilotEmbeddingJob {
         );
       }
 
-      this.event.emit('user.chatOrDoc.embed.finished', {
-        type: 'chats',
-        contextId,
-        sessionOrDocId: docId,
-        chunkSize: total,
-      });
+      if (contextId) {
+        this.event.emit('user.chatOrDoc.embed.finished', {
+          type: 'chats',
+          contextId,
+          sessionOrDocId: docId,
+          chunkSize: total,
+        });
+      }
     } catch (error: any) {
-      this.event.emit('user.chatOrDoc.embed.failed', {
-        type: 'chats',
-        contextId,
-        sessionOrDocId: docId,
-        error: mapAnyError(error).message,
-      });
+      if (contextId) {
+        this.event.emit('user.chatOrDoc.embed.failed', {
+          type: 'chats',
+          contextId,
+          sessionOrDocId: docId,
+          error: mapAnyError(error).message,
+        });
+      }
 
       // passthrough error to job queue
       throw error;

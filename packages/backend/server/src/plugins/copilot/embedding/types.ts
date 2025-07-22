@@ -41,12 +41,12 @@ declare global {
       sessionId: string;
     };
     'copilot.embedding.docs': {
-      contextId: string;
+      contextId?: string;
       userId: string;
       docId: string;
     };
     'copilot.embedding.files': {
-      contextId: string;
+      contextId?: string;
       userId: string;
       blobId: string;
       fileId: string;

@@ -293,12 +293,6 @@ export const builtinToolbarConfig = {
     conversionsActionGroup,
     inlineTextActionGroup,
     highlightActionGroup,
-    turnIntoDatabase,
-    turnIntoLinkedDoc,
-    {
-      id: 'g.comment',
-      ...blockCommentToolbarButton,
-    },
     {
       placement: ActionPlacement.More,
       id: 'a.clipboard',

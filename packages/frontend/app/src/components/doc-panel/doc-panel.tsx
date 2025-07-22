@@ -1,5 +1,6 @@
 import { IconButton } from '@afk/component';
 import { CloseIcon } from '@blocksuite/icons/rc';
+
 import { DocEditor } from '@/components/doc-composer/doc-editor';
 import { useDocPanelStore } from '@/store/doc-panel';
 
@@ -29,7 +30,7 @@ export function DocPanel() {
       </div>
 
       {/* 文档内容 */}
-      <div className="flex-1 overflow-auto rounded p-2">
+      <div className="flex-1 overflow-auto rounded py-2 px-6">
         <DocEditor doc={currentDoc} readonly={true} />
       </div>
     </div>

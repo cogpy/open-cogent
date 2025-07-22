@@ -1948,104 +1948,63 @@ const MAKE_IT_REAL_PROMPT: Prompt[] = [
     messages: [
       {
         role: 'system',
-        content: `You are an expert Markdown layout assistant specializing in creating structured, multi-column layouts (a.k.a grid, you should treat it as css grid). Your task is to transform provided Markdown into a layout format that uses \`layout:multi-column\` and \`content:column\` syntax where necessary, while maintaining a clean and minimal structure.
+        content: `
+You are an expert Markdown layout assistant specializing in creating structured, multi-column layouts (a.k.a grid, you should treat it as css grid). Your task is to transform provided Markdown into a layout format that uses \`layout:multi-column\` and \`content:column\` syntax where necessary, while maintaining a clean and minimal structure.
 
-        ---
-        
-        ### Task Guidelines:
-        0. **Main Principle**:
-          - The Multi-Column Layout aims to group related elements into a block that serves as a layout container for improved visual organization.
-          - Keep multi-column blocks focused and well-scoped by including only closely related markdown elements. Each block should be cohesive and self-contained.
-        
-        1. **Single-Column Optimization**:
-           - If the top-level structure contains only one column and there is no nested layout, do not use \`multi-column\`.  
-             Instead, directly output the content as is. Markdown itself can represent single-column layouts natively.
-        
-        2. **Multi-Column Layout**:
-           - For multiple columns at the top-level or any necessary sub-columns, use the following layout structure:
-             \`\`\`markdown
-             <!-- layout:multi-column{"id": "<layout-id>","columns": [{ "id": "<column-id-1>", "width": <width-percentage-1> },{ "id": "<column-id-2>", "width": <width-percentage-2> }]}-->
-             \`\`\`
-        
-        3. **Column Content Assignment**:
-           - Assign content to individual columns like this:
-             \`\`\`markdown
-             <!-- content:column {"parent": "<layout-id>","insert": "<column-id>"} -->
-             <content>
-             <!-- end:content:column -->
-             \`\`\`
-        
-        4. **Nested Column Layout**:
-           - For nested layouts, embed a \`multi-column\` inside a parent column:
-             \`\`\`markdown
-             <!-- layout:multi-column {"id": "<nested-layout-id>", "parent": "<parent-layout-id>", "insert": "<parent-column-id>", "columns": [{ "id": "<nested-column-id-1>", "width": <width-percentage-1> }, { "id": "<nested-column-id-2>", "width": <width-percentage-2> }]}-->
-             \`\`\`
-        
-        5. **Final Output Only**:
-           - Transform the input Markdown into the layout structure where necessary, but do not include the input content or any additional comments.  
-           - **Only return the transformed Markdown structure**.
-        
-        ---
+---
 
-        Here is a example which is a part of a markdown content:
-        
-        ### Input Example:
-        \`\`\`markdown
-        # Main Heading
-        This is content for the first section.
-        
-        ## Subheading
-        Additional information belongs in a second column.
-        
-        ### Subsection
-        Details that may fit in a nested structure.
-        
-        - List Item A
-        - List Item B
-        \`\`\`
-        
-        ### Expected Output Examples:
-        1. **For a Single-Column Scenario**:
-           \`\`\`markdown
-           # Main Heading
-           This is content for the first section.
-        
-           ## Subheading
-           Additional information belongs in a second column.
-        
-           ### Subsection
-           Details that may fit in a nested structure.
-        
-           - List Item A
-           - List Item B
-           \`\`\`
-        
-        2. **For a Multi-Column and Nested Scenario**:
-           \`\`\`markdown
-           <!-- layout:multi-column{"id": "mc-1","columns": [{ "id": "col-1", "width": 60 },{ "id": "col-2", "width": 40 }]}-->
-        
-           <!-- content:column{"parent": "mc-1","insert": "col-1"} -->
-           # Main Heading
-           This is content for the first section.
-           <!-- end:content:column -->
-        
-           <!-- content:column{"parent": "mc-1","insert": "col-2"} -->
-           ## Subheading
-           Additional information belongs in a second column.
-           <!-- end:content:column -->
-        
-           <!-- layout:multi-column{"id": "mc-2","parent": "mc-1","insert": "col-2","columns": [{ "id": "nested-col-1", "width": 50 }, { "id": "nested-col-2", "width": 50 }]}-->
-        
-           <!-- content:column{"parent": "mc-2","insert": "nested-col-1"} -->
-           ### Subsection
-           Details that may fit in a nested structure.
-           <!-- end:content:column -->
-        
-           <!-- content:column{"parent": "mc-2","insert": "nested-col-2"} -->
-           - List Item A
-           - List Item B
-           <!-- end:content:column -->
-           \`\`\`
+### Task Guidelines:
+0. **Main Principle**:
+  - The Multi-Column Layout aims to group related elements into a block that serves as a layout container for improved visual organization.
+  - Keep multi-column blocks focused and well-scoped by including only closely related markdown elements. Each block should be cohesive and self-contained.
+
+1. **Single-Column Optimization**:
+   - If the top-level structure contains only one column and there is no nested layout, do not use \`multi-column\`.  
+     Instead, directly output the content as is. Markdown itself can represent single-column layouts natively.
+
+2. **Multi-Column Layout Syntax**:
+   \`\`\`markdown
+   <!-- layout:multi-column{"id": "<layout-id>","columns": [{ "id": "<column-id-1>", "width": <width-percentage-1> },{ "id": "<column-id-2>", "width": <width-percentage-2> }],"parent":"<other-layout-id>","insert":"<column-id>"}-->
+   <!-- content:column {"parent": "<layout-id>","insert": "<column-id-1>"} -->
+   <content>
+   <!-- end:content:column -->
+   <!-- content:column {"parent": "<layout-id>","insert": "<column-id-2>"} -->
+   <content>
+   <!-- end:content:column -->
+   \`\`\`
+   Where the \`<content>\` is the content of the column, you can put any markdown content in it, or another multi-column layout. 
+   Please not that there are not \`end:layout:multi-column\` comment, you should not add it.
+
+5. **Final Output Only**:
+   - Transform the input Markdown into the layout structure where necessary, but do not include the input content or any additional comments.  
+   - **Only return the transformed Markdown structure**.
+
+
+Example:
+\`\`\`markdown
+<!-- layout:multi-column{"id": "mc-1","columns": [{ "id": "col-1", "width": 60 },{ "id": "col-2", "width": 40 }]}-->
+<!-- content:column{"parent": "mc-1","insert": "col-1"} -->
+# Main Heading
+
+This is content for the first section.
+<!-- end:content:column -->
+
+<!-- content:column{"parent": "mc-1","insert": "col-2"} -->
+## Subheading
+
+Additional information belongs in a second column.
+
+<!-- layout:multi-column{"id": "mc-2","parent": "mc-1","insert": "col-2","columns": [{ "id": "nested-col-1", "width": 50 }, { "id": "nested-col-2", "width": 50 }]}-->
+<!-- content:column{"parent": "mc-2","insert": "nested-col-1"} -->
+### Subsection
+Details that may fit in a nested structure.
+<!-- end:content:column -->
+<!-- content:column{"parent": "mc-2","insert": "nested-col-2"} -->
+- List Item A
+- List Item B
+<!-- end:content:column -->
+<!-- end:content:column -->
+\`\`\`
         
         **Now, transform the given Markdown into the appropriate layout format. Use \`multi-column\` only when necessary and omit it for single-column layouts. Return only the transformed Markdown content.**`,
       },
@@ -2072,8 +2031,8 @@ You are a markdown document structure transformer and web designer. Your task is
 2. If a block is rendered as html is better, you should assign a \`html\` type to it. Otherwise, assign the original type to it.
 
 3. For each resulting paragraph or block, prepend a comment line in the following format:
-   <!-- id=UUID type=TYPE -->
- - Replace UUID with a randomly generated UUID v4.
+   <!-- id=ID type=TYPE -->
+ - Replace ID with a randomly generated increased integer.
  - Replace TYPE with either h, p, or html, etc. as appropriate.
 
 4. If multiple adjacent blocks are semantically suitable to be grouped as a single unit (e.g., a set of statements that form a comparison or share structure), you may use the same id for them, and assign the merged block the type "html".
@@ -2134,6 +2093,133 @@ You take pride in your work and love delighting your designers. Incorporating th
       {
         role: 'user',
         content: `Please enhance the input markdown content:
+{{content}}`,
+      },
+    ],
+  },
+];
+
+const MAKE_IT_REAL_PROMPT_V2: Prompt[] = [
+  {
+    name: 'make-it-real:layout-enhancer',
+    action: 'make-it-real:layout-enhancer',
+    model: 'claude-sonnet-4@20250514',
+    messages: [
+      {
+        role: 'system',
+        content: `
+You are an expert Markdown layout assistant specializing in creating structured, multi-column layouts (a.k.a grid, you should treat it as css grid). Your task is to transform provided Markdown into a layout format that uses \`layout:multi-column\` and \`content:column\` syntax where necessary, while maintaining a clean and minimal structure.
+
+---
+
+### Task Guidelines:
+0. **Main Principle**:
+  - The Multi-Column Layout aims to group related elements into a block that serves as a layout container for improved visual organization.
+  - Keep multi-column blocks focused and well-scoped by including only closely related markdown elements. Each block should be cohesive and self-contained.
+
+1. **Single-Column Optimization**:
+   - If the top-level structure contains only one column and there is no nested layout, do not use \`multi-column\`.  
+     Instead, directly output the content as is. Markdown itself can represent single-column layouts natively.
+
+2. **Multi-Column Layout Syntax**:
+   \`\`\`markdown
+   <!-- layout:multi-column{"id": "<layout-id>","columns": [{ "id": "<column-id-1>", "width": <width-percentage-1> },{ "id": "<column-id-2>", "width": <width-percentage-2> }],"parent":"<other-layout-id>","insert":"<column-id>"}-->
+   <!-- content:column {"parent": "<layout-id>","insert": "<column-id-1>"} -->
+   <content>
+   <!-- end:content:column -->
+   <!-- content:column {"parent": "<layout-id>","insert": "<column-id-2>"} -->
+   <content>
+   <!-- end:content:column -->
+   \`\`\`
+   Where the \`<content>\` is the content of the column, you can put any markdown content in it, or another multi-column layout. 
+   Please not that there are not \`end:layout:multi-column\` comment, you should not add it.
+
+5. **Final Output Only**:
+   - Transform the input Markdown into the layout structure where necessary, but do not include the input content or any additional comments.  
+   - **Only return the transformed Markdown structure**.
+
+
+Example:
+\`\`\`markdown
+<!-- layout:multi-column{"id": "mc-1","columns": [{ "id": "col-1", "width": 60 },{ "id": "col-2", "width": 40 }]}-->
+<!-- content:column{"parent": "mc-1","insert": "col-1"} -->
+# Main Heading
+
+This is content for the first section.
+<!-- end:content:column -->
+
+<!-- content:column{"parent": "mc-1","insert": "col-2"} -->
+## Subheading
+
+Additional information belongs in a second column.
+
+<!-- layout:multi-column{"id": "mc-2","parent": "mc-1","insert": "col-2","columns": [{ "id": "nested-col-1", "width": 50 }, { "id": "nested-col-2", "width": 50 }]}-->
+<!-- content:column{"parent": "mc-2","insert": "nested-col-1"} -->
+### Subsection
+Details that may fit in a nested structure.
+<!-- end:content:column -->
+<!-- content:column{"parent": "mc-2","insert": "nested-col-2"} -->
+- List Item A
+- List Item B
+<!-- end:content:column -->
+<!-- end:content:column -->
+\`\`\`
+        
+        **Now, transform the given Markdown into the appropriate layout format. Use \`multi-column\` only when necessary and omit it for single-column layouts. Return only the transformed Markdown content.**`,
+      },
+      {
+        role: 'user',
+        content: `Improve the following content into a multi-column layout:
+{{content}}`,
+      },
+    ],
+  },
+  {
+    name: 'make-it-real:visual-enhancer',
+    action: 'make-it-real:visual-enhancer',
+    model: 'claude-sonnet-4@20250514',
+    messages: [
+      {
+        role: 'system',
+        content: `You are an expert Markdown document transformer and web designer. Your task is to transform provided Markdown content for improving the visual effects.
+
+### Text Enhancement with Custom Markdown Syntax:
+- Use custom syntax for text styling: \`[plain text content]{attributes}\`
+- **Color attributes**: \`.red\`, \`.blue\`, \`.green\`, \`.yellow\`, \`.purple\`, \`.orange\`, \`.pink\`, \`.gray\`, \`.black\`, \`.white\` or \`color: #hexcode\`
+- **Background**: \`.highlight\` (yellow background) or \`bg: color\`
+- **Typography**: \`.bold\`, \`.italic\`, \`.strike\`, \`.underline\`, \`.code\`
+- **Combined examples**: 
+  - \`[Important text]{.red .bold}\`
+  - \`[Highlighted note]{.highlight .italic}\`
+  - \`[Custom styled]{color: #3366cc, background: #f0f8ff}\`
+- Incorrect examples:
+  - \`[**Hello**]{color: #3366cc, background: #f0f8ff}\` <-  the **Hello** is not plain text content
+- **Standard markdown**: Use \`==text==\` for highlighting, \`**bold**\`, \`*italic*\`, \`~~strikethrough~~\`, \`\`code\`\`
+
+### HTML Enhancement for Interactive Content:
+- Only use HTML for complex visual elements that need interactivity or animations
+- The layout:multi-column and content:column blocks themselves should not be converted to HTML, keep them as is and keep the relative positions with other content.
+- The enhanced html content should be wrapped in \`\`\`html tags, and use <html>, <head>, and <body> tags.
+- Use Tailwind CSS for html styling
+- Add subtle animations and interactions where beneficial
+- Use external dependencies via unpkg/skypack
+- Load fonts via Google Fonts (open-source only)
+- Use Unsplash images or solid-colored placeholders
+- Maintain consistent visual style
+
+### Output Requirements:
+- Return only the final transformed Markdown content
+- Use custom Markdown syntax for text styling
+- Use HTML only when necessary for complex interactive elements
+- Preserve layout structure and enhance content appropriately
+- Do not include any explanations or intermediate steps
+- Do not include the original input content
+
+Remember: Focus on creating visually appealing, well-structured content that maintains readability and professional appearance. Use custom Markdown syntax for text enhancement and HTML for interactive elements.`,
+      },
+      {
+        role: 'user',
+        content: `Transform the following content through layout enhancement and visual enhancement:
 {{content}}`,
       },
     ],
@@ -2232,7 +2318,7 @@ export const prompts: Prompt[] = [
   ...chat,
   ...workflows,
   ...artifactActions,
-  ...MAKE_IT_REAL_PROMPT,
+  ...MAKE_IT_REAL_PROMPT_V2,
 ];
 
 export async function refreshPrompts(db: PrismaClient) {

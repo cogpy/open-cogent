@@ -14,8 +14,7 @@ export const createMakeItRealTool = (
   saveDoc: SaveDocFunc
 ) => {
   return tool({
-    description:
-      'This tool(make-it-real) is used to make the markdown content more beautiful',
+    description: `This tool(make-it-real) is used to enhance a document layout and visual effects.`,
     parameters: z.object({
       markdown: z.string().describe('The markdown content'),
     }),
@@ -24,8 +23,7 @@ export const createMakeItRealTool = (
         let content = markdown;
         for (const promptName of [
           'make-it-real:layout-enhancer',
-          'make-it-real:doc-composer',
-          'make-it-real:formulate-html',
+          'make-it-real:visual-enhancer',
         ]) {
           const prompt = await promptService.get(promptName);
           if (!prompt) {

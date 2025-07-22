@@ -33,24 +33,21 @@ export function ChatContentStreamObjects({
   return (
     <div className="flex flex-col gap-2 max-w-full text-left prose">
       {streamObjects.map((obj, idx) => {
-        console.log(obj);
+        const loading = isStreaming && idx === streamObjects.length - 1;
         switch (obj.type) {
           case 'text-delta':
             return (
               <MarkdownText
                 key={idx}
                 text={obj.textDelta ?? ''}
-                loading={isStreaming}
+                loading={loading}
               />
             );
 
           case 'reasoning':
             return (
               <div key={idx} className="rounded-md bg-black/[0.05] p-4">
-                <MarkdownText
-                  text={obj.textDelta ?? ''}
-                  loading={isStreaming}
-                />
+                <MarkdownText text={obj.textDelta ?? ''} loading={loading} />
               </div>
             );
 

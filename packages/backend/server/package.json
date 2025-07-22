@@ -8,7 +8,7 @@
     "run-test": "./scripts/run-test.ts"
   },
   "scripts": {
-    "build": "affine bundle -p @afk/server",
+    "build": "r oa.ts bundle -p @afk/server",
     "dev": "nodemon ./src/index.ts",
     "dev:mail": "email dev -d src/mails",
     "test": "ava --concurrency 1 --serial",

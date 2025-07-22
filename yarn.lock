@@ -351,7 +351,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@afk/server-native@workspace:packages/backend/native"
   dependencies:
-    "@napi-rs/cli": "npm:3.0.0-alpha.89"
+    "@napi-rs/cli": "npm:3.0.1"
     tiktoken: "npm:^1.0.17"
     tinybench: "npm:^4.0.0"
   languageName: unknown
@@ -7126,9 +7126,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@napi-rs/cli@npm:3.0.0-alpha.89":
-  version: 3.0.0-alpha.89
-  resolution: "@napi-rs/cli@npm:3.0.0-alpha.89"
+"@napi-rs/cli@npm:3.0.1":
+  version: 3.0.1
+  resolution: "@napi-rs/cli@npm:3.0.1"
   dependencies:
     "@inquirer/prompts": "npm:^7.4.0"
     "@napi-rs/cross-toolchain": "npm:^0.0.19"
@@ -7138,10 +7138,10 @@ __metadata:
     colorette: "npm:^2.0.20"
     debug: "npm:^4.4.0"
     emnapi: "npm:^1.4.0"
+    find-up: "npm:^7.0.0"
     js-yaml: "npm:^4.1.0"
     lodash-es: "npm:^4.17.21"
     semver: "npm:^7.7.1"
-    toml: "npm:^3.0.0"
     typanion: "npm:^3.14.0"
     wasm-sjlj: "npm:^1.0.6"
   peerDependencies:
@@ -7155,7 +7155,7 @@ __metadata:
   bin:
     napi: ./dist/cli.js
     napi-raw: ./cli.mjs
-  checksum: 10/8ba4122d1bf42bf844c8304e374aa6f08a7a2804cf0d45d9a0007820076b1560cb9c8d78a91c5c3c0b8a10e474f9277fc5faab78bbe87643a2ff2027f2129b11
+  checksum: 10/b2fcc16854fca7bae2ef4dd0a5cf1b40f9603529fc0e6d7ccfdbd69e8195467d2d0109376f3e72bcdc5f3d53a604ab3e17adeaaaf4c08d845c06a347d8eca2b8
   languageName: node
   linkType: hard
 
@@ -28760,13 +28760,6 @@ __metadata:
     "@tokenizer/token": "npm:^0.3.0"
     ieee754: "npm:^1.2.1"
   checksum: 10/8b352abfb5ac0a22cbdfe9612de8e8206df9aa8071fa045be5d892797c943f7e470f4ce1894f56726ca80fe8bb58af73a187d478eebd6d4c894abec4528e1415
-  languageName: node
-  linkType: hard
-
-"toml@npm:^3.0.0":
-  version: 3.0.0
-  resolution: "toml@npm:3.0.0"
-  checksum: 10/cfef0966868d552bd02e741f30945a611f70841b7cddb07ea2b17441fe32543985bc0a7c0dcf7971af26fcaf8a17712a485d911f46bfe28644536e9a71a2bd09
   languageName: node
   linkType: hard
 

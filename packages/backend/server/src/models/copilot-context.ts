@@ -32,9 +32,9 @@ export class CopilotContextModel extends BaseModel {
         sessionId,
         config: {
           userId: session.userId,
+          chats: [],
           docs: [],
           files: [],
-          categories: [],
         },
       },
     });

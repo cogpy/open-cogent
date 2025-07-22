@@ -112,7 +112,7 @@ const ChatSession = ({
         )}
       </div>
 
-      <div className="max-w-[900px] mx-auto w-full border-t p-4">
+      <div className="max-w-[900px] mx-auto w-full py-4">
         <ChatInput
           input={input}
           setInput={setInput}

@@ -49,7 +49,7 @@ export const Loading = ({
         cy={12}
         r={8}
         strokeWidth={strokeWidth}
-        stroke={strokeColor || 'rgba(162, 102, 194, 1)'}
+        stroke={strokeColor || 'var(--affine-v2-button-primary)'}
         strokeDasharray={`${2 * Math.PI * 8 * progress} ${
           2 * Math.PI * 8 * (1 - progress)
         }`}

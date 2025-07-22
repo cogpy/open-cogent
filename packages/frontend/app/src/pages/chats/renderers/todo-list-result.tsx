@@ -1,7 +1,13 @@
-import { CheckBoxCheckSolidIcon } from '@blocksuite/icons/rc';
+import { Loading } from '@afk/component';
+import {
+  SingleSelectCheckSolidIcon,
+  SingleSelectUnIcon,
+} from '@blocksuite/icons/rc';
+import { LayoutGroup, motion } from 'framer-motion';
 
-import { MessageCard } from '@/components/ui/card/message-card';
 import { cn } from '@/lib/utils';
+
+import * as styles from './todo-list-result.css';
 
 interface TodoItem {
   id: string;
@@ -25,9 +31,8 @@ const COLUMN_LABELS = {
   todo: 'Todo',
 } as const;
 
-const statusToCardStatus = (
-  status: string
-): 'success' | 'done' | 'loading' | 'loading-placeholder' => {
+type CardStatus = 'done' | 'in-progress' | 'todo';
+const statusToCardStatus = (status: string): CardStatus => {
   switch (status) {
     case 'completed':
     case 'done':
@@ -36,33 +41,22 @@ const statusToCardStatus = (
     case 'in-progress':
     case 'inProgress':
     case 'processing':
-      return 'loading';
+      return 'in-progress';
     case 'pending':
     case 'todo':
     default:
-      return 'loading';
+      return 'todo';
   }
 };
 
-const getIcon = (status: string) => {
+const getIcon = (status: CardStatus) => {
   switch (status) {
     case 'done':
-      return <CheckBoxCheckSolidIcon />;
-    case 'pending':
-      return (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-        >
-          <circle cx="12" cy="12" r="9.25" stroke="#B3B3B3" strokeWidth="1.5" />
-        </svg>
-      );
-    // processing & loading show spinner via MessageCard, no icon needed
+      return <SingleSelectCheckSolidIcon />;
+    case 'todo':
+      return <SingleSelectUnIcon />;
     default:
-      return undefined;
+      return <Loading size={24} />;
   }
 };
 
@@ -95,42 +89,87 @@ export function TodoListResult({ result, className }: TodoListResultProps) {
   }
 
   return (
-    <div className={cn('', className)}>
-      {/* Horizontal scroll wrapper */}
-      <div className="overflow-x-auto">
-        {/* Track: flex on mobile, grid on medium+ */}
-        <div className="flex md:grid md:grid-cols-3 gap-4 min-w-max pb-2 max-h-[300px]">
-          {/** Render each column */}
-          {(
-            Object.keys(COLUMN_LABELS) as Array<keyof typeof COLUMN_LABELS>
-          ).map(key => {
-            const items = grouped[key];
-            return (
-              <div
-                key={key}
-                className="flex-shrink-0 md:flex-shrink md:gap-2 flex flex-col gap-2 w-72"
-              >
-                <h3 className="text-sm font-medium text-gray-500">
-                  {COLUMN_LABELS[key]}
-                </h3>
-                {items.length === 0 ? (
-                  <span className="text-xs text-gray-400">-</span>
-                ) : (
-                  items.map(item => (
-                    <MessageCard
-                      key={item.id}
-                      status={statusToCardStatus(item.status)}
-                      title={item.title}
-                      subTitle={item.description}
-                      icon={getIcon(statusToCardStatus(item.status))}
-                    />
-                  ))
-                )}
-              </div>
-            );
-          })}
+    <LayoutGroup>
+      <div className={cn('', className)}>
+        {/* Horizontal scroll wrapper */}
+        <div className="overflow-x-auto">
+          {/* Track: flex on mobile, grid on medium+ */}
+          <div className="flex md:grid md:grid-cols-3 gap-4 min-w-max pb-2 max-h-[800px]">
+            {/** Render each column */}
+            {(
+              Object.keys(COLUMN_LABELS) as Array<keyof typeof COLUMN_LABELS>
+            ).map(key => {
+              const items = grouped[key];
+              return (
+                <div
+                  key={key}
+                  className="flex-shrink-0 flex flex-col gap-2 w-72"
+                >
+                  <h3 className={cn(styles.todoHeader)}>
+                    {COLUMN_LABELS[key]}
+                  </h3>
+                  {items.length === 0
+                    ? null
+                    : items.map(item => (
+                        <motion.div
+                          key={item.id}
+                          layout
+                          layoutId={item.id}
+                          transition={{
+                            type: 'spring',
+                            stiffness: 500,
+                            damping: 30,
+                          }}
+                        >
+                          <TodoCard
+                            status={statusToCardStatus(item.status)}
+                            title={item.title}
+                            subTitle={item.description}
+                          />
+                        </motion.div>
+                      ))}
+                </div>
+              );
+            })}
+          </div>
         </div>
+      </div>
+    </LayoutGroup>
+  );
+}
+
+const TodoCard = ({
+  status,
+  title,
+  subTitle,
+}: {
+  status: CardStatus;
+  title: string;
+  subTitle?: string;
+}) => {
+  const icon = getIcon(status);
+  return (
+    <div
+      data-status={status}
+      className={cn(
+        styles.todoCard,
+        'px-4 py-2 rounded-2xl border shadow-view flex items-center gap-3'
+      )}
+    >
+      <div className={cn('size-6 text-2xl shrink-0', styles.todoCardIcon)}>
+        {icon}
+      </div>
+
+      <div className={styles.todoCardContent}>
+        <div className={cn(styles.todoCardTitle, 'truncate')}>{title}</div>
+        {subTitle ? (
+          <div className={styles.todoCardSubTitleContainer}>
+            <div className={cn(styles.todoCardSubTitle, 'truncate')}>
+              {subTitle}
+            </div>
+          </div>
+        ) : null}
       </div>
     </div>
   );
-}
+};

@@ -102,7 +102,7 @@ const SidebarContent = () => {
 
       {/* scroll area */}
       {collectedItems.length === 0 ? null : (
-        <h3 className={cn(styles.sectionTitle, 'mb-2', 'pt-2 px-4')}>
+        <h3 className={cn(styles.sectionTitle, 'mb-2', 'pt-2 px-4', 'mt-2')}>
           Favorites
         </h3>
       )}

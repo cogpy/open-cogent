@@ -1,12 +1,10 @@
 // oxlint-disable no-array-index-key
 import type { StreamObject } from '@afk/graphql';
 
-import { DocCard } from '@/components/doc-panel/doc-card';
 import { MessageCard } from '@/components/ui/card/message-card';
 import { MarkdownText } from '@/components/ui/markdown';
 
 import { BrowserUseResult } from './browser-use-result';
-import { DocComposeResult } from './doc-compose-result';
 import { MakeItRealResult } from './make-it-real-result';
 import { TodoListResult } from './todo-list-result';
 import { WebSearchResult } from './web-search-result';

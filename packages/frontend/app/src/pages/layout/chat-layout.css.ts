@@ -74,3 +74,7 @@ export const listItemLabel = style({
   fontSize: 14,
   userSelect: 'none',
 });
+
+export const activeItem = style({
+  backgroundColor: cssVarV2('layer/background/hoverOverlay'),
+});

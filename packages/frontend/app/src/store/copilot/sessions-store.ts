@@ -46,7 +46,9 @@ export interface ChatSessionsState {
 }
 
 export function createChatSessionsStore() {
-  const registry = createRefCounter<string, StoreApi<ChatSessionState>>();
+  const registry = createRefCounter<string, StoreApi<ChatSessionState>>({
+    maxCacheSize: 10,
+  });
 
   return createStore<ChatSessionsState>()(
     immer<ChatSessionsState>((set, get) => ({

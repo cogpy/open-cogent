@@ -199,6 +199,12 @@ export function createChatSessionStore(params: {
       /* ---------- Actions ---------- */
       init: async () => {
         await withFlag(store, 'isInitializing', async () => {
+          // Mark the session as loading while we fetch the initial data.
+          store.setState(
+            produce((draft: ChatSessionState) => {
+              draft.isLoading = true;
+            })
+          );
           const meta = await client.getSession(sessionId);
           const histories = await client.getHistories(
             {},
@@ -242,6 +248,13 @@ export function createChatSessionStore(params: {
             }
             state.contextId = contextId;
           });
+
+          // Data loaded → reset loading flag
+          store.setState(
+            produce((draft: ChatSessionState) => {
+              draft.isLoading = false;
+            })
+          );
         });
       },
 

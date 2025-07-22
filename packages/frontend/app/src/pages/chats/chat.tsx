@@ -1,3 +1,4 @@
+import { Loading } from '@afk/component';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { type StoreApi, useStore } from 'zustand';
@@ -19,6 +20,7 @@ const ChatPageImpl = ({
   const messages = useStore(store, s => s.messages);
   const isSubmitting = useStore(store, s => s.isSubmitting);
   const isStreaming = useStore(store, s => s.isStreaming);
+  const isLoading = useStore(store, s => s.isLoading);
 
   const [input, setInput] = useState('');
 
@@ -32,17 +34,23 @@ const ChatPageImpl = ({
   return (
     <div className="flex flex-col justify-center h-full gap-4">
       <div className="flex-1 rounded p-6 flex flex-col gap-2 h-full overflow-y-auto">
-        <div className="max-w-[900px] mx-auto w-full">
-          {messages.map((m, idx) => {
-            return (
-              <MessageRenderer
-                key={m.id ?? idx}
-                message={m}
-                isStreaming={isStreaming && idx === messages.length - 1}
-              />
-            );
-          })}
-        </div>
+        {messages.length === 0 && isLoading ? (
+          <div className="h-full flex items-center justify-center">
+            <Loading size={24} />
+          </div>
+        ) : (
+          <div className="max-w-[900px] mx-auto w-full">
+            {messages.map((m, idx) => {
+              return (
+                <MessageRenderer
+                  key={m.id ?? idx}
+                  message={m}
+                  isStreaming={isStreaming && idx === messages.length - 1}
+                />
+              );
+            })}
+          </div>
+        )}
       </div>
       <div className="w-full max-w-[900px] mx-auto px-4 pb-4">
         <ChatInput
@@ -74,7 +82,9 @@ export const ChatPage = () => {
             client: copilotClient,
           })
         : null,
-    () => id && chatSessionsStore.getState().release(id)
+    () => {
+      id && chatSessionsStore.getState().release(id);
+    }
   );
 
   // When sessionStore becomes available, clear input local state so ChatPageImpl controls it

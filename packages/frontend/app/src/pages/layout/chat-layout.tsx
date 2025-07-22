@@ -6,7 +6,7 @@ import {
   PageIcon,
 } from '@blocksuite/icons/rc';
 import { useEffect, useMemo } from 'react';
-import { Link, Outlet } from 'react-router';
+import { Link, Outlet, useLocation, useMatch } from 'react-router';
 
 import { UserInfo } from '@/components/sidebar/user-info';
 import { ChatIcon } from '@/icons/chat';
@@ -25,29 +25,41 @@ const filterCollected = (items: any[]) =>
   items.filter(item => item?.metadata?.collected);
 
 const ChatItem = ({ chat }: { chat: Chat }) => {
+  const match = useMatch(`/chats/${chat.sessionId}`);
+  const isActive = Boolean(match);
   return (
-    <li className={styles.listItem}>
-      <ChatIcon className={styles.listItemIcon} />
-      <div className={styles.listItemLabel}>{chat.title}</div>
-    </li>
+    <Link to={`/chats/${chat.sessionId}`}>
+      <li className={cn(styles.listItem, isActive && styles.activeItem)}>
+        <ChatIcon className={styles.listItemIcon} />
+        <div className={styles.listItemLabel}>{chat.title}</div>
+      </li>
+    </Link>
   );
 };
 
 const DocItem = ({ doc }: { doc: Doc }) => {
+  const match = useMatch(`/library/${doc.docId}`);
+  const isActive = Boolean(match);
   return (
-    <li className={styles.listItem}>
-      <PageIcon className={styles.listItemIcon} />
-      <div className={styles.listItemLabel}>{doc.title}</div>
-    </li>
+    <Link to={`/library/${doc.docId}`}>
+      <li className={cn(styles.listItem, isActive && styles.activeItem)}>
+        <PageIcon className={styles.listItemIcon} />
+        <div className={styles.listItemLabel}>{doc.title}</div>
+      </li>
+    </Link>
   );
 };
 
 const FileItem = ({ file }: { file: File }) => {
+  const match = useMatch(`/library/${file.fileId}`);
+  const isActive = Boolean(match);
   return (
-    <li className={styles.listItem}>
-      <FileIcon className={styles.listItemIcon} />
-      <div className={styles.listItemLabel}>{file.fileName}</div>
-    </li>
+    <Link to={`/library/${file.fileId}`}>
+      <li className={cn(styles.listItem, isActive && styles.activeItem)}>
+        <FileIcon className={styles.listItemIcon} />
+        <div className={styles.listItemLabel}>{file.fileName}</div>
+      </li>
+    </Link>
   );
 };
 
@@ -59,19 +71,27 @@ const SidebarContent = () => {
     refresh();
   }, [refresh]);
 
+  const { pathname } = useLocation();
+  const inChats = pathname === '/chats';
+  const inLibrary = pathname.startsWith('/library');
+
   return (
     <div className="size-full flex flex-col">
       {/* not scroll area */}
       <div className="flex flex-col gap-1 px-2">
         <UserInfo />
         <Link to="/chats">
-          <li className={styles.hoverableItem}>
+          <li
+            className={cn(styles.hoverableItem, inChats && styles.activeItem)}
+          >
             <EditIcon className={styles.hoverableIcon} />
             <div className={styles.hoverableLabel}>New Chat</div>
           </li>
         </Link>
         <Link to="/library">
-          <li className={styles.hoverableItem}>
+          <li
+            className={cn(styles.hoverableItem, inLibrary && styles.activeItem)}
+          >
             <AllDocsIcon className={styles.hoverableIcon} />
             <div className={styles.hoverableLabel}>Library</div>
           </li>
@@ -100,7 +120,7 @@ const SidebarContent = () => {
             </ul>
           ) : null}
         </section> */}
-        <ul>
+        <ul className="flex flex-col gap-1">
           {collectedItems.length === 0 ? (
             <span className="text-xs text-gray-400 px-2">No favorites yet</span>
           ) : null}

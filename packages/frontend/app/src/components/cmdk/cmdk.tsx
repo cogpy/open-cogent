@@ -298,7 +298,7 @@ export const Cmdk = ({
           <SearchIcon className="text-xl" />
         </div>
         <div
-          className="text-sm truncate w-0 flex-1"
+          className="text-sm truncate w-0 flex-1 flex items-center"
           style={{ color: cssVarV2.text.secondary }}
         >
           Search ⌘K
@@ -326,7 +326,7 @@ export const Cmdk = ({
             width: `calc(100% - 48px)`,
             maxHeight: 420,
             maxWidth: 720,
-            marginTop: 200,
+            marginTop: `min(200px, 20vh)`,
             minHeight: 80,
             display: 'flex',
             flexDirection: 'column',

@@ -19,6 +19,7 @@ import type { ChatSessionState } from '@/store/copilot/types';
 import { useLibraryStore } from '@/store/library';
 
 import * as styles from './chat-input.css';
+import { FileIconRenderer } from './file-icon-renderer';
 
 export type ChatContextChat = {
   type: 'chat';
@@ -146,55 +147,18 @@ const FileContextPreview = ({
   context: ChatContextFile;
   onRemove: () => void;
 }) => {
-  const { user } = useAuthStore();
   const file = context.blob;
   const mineType = context.mineType ?? file?.type;
   const fileName = context.name ?? file?.name;
 
-  const [imgUrl, setImgUrl] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (file && mineType.startsWith('image/') && !context.blobId) {
-      const url = URL.createObjectURL(file);
-      setImgUrl(url);
-
-      return () => {
-        URL.revokeObjectURL(url);
-      };
-    }
-
-    if (mineType.startsWith('image/') && context.blobId && user) {
-      setImgUrl(`/api/copilot/blob/${user.id}/${context.blobId}`);
-    }
-    return () => {};
-  }, [context.blobId, file, mineType, user]);
-
-  if (imgUrl) {
-    return (
-      <div className="w-10 h-10 relative group shrink-0">
-        <img
-          src={imgUrl}
-          alt={fileName}
-          className="size-full object-cover rounded-md"
-        />
-        <div
-          className={cn(
-            'absolute size-4 rounded-xs bg-white border border-gray-200 flex items-center justify-center -top-2 -right-2 cursor-pointer',
-            // show when hover
-            'opacity-0 group-hover:opacity-100'
-          )}
-          onClick={onRemove}
-        >
-          <CloseIcon />
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className={styles.contextPreview}>
       <div className={styles.contextPreviewIcon}>
-        <FileIcon />
+        <FileIconRenderer
+          mimeType={mineType}
+          blob={context.blob}
+          blobId={context.blobId}
+        />
       </div>
       <div className={styles.contextPreviewTitle}>{fileName}</div>
       <IconButton icon={<CloseIcon />} variant="plain" onClick={onRemove} />
@@ -370,7 +334,13 @@ export const ContextSelectorMenu = ({
                         })
                       }
                       key={file.fileId}
-                      prefixIcon={<FileIcon />}
+                      prefixIcon={
+                        <FileIconRenderer
+                          mimeType={file.mimeType}
+                          blobId={file.blobId}
+                          className="rounded-sm"
+                        />
+                      }
                     >
                       {file.fileName}
                     </MenuItem>

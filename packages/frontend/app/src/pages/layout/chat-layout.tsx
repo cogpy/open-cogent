@@ -101,9 +101,11 @@ const SidebarContent = () => {
       </div>
 
       {/* scroll area */}
-      <h3 className={cn(styles.sectionTitle, 'mb-2', 'pt-2 px-4')}>
-        Favorites
-      </h3>
+      {collectedItems.length === 0 ? null : (
+        <h3 className={cn(styles.sectionTitle, 'mb-2', 'pt-2 px-4')}>
+          Favorites
+        </h3>
+      )}
       <ScrollableContainer className="px-2 flex-1 h-0">
         {/* Chats */}
         {/* <section className="mb-2">
@@ -123,9 +125,6 @@ const SidebarContent = () => {
           ) : null}
         </section> */}
         <ul className="flex flex-col gap-1">
-          {collectedItems.length === 0 ? (
-            <span className="text-xs text-gray-400 px-2">No favorites yet</span>
-          ) : null}
           {collectedItems.map(item => {
             if (item.type === 'chat') {
               return <ChatItem chat={item} key={item.id} />;

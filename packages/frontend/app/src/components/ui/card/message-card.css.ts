@@ -3,8 +3,7 @@ import { style } from '@vanilla-extract/css';
 
 export const root = style({
   maxWidth: '400px',
-  height: 70,
-  padding: '0 16px',
+  padding: '16px',
   display: 'flex',
   alignItems: 'center',
   borderRadius: 16,

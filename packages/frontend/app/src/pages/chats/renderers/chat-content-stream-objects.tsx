@@ -52,6 +52,35 @@ export function ChatContentStreamObjects({
             );
 
           case 'tool-call':
+            // Specialized handling for web_search_exa placeholder
+            if (obj.toolName === 'web_search_exa') {
+              // Attempt to extract query from args (GraphQL returns JSON string or object)
+              let query = undefined as string | undefined;
+              if (typeof obj.args === 'string') {
+                try {
+                  const parsed = JSON.parse(obj.args);
+                  query = parsed?.query ?? undefined;
+                } catch {
+                  // ignore
+                }
+              } else if (obj.args && typeof obj.args === 'object') {
+                query = obj.args.query ?? undefined;
+              }
+
+              return (
+                <MessageCard
+                  key={idx}
+                  status="loading"
+                  className="my-5"
+                  title={
+                    query
+                      ? `Searching the web for "${query}" …`
+                      : 'Searching the web …'
+                  }
+                />
+              );
+            }
+
             return (
               <MessageCard
                 key={idx}

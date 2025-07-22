@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 
 interface WebSearchResultProps {
   /** The search results from web_search_exa tool */
@@ -26,18 +26,27 @@ export function WebSearchResult({ results, query }: WebSearchResultProps) {
     setIsExpanded(!isExpanded);
   };
 
-  // Parse results to extract relevant information
-  const searchResults: SearchResult[] = Array.isArray(results)
-    ? results.map(result => ({
-        title: result.title || result.name || 'Untitled',
-        url: result.url || result.link || '#',
-        snippet: result.snippet || result.description || result.text || '',
-        content: result.content || result.body || result.fullText || '',
-        favicon:
-          result.favicon ||
-          `https://www.google.com/s2/favicons?domain=${new URL(result.url || 'https://example.com').hostname}&sz=16`,
-      }))
-    : [];
+  // Parse results to extract relevant information (memoized to avoid re-computation on unrelated re-renders)
+  const searchResults: SearchResult[] = useMemo(() => {
+    if (!Array.isArray(results)) return [];
+    return results.map(result => ({
+      title: result.title || result.name || 'Untitled',
+      url: result.url || result.link || '#',
+      snippet: result.snippet || result.description || result.text || '',
+      content: result.content || result.body || result.fullText || '',
+      favicon:
+        result.favicon ||
+        (() => {
+          try {
+            const domain = new URL(result.url || 'https://example.com')
+              .hostname;
+            return `https://www.google.com/s2/favicons?domain=${domain}&sz=16`;
+          } catch {
+            return undefined;
+          }
+        })(),
+    }));
+  }, [results]);
 
   const resultCount = searchResults.length;
 

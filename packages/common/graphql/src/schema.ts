@@ -152,6 +152,10 @@ export interface CopilotContext {
   matchChat: Array<ContextMatchedChatChunk>;
   /** match file in context */
   matchFiles: Array<ContextMatchedFileChunk>;
+  /** remove a file from context */
+  removeContextChat: Scalars['Boolean']['output'];
+  /** remove a file from context */
+  removeContextFile: Scalars['Boolean']['output'];
   userId: Scalars['ID']['output'];
 }
 
@@ -166,6 +170,14 @@ export interface CopilotContextMatchFilesArgs {
   limit?: InputMaybe<Scalars['SafeInt']['input']>;
   scopedThreshold?: InputMaybe<Scalars['Float']['input']>;
   threshold?: InputMaybe<Scalars['Float']['input']>;
+}
+
+export interface CopilotContextRemoveContextChatArgs {
+  sessionId: Scalars['String']['input'];
+}
+
+export interface CopilotContextRemoveContextFileArgs {
+  fileId: Scalars['String']['input'];
 }
 
 export interface CopilotContextChat {
@@ -674,10 +686,6 @@ export interface Mutation {
   importUsers: Array<UserImportResultType>;
   /** Remove user avatar */
   removeAvatar: RemoveAvatar;
-  /** remove a file from context */
-  removeContextChat: Scalars['Boolean']['output'];
-  /** remove a file from context */
-  removeContextFile: Scalars['Boolean']['output'];
   /** Remove user embedding doc */
   removeUserDocs: Scalars['Boolean']['output'];
   /** Remove user embedding files */
@@ -796,14 +804,6 @@ export interface MutationEnableUserArgs {
 
 export interface MutationImportUsersArgs {
   input: ImportUsersInput;
-}
-
-export interface MutationRemoveContextChatArgs {
-  options: RemoveContextChatInput;
-}
-
-export interface MutationRemoveContextFileArgs {
-  options: RemoveContextFileInput;
 }
 
 export interface MutationRemoveUserDocsArgs {
@@ -1037,16 +1037,6 @@ export interface QueryTooLongDataType {
 export interface RemoveAvatar {
   __typename?: 'RemoveAvatar';
   success: Scalars['Boolean']['output'];
-}
-
-export interface RemoveContextChatInput {
-  contextId: Scalars['String']['input'];
-  sessionId: Scalars['String']['input'];
-}
-
-export interface RemoveContextFileInput {
-  contextId: Scalars['String']['input'];
-  fileId: Scalars['String']['input'];
 }
 
 export interface RuntimeConfigNotFoundDataType {
@@ -1507,13 +1497,23 @@ export type AddContextChatMutation = {
   };
 };
 
-export type RemoveContextChatMutationVariables = Exact<{
-  options: RemoveContextChatInput;
+export type RemoveContextChatQueryVariables = Exact<{
+  contextId: Scalars['String']['input'];
+  sessionId: Scalars['String']['input'];
 }>;
 
-export type RemoveContextChatMutation = {
-  __typename?: 'Mutation';
-  removeContextChat: boolean;
+export type RemoveContextChatQuery = {
+  __typename?: 'Query';
+  currentUser: {
+    __typename?: 'UserType';
+    copilot: {
+      __typename?: 'Copilot';
+      contexts: Array<{
+        __typename?: 'CopilotContext';
+        removeContextChat: boolean;
+      }>;
+    };
+  } | null;
 };
 
 export type CreateCopilotContextMutationVariables = Exact<{
@@ -1545,13 +1545,23 @@ export type AddContextFileMutation = {
   };
 };
 
-export type RemoveContextFileMutationVariables = Exact<{
-  options: RemoveContextFileInput;
+export type RemoveContextFileQueryVariables = Exact<{
+  contextId: Scalars['String']['input'];
+  fileId: Scalars['String']['input'];
 }>;
 
-export type RemoveContextFileMutation = {
-  __typename?: 'Mutation';
-  removeContextFile: boolean;
+export type RemoveContextFileQuery = {
+  __typename?: 'Query';
+  currentUser: {
+    __typename?: 'UserType';
+    copilot: {
+      __typename?: 'Copilot';
+      contexts: Array<{
+        __typename?: 'CopilotContext';
+        removeContextFile: boolean;
+      }>;
+    };
+  } | null;
 };
 
 export type ListContextObjectQueryVariables = Exact<{
@@ -2823,6 +2833,16 @@ export type Queries =
       response: ListUsersQuery;
     }
   | {
+      name: 'removeContextChatQuery';
+      variables: RemoveContextChatQueryVariables;
+      response: RemoveContextChatQuery;
+    }
+  | {
+      name: 'removeContextFileQuery';
+      variables: RemoveContextFileQueryVariables;
+      response: RemoveContextFileQuery;
+    }
+  | {
       name: 'listContextObjectQuery';
       variables: ListContextObjectQueryVariables;
       response: ListContextObjectQuery;
@@ -3025,11 +3045,6 @@ export type Mutations =
       response: AddContextChatMutation;
     }
   | {
-      name: 'removeContextChatMutation';
-      variables: RemoveContextChatMutationVariables;
-      response: RemoveContextChatMutation;
-    }
-  | {
       name: 'createCopilotContextMutation';
       variables: CreateCopilotContextMutationVariables;
       response: CreateCopilotContextMutation;
@@ -3038,11 +3053,6 @@ export type Mutations =
       name: 'addContextFileMutation';
       variables: AddContextFileMutationVariables;
       response: AddContextFileMutation;
-    }
-  | {
-      name: 'removeContextFileMutation';
-      variables: RemoveContextFileMutationVariables;
-      response: RemoveContextFileMutation;
     }
   | {
       name: 'submitAudioTranscriptionMutation';

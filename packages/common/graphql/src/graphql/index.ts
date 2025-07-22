@@ -325,11 +325,17 @@ export const addContextChatMutation = {
 }`,
 };
 
-export const removeContextChatMutation = {
-  id: 'removeContextChatMutation' as const,
+export const removeContextChatQuery = {
+  id: 'removeContextChatQuery' as const,
   op: 'removeContextChat',
-  query: `mutation removeContextChat($options: RemoveContextChatInput!) {
-  removeContextChat(options: $options)
+  query: `query removeContextChat($contextId: String!, $sessionId: String!) {
+  currentUser {
+    copilot {
+      contexts(contextId: $contextId) {
+        removeContextChat(sessionId: $sessionId)
+      }
+    }
+  }
 }`,
 };
 
@@ -359,11 +365,17 @@ export const addContextFileMutation = {
   file: true,
 };
 
-export const removeContextFileMutation = {
-  id: 'removeContextFileMutation' as const,
+export const removeContextFileQuery = {
+  id: 'removeContextFileQuery' as const,
   op: 'removeContextFile',
-  query: `mutation removeContextFile($options: RemoveContextFileInput!) {
-  removeContextFile(options: $options)
+  query: `query removeContextFile($contextId: String!, $fileId: String!) {
+  currentUser {
+    copilot {
+      contexts(contextId: $contextId) {
+        removeContextFile(fileId: $fileId)
+      }
+    }
+  }
 }`,
 };
 

@@ -97,6 +97,12 @@ type CopilotContext {
 
   """match file in context"""
   matchFiles(content: String!, limit: SafeInt, scopedThreshold: Float, threshold: Float): [ContextMatchedFileChunk!]!
+
+  """remove a file from context"""
+  removeContextChat(sessionId: String!): Boolean!
+
+  """remove a file from context"""
+  removeContextFile(fileId: String!): Boolean!
   userId: ID!
 }
 
@@ -564,12 +570,6 @@ type Mutation {
   """Remove user avatar"""
   removeAvatar: RemoveAvatar!
 
-  """remove a file from context"""
-  removeContextChat(options: RemoveContextChatInput!): Boolean!
-
-  """remove a file from context"""
-  removeContextFile(options: RemoveContextFileInput!): Boolean!
-
   """Remove user embedding doc"""
   removeUserDocs(docId: String!): Boolean!
 
@@ -729,16 +729,6 @@ type QueryTooLongDataType {
 
 type RemoveAvatar {
   success: Boolean!
-}
-
-input RemoveContextChatInput {
-  contextId: String!
-  sessionId: String!
-}
-
-input RemoveContextFileInput {
-  contextId: String!
-  fileId: String!
 }
 
 type RuntimeConfigNotFoundDataType {

@@ -1,3 +1,9 @@
-mutation removeContextChat($options: RemoveContextChatInput!) {
-  removeContextChat(options: $options)
+query removeContextChat($contextId: String!, $sessionId: String!) {
+  currentUser {
+    copilot {
+      contexts(contextId: $contextId) {
+        removeContextChat(sessionId: $sessionId)
+      }
+    }
+  }
 }

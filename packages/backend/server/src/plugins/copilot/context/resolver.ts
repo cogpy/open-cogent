@@ -6,7 +6,6 @@ import {
   Field,
   Float,
   ID,
-  InputType,
   Mutation,
   ObjectType,
   Parent,
@@ -48,24 +47,6 @@ import { MAX_EMBEDDABLE_SIZE } from '../types';
 import { getSignal, readStream } from '../utils';
 import { CopilotUserService } from '../workspace';
 import { CopilotContextService } from './service';
-
-@InputType()
-class RemoveContextChatInput {
-  @Field(() => String)
-  contextId!: string;
-
-  @Field(() => String)
-  sessionId!: string;
-}
-
-@InputType()
-class RemoveContextFileInput {
-  @Field(() => String)
-  contextId!: string;
-
-  @Field(() => String)
-  fileId!: string;
-}
 
 @ObjectType('CopilotContext')
 export class CopilotContextType {
@@ -378,51 +359,57 @@ export class CopilotContextResolver {
     }
   }
 
-  @Mutation(() => Boolean, {
+  @ResolveField(() => Boolean, {
     description: 'remove a file from context',
   })
   @CallMetric('ai', 'context_file_remove')
   async removeContextChat(
-    @Args({ name: 'options', type: () => RemoveContextChatInput })
-    options: RemoveContextChatInput
+    @Parent() context: CopilotContextType,
+    @Args({ name: 'sessionId' }) sessionId: string
   ): Promise<boolean> {
-    const lockFlag = `${COPILOT_LOCKER}:context:${options.contextId}`;
+    if (!context.id) {
+      throw new CopilotInvalidContext({ contextId: context.id || 'undefined' });
+    }
+    const lockFlag = `${COPILOT_LOCKER}:context:${context.id}`;
     await using lock = await this.mutex.acquire(lockFlag);
     if (!lock) {
       throw new TooManyRequest('Server is busy');
     }
-    const session = await this.context.get(options.contextId);
+    const session = await this.context.get(context.id);
 
     try {
-      return await session.removeChat(options.sessionId);
+      return await session.removeChat(sessionId);
     } catch (e: any) {
       throw new CopilotFailedToModifyContext({
-        contextId: options.contextId,
+        contextId: context.id,
         message: e.message,
       });
     }
   }
 
-  @Mutation(() => Boolean, {
+  @ResolveField(() => Boolean, {
     description: 'remove a file from context',
   })
   @CallMetric('ai', 'context_file_remove')
   async removeContextFile(
-    @Args({ name: 'options', type: () => RemoveContextFileInput })
-    options: RemoveContextFileInput
+    @Parent() context: CopilotContextType,
+    @Args({ name: 'fileId' }) fileId: string
   ): Promise<boolean> {
-    const lockFlag = `${COPILOT_LOCKER}:context:${options.contextId}`;
+    if (!context.id) {
+      throw new CopilotInvalidContext({ contextId: context.id || 'undefined' });
+    }
+    const lockFlag = `${COPILOT_LOCKER}:context:${context.id}`;
     await using lock = await this.mutex.acquire(lockFlag);
     if (!lock) {
       throw new TooManyRequest('Server is busy');
     }
-    const session = await this.context.get(options.contextId);
+    const session = await this.context.get(context.id);
 
     try {
-      return await session.removeFile(options.fileId);
+      return await session.removeFile(fileId);
     } catch (e: any) {
       throw new CopilotFailedToModifyContext({
-        contextId: options.contextId,
+        contextId: context.id,
         message: e.message,
       });
     }

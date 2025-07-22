@@ -348,7 +348,7 @@ export const removeContextFileMutation = {
 export const listContextObjectQuery = {
   id: 'listContextObjectQuery' as const,
   op: 'listContextObject',
-  query: `query listContextObject($workspaceId: String!, $sessionId: String!, $contextId: String!) {
+  query: `query listContextObject($sessionId: String!, $contextId: String!) {
   currentUser {
     copilot {
       contexts(sessionId: $sessionId, contextId: $contextId) {

@@ -47,6 +47,9 @@ export interface ChatSessionState extends SessionFlags {
   sendMessage(options: Omit<SendMessageOptions, 'sessionId'>): Promise<void>;
   cleanup(sessionIds: string[]): Promise<void>;
   clearError(): void;
+  loadFileContexts(): Promise<void>;
+  addFileContext(file: File): Promise<void>;
+  removeFileContext(fileId: string): Promise<void>;
 
   /** Toggle pinned state for this session. */
   togglePin(): Promise<void>;

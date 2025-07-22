@@ -1,4 +1,5 @@
 import { Divider, IconButton, Menu, MenuItem, RowInput } from '@afk/component';
+import type { CopilotContextFile } from '@afk/graphql';
 import {
   AttachmentIcon,
   CloseIcon,
@@ -8,11 +9,13 @@ import {
 } from '@blocksuite/icons/rc';
 import { cssVarV2 } from '@toeverything/theme/v2';
 import { type IDBPDatabase, openDB } from 'idb';
+import { groupBy } from 'lodash';
 import { startTransition, useEffect, useRef, useState } from 'react';
-import { create, type StoreApi } from 'zustand';
+import { create, type StoreApi, useStore } from 'zustand';
 
 import { ChatIcon } from '@/icons/chat';
 import { cn } from '@/lib/utils';
+import { useAuthStore } from '@/store/auth';
 import type { ChatSessionState } from '@/store/copilot/types';
 import { useLibraryStore } from '@/store/library';
 
@@ -33,7 +36,10 @@ export type ChatContextFile = {
 export type ChatContextAttachment = {
   type: 'attachment';
   id: string;
-  blob: File;
+  blob?: File;
+  blobId?: string;
+  mineType: string;
+  name: string;
 };
 
 export type ChatContext =
@@ -167,14 +173,15 @@ const AttachmentContextPreview = ({
   context: ChatContextAttachment;
   onRemove: () => void;
 }) => {
+  const { user } = useAuthStore();
   const file = context.blob;
-  const mineType = file.type;
-  const fileName = file.name;
+  const mineType = context.mineType ?? file?.type;
+  const fileName = context.name ?? file?.name;
 
   const [imgUrl, setImgUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    if (mineType.startsWith('image/')) {
+    if (file && mineType.startsWith('image/') && !context.blobId) {
       const url = URL.createObjectURL(file);
       setImgUrl(url);
 
@@ -182,8 +189,12 @@ const AttachmentContextPreview = ({
         URL.revokeObjectURL(url);
       };
     }
+
+    if (mineType.startsWith('image/') && context.blobId && user) {
+      setImgUrl(`/api/copilot/blob/${user.id}/${context.blobId}`);
+    }
     return () => {};
-  }, [file, mineType]);
+  }, [context.blobId, file, mineType, user]);
 
   if (imgUrl) {
     return (
@@ -226,6 +237,7 @@ export const ContextSelectorMenu = ({
   children: React.ReactNode;
   store?: StoreApi<ChatSessionState>;
 }) => {
+  const [open, setOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { docs, files, chats } = useLibraryStore();
   const { setContexts, loadContexts } = useContextCache();
@@ -258,10 +270,7 @@ export const ContextSelectorMenu = ({
   }, [chats, docs, files, search]);
 
   const handleAdd = async (updates: ChatContext[] | ChatContext) => {
-    const prevContexts = store
-      ? // TODO: get from store
-        ([] as ChatContext[])
-      : await loadContexts();
+    const prevContexts = store ? ([] as ChatContext[]) : await loadContexts();
     const targets = Array.isArray(updates) ? updates : [updates];
 
     const newContexts = [...prevContexts];
@@ -275,7 +284,15 @@ export const ContextSelectorMenu = ({
     }
 
     if (store) {
-      // TODO: client.saveContexts
+      await Promise.all(
+        targets.map(target => {
+          if (target.type === 'attachment') {
+            return store.getState().addFileContext(target.blob!);
+          }
+          // TODO: add other context types
+          return Promise.resolve();
+        })
+      );
     } else {
       await setContexts(newContexts);
     }
@@ -284,6 +301,10 @@ export const ContextSelectorMenu = ({
   return (
     <Menu
       contentOptions={{ style: { padding: 0 } }}
+      rootOptions={{
+        open,
+        onOpenChange: setOpen,
+      }}
       items={
         <div className="max-h-[400px] max-w-[280px] overflow-y-auto rounded-lg">
           {/* Search */}
@@ -400,10 +421,13 @@ export const ContextSelectorMenu = ({
                     type: 'attachment',
                     id: Math.random().toString(36).substring(2, 15),
                     blob: file,
+                    mineType: file.type,
+                    name: file.name,
                   });
                 }
                 handleAdd(newContexts);
                 e.target.value = '';
+                setOpen(false);
               }}
             />
             <MenuItem
@@ -422,35 +446,13 @@ export const ContextSelectorMenu = ({
   );
 };
 
-export const ContextPreview = ({
-  store,
+const ContextPreviewUI = ({
+  contexts,
+  handleRemove,
 }: {
-  store?: StoreApi<ChatSessionState>;
+  contexts: ChatContext[];
+  handleRemove: (id: string) => void;
 }) => {
-  const {
-    contexts: cacheContexts,
-    removeContexts,
-    loadContexts,
-  } = useContextCache();
-
-  // TODO: use session contexts
-  const contexts = store ? [] : cacheContexts;
-
-  useEffect(() => {
-    if (store) return;
-    loadContexts();
-  }, [loadContexts, store]);
-
-  const handleRemove = (id: string) => {
-    if (store) {
-      // TODO: call api to remove context
-    } else {
-      removeContexts([id]);
-    }
-  };
-
-  if (!contexts.length) return null;
-
   return (
     <div className="w-full flex items-center gap-3 overflow-x-auto mb-2 pb-2 pt-4 -mt-4">
       {contexts.map(context => {
@@ -486,5 +488,61 @@ export const ContextPreview = ({
         }
       })}
     </div>
+  );
+};
+
+const ContextCachePreview = () => {
+  const { contexts, removeContexts, loadContexts } = useContextCache();
+
+  useEffect(() => {
+    loadContexts();
+  }, [loadContexts]);
+
+  const handleRemove = async (id: string) => {
+    removeContexts([id]);
+  };
+
+  if (!contexts.length) return null;
+  return <ContextPreviewUI contexts={contexts} handleRemove={handleRemove} />;
+};
+
+const ContextCloudPreview = ({
+  store,
+}: {
+  store: StoreApi<ChatSessionState>;
+}) => {
+  const contextFiles = useStore(store, s => s.contextFiles);
+
+  const contexts = contextFiles.map(file => {
+    return {
+      type: 'attachment',
+      id: file.id,
+      blobId: file.blobId,
+      mineType: file.mimeType,
+      name: file.name,
+    } satisfies ChatContextAttachment;
+  });
+
+  const handleRemove = async (id: string) => {
+    const context = contexts.find(c => c.id === id);
+    if (context?.type === 'attachment') {
+      return await store.getState().removeFileContext(context.id);
+    }
+    // TODO: remove other context types
+  };
+
+  if (!contextFiles.length) return null;
+  return <ContextPreviewUI contexts={contexts} handleRemove={handleRemove} />;
+};
+
+export const ContextPreview = ({
+  store,
+}: {
+  store?: StoreApi<ChatSessionState>;
+}) => {
+  return store ? (
+    <ContextCloudPreview store={store} />
+  ) : (
+    <ContextCachePreview />
   );
 };

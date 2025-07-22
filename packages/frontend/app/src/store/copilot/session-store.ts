@@ -214,6 +214,7 @@ export function createChatSessionStore(params: {
             }
           );
           const contextId = await client.createContext(sessionId);
+          await get().loadFileContexts();
           const historyEntry = Array.isArray(histories)
             ? histories.find((h: any) => h.sessionId === sessionId)
             : undefined;
@@ -394,8 +395,28 @@ export function createChatSessionStore(params: {
         });
       },
 
-      loadContexts: async () => {
-        const contexts = await client.getContextFiles(sessionId);
+      loadFileContexts: async () => {
+        const contextId = get().contextId;
+        const contexts = await client.getContextFiles(sessionId, contextId);
+
+        set(state => {
+          state.contextFiles = contexts?.files ?? [];
+        });
+      },
+      addFileContext: async (file: File) => {
+        const contextId = get().contextId;
+        await client.addContextFile(file, {
+          contextId,
+        });
+        get().loadFileContexts();
+      },
+      removeFileContext: async (fileId: string) => {
+        const contextId = get().contextId;
+        await client.removeContextFile({
+          contextId,
+          fileId,
+        });
+        get().loadFileContexts();
       },
     }))
   );

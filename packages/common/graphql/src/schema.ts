@@ -1488,7 +1488,6 @@ export type RemoveContextFileMutation = {
 };
 
 export type ListContextObjectQueryVariables = Exact<{
-  workspaceId: Scalars['String']['input'];
   sessionId: Scalars['String']['input'];
   contextId: Scalars['String']['input'];
 }>;

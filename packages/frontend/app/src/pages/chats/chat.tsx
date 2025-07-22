@@ -19,9 +19,11 @@ export const ChatPage = () => {
 
   const navigate = useNavigate();
   useEffect(() => {
-    // delete msg param immediately after mount
-    navigate({ search: '' }, { replace: true });
-  }, [navigate]);
+    if (searchParams.get('msg')) {
+      // delete msg param immediately after mount
+      navigate({ search: '' }, { replace: true });
+    }
+  }, [navigate, searchParams]);
 
   /* ---------------- Existing-session mode ---------------- */
   const sessionStore = useRefCounted(

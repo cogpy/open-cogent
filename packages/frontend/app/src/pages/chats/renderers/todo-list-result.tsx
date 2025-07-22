@@ -161,7 +161,9 @@ const TodoCard = ({
       </div>
 
       <div className={styles.todoCardContent}>
-        <div className={cn(styles.todoCardTitle, 'truncate')}>{title}</div>
+        <div className={cn(styles.todoCardTitle, 'w-full truncate')}>
+          {title}
+        </div>
         {subTitle ? (
           <div className={styles.todoCardSubTitleContainer}>
             <div className={cn(styles.todoCardSubTitle, 'truncate')}>

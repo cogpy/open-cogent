@@ -1,5 +1,5 @@
 import { Loading } from '@afk/component';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { type StoreApi, useStore } from 'zustand';
 
 import { ChatInput } from '@/components/chat-input';
@@ -24,18 +24,17 @@ const ChatPlaceholder = ({
 }: ChatPlaceholderProps) => {
   const [input, setInput] = useState(message ?? '');
 
-  const onSend = async () => {
+  const onSend = useCallback(async () => {
     if (!input.trim()) return;
     if (onPlaceholderSend) {
       await onPlaceholderSend(input);
       setInput('');
     }
-  };
+  }, [input, onPlaceholderSend]);
 
   useEffect(() => {
     if (message) onSend();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [message, onSend]);
 
   return (
     <div className="flex flex-col justify-center h-full p-4 gap-4 max-w-[900px] mx-auto">
@@ -48,6 +47,7 @@ const ChatPlaceholder = ({
         onSend={onSend}
         sending={isCreating}
         placeholder={placeholder}
+        isCreating={isCreating}
       />
     </div>
   );
@@ -107,7 +107,7 @@ const ChatSession = ({
             <Loading size={24} />
           </div>
         ) : (
-          <div className="max-w-[900px] mx-auto w-full">
+          <div className="max-w-[900px] mx-auto w-full [&>*:not(:first-child)]:mt-4">
             {messages.map((m, idx) => (
               <MessageRenderer
                 key={m.id ?? idx}

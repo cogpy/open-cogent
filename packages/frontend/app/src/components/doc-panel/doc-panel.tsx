@@ -44,6 +44,7 @@ export function DocPanelById({
   onOpenChat,
   onClose,
 }: DocPanelByIdProps) {
+  console.log('render doc panel by id');
   const [state, setState] = useState<DocLoadState>({ status: 'loading' });
 
   useEffect(() => {

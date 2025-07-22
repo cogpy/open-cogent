@@ -1,10 +1,12 @@
 // oxlint-disable no-array-index-key
+import { Loading } from '@afk/component';
 import type { StreamObject } from '@afk/graphql';
 
 import { MessageCard } from '@/components/ui/card/message-card';
 import { MarkdownText } from '@/components/ui/markdown';
 
 import { BrowserUseResult } from './browser-use-result';
+import { GeneratingCard } from './generating-card';
 import { MakeItRealResult } from './make-it-real-result';
 import { TodoListResult } from './todo-list-result';
 import { WebSearchResult } from './web-search-result';
@@ -12,6 +14,7 @@ import { WebSearchResult } from './web-search-result';
 interface ChatContentStreamObjectsProps {
   streamObjects: StreamObject[];
   isStreaming?: boolean;
+  isAssistant?: boolean;
 }
 
 /**
@@ -25,11 +28,12 @@ interface ChatContentStreamObjectsProps {
 export function ChatContentStreamObjects({
   streamObjects,
   isStreaming = false,
+  isAssistant = false,
 }: ChatContentStreamObjectsProps) {
   if (!streamObjects?.length) return null;
 
   return (
-    <div className="flex flex-col gap-2 max-w-full text-left prose">
+    <div className="flex flex-col gap-2 max-w-full text-left prose w-full">
       {streamObjects.map((obj, idx) => {
         const loading = isStreaming && idx === streamObjects.length - 1;
         console.log(obj);
@@ -40,13 +44,18 @@ export function ChatContentStreamObjects({
                 key={idx}
                 text={obj.textDelta ?? ''}
                 loading={loading}
+                className={isAssistant ? 'min-w-full' : undefined}
               />
             );
 
           case 'reasoning':
             return (
               <div key={idx} className="rounded-md bg-black/[0.05] p-4">
-                <MarkdownText text={obj.textDelta ?? ''} loading={loading} />
+                <MarkdownText
+                  className={isAssistant ? 'min-w-full' : undefined}
+                  text={obj.textDelta ?? ''}
+                  loading={loading}
+                />
               </div>
             );
 
@@ -56,11 +65,11 @@ export function ChatContentStreamObjects({
               obj.toolName === 'make_it_real'
             ) {
               return (
-                <MessageCard
+                <GeneratingCard
                   key={idx}
-                  status="loading"
-                  className="my-5"
-                  title={obj.textDelta}
+                  title={'Generating...'}
+                  content={obj.textDelta ?? ''}
+                  icon={<Loading />}
                 />
               );
             }

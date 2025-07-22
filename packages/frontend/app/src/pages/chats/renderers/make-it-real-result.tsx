@@ -26,7 +26,7 @@ export function MakeItRealResult({ docId, title }: MakeItRealResultProps) {
       <div className="p-4 space-y-3">
         <div className="flex items-start gap-3">
           <div className="flex-shrink-0 mt-0.5 h-4 flex items-center">
-            <PageIcon className="w-4 h-4 text-gray-400" />
+            <PageIcon className="w-4 h-4 text-gray-400 text-xl" />
           </div>
 
           <div className="flex-1 min-w-0">

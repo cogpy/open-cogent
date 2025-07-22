@@ -221,7 +221,8 @@ export abstract class CopilotProvider<C = any> {
             tools.make_it_real = createMakeItRealTool(
               toolStreams,
               prompt,
-              this.factory
+              this.factory,
+              saveDoc
             );
             break;
           }

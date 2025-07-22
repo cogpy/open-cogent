@@ -36,6 +36,7 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     gap: '8px',
+    padding: '8px',
   }),
   columnPlaceholder: css({
     display: 'flex',
@@ -153,7 +154,10 @@ export class ColumnBlockComponent extends BlockComponent<ColumnBlockModel> {
 
     const containerStyles = styleMap({
       width: `${this.model.widthPercentage}%`,
+      border: '1px dashed transparent',
     });
+
+    console.log('xsdas');
 
     return html`
       <div

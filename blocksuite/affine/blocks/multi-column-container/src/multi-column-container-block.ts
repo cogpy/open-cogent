@@ -281,14 +281,12 @@ export class MultiColumnContainerBlockComponent extends BlockComponent<MultiColu
     // 计算权重分配后的实际宽度
     const actualWidth = this._calculateActualWidth(column);
 
-    return html`
-      <div
-        style="flex: 0 0 ${actualWidth}%; max-width: 100%; word-wrap: break-word; overflow-wrap: break-word;"
-      >
-        <div style="width: 100%;">${this.renderChildren(column)}</div>
-        ${this._renderResizeHandle(index)}
-      </div>
-    `;
+    return html`<div
+      style="flex: 0 0 ${actualWidth}%; max-width: 100%; word-wrap: break-word; overflow-wrap: break-word; padding: 8px;"
+    >
+      <div style="width: 100%;">${this.renderChildren(column)}</div>
+      ${this._renderResizeHandle(index)}
+    </div> `;
   }
 
   /**

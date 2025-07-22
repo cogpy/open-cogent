@@ -32,6 +32,7 @@ export function ChatContentStreamObjects({
     <div className="flex flex-col gap-2 max-w-full text-left prose">
       {streamObjects.map((obj, idx) => {
         const loading = isStreaming && idx === streamObjects.length - 1;
+        console.log(obj);
         switch (obj.type) {
           case 'text-delta':
             return (

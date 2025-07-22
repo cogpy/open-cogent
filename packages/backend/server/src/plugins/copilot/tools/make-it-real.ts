@@ -4,6 +4,8 @@ import { z } from 'zod';
 
 import { PromptService } from '../prompt';
 import { CopilotProviderFactory, StreamObjectToolResult } from '../providers';
+import { CopilotProviderFactory } from '../providers';
+import { SaveDocFunc } from './doc-compose';
 import { toolError } from './error';
 import { duplicateStreamObjectStream } from './utils';
 const logger = new Logger('MakeItRealTool');
@@ -11,7 +13,8 @@ const logger = new Logger('MakeItRealTool');
 export const createMakeItRealTool = (
   toolStream: ReadableStream<StreamObjectToolResult>[],
   promptService: PromptService,
-  factory: CopilotProviderFactory
+  factory: CopilotProviderFactory,
+  saveDoc: SaveDocFunc
 ) => {
   let { readable, writable } = new TransformStream<StreamObjectToolResult>();
   toolStream.push(readable);
@@ -50,7 +53,9 @@ export const createMakeItRealTool = (
           originalStream,
           writable
         );
-        return { content };
+        console.log(content);
+        const ret = await saveDoc(content);
+        return ret;
       } catch (err: any) {
         logger.error(`Failed to make it real layout enhancer`, err);
         return toolError(

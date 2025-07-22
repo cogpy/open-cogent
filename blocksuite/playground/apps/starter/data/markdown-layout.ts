@@ -18,60 +18,192 @@ export const markdownLayout: InitFn = async (
   doc.clear();
 
   // 创建紧凑的混合测试内容，包含所有功能的精简示例
-  const compactMixedContent = `
-# 🎨 完整功能混合测试
+  const compactMixedContent = `<!-- layout:multi-column{"id": "masthead-row","columns": [{ "id": "masthead-col", "width": 100 }]}-->
+<!-- content:column{"parent": "masthead-row","insert": "masthead-col"} -->
+\`\`\`html
+<div>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  .masthead {
+    font-family: 'Playfair Display', serif;
+    letter-spacing: 0.08em;
+    text-align: center;
+    padding: 1.5rem 0 0.5rem 0;
+    border-bottom: 3px solid oklch(95% 0 0);
+    margin-bottom: 0.5rem;
+    background: oklch(98% 0 0);
+  }
+  .masthead-title {
+    font-size: 3.2rem;
+    font-weight: 900;
+    color: oklch(20% 0 0);
+    text-shadow: 0 2px 0 oklch(98% 0 0);
+    letter-spacing: 0.12em;
+  }
+  .masthead-sub {
+    font-family: 'Roboto', sans-serif;
+    font-size: 1.1rem;
+    color: oklch(40% 0 0);
+    margin-top: 0.2rem;
+    letter-spacing: 0.04em;
+  }
+</style>
+<div class="masthead">
+  <div class="masthead-title">THE DAILY HERALD</div>
+  <div class="masthead-sub">Tuesday, July 22, 2025 &nbsp;|&nbsp; Edition No. 184 &nbsp;|&nbsp; www.dailyherald.com</div>
+</div>
+\`\`\`
+</div>
+<!-- end:content:column -->
 
-这是一个包含 **加粗文本**、*斜体文本*、~~删除线~~、==高亮文本== 和 [红色文本]{"color": "red"} 的段落。
+<!-- layout:multi-column{"id": "main-row","columns": [{ "id": "col-1", "width": 33 },{ "id": "col-2", "width": 34 },{ "id": "col-3", "width": 33 }]}-->
+<!-- content:column{"parent": "main-row","insert": "col-1"} -->
 
-## 📊 表格功能测试
+## [TECHNOLOGY]{"color": "oklch(20% 0.02 260)"}
 
-| 功能 | 状态 | 描述 |
-|------|------|------|
-| **富文本** | ✅ [完成]{"color": "green"} | 支持 *斜体*、**加粗**、==高亮== |
-| 表格支持 | 🚧 [测试中]{"color": "orange"} | 包含格式化内容的表格 |
-| 多列布局 | ❌ [待测试]{"color": "red"} | 复杂的 ~~嵌套~~ 布局 |
+---
 
-<!-- note:split -->
+### [AI's Ascent Redefines the Future]{"color": "oklch(20% 0.02 260)", ".bold": true}
 
-# 🚀 第二个 Note Block
+[Artificial intelligence continues its remarkable trajectory, pushing the boundaries of what was once thought possible.]{".italic": true, "color": "oklch(38% 0.01 260)"}
 
-这是文档分割功能的示例，具有 [蓝色背景]{"background": "#f0f9ff"}。
+A standout achievement saw an experimental OpenAI model secure an astonishing 35 out of 42 points at the International Math Olympiad, earning a gold medal. This feat underscores AI's growing capacity for complex problem-solving and abstract reasoning, challenging traditional notions of intellectual prowess.
 
-<!-- layout:multi-column {"id":"container-1","columns":[{"id":"col-1","width":50},{"id":"col-2","width":50}]} -->
+A magnetic breakthrough promises to make AI systems ten times more efficient, potentially revolutionizing data processing and energy consumption. Policymakers are taking note: the Trump administration is reportedly planning a major AI policy overhaul, signaling governmental recognition of AI's profound societal and economic implications.
 
-<!-- content:column {"parent":"container-1","insert":"col-1"} -->
+Microsoft's stock surged on the back of increased AI adoption, reflecting market confidence. While a human programmer narrowly bested an AI in a recent coding competition, the overall trend points to AI's increasing integration into, and influence over, nearly every facet of modern life.
 
-### 🧭 **左侧导航**
+---
 
-包含 **[加粗蓝色]{"color": "blue", "bold": true}** 和 *[斜体橙色]{"background": "orange", "italic": true}* 的混合格式。
+### [Market Watch]{"color": "oklch(20% 0.02 260)", ".bold": true}
 
 \`\`\`html
-<div style="background: #3b82f6; color: white; padding: 8px; border-radius: 4px;">组件示例</div>
+<div>
+<style>
+  .ticker {
+    font-family: 'Roboto', sans-serif;
+    font-size: 1rem;
+    background: oklch(98% 0 0);
+    border: 1px solid oklch(90% 0 0);
+    border-radius: 0.3rem;
+    padding: 0.5rem 0.8rem;
+    margin: 0.7rem 0 1.2rem 0;
+    overflow: hidden;
+    white-space: nowrap;
+    box-shadow: 0 1px 3px oklch(90% 0 0 / 0.08);
+  }
+  .ticker span {
+    margin-right: 1.5rem;
+    font-weight: 700;
+  }
+  .ticker .up { color: oklch(45% 0.18 140); }
+  .ticker .down { color: oklch(45% 0.18 30); }
+</style>
+<div class="ticker">
+  <span>MSFT <span class="up">+2.1%</span></span>
+  <span>GOOGL <span class="up">+1.4%</span></span>
+  <span>NVDA <span class="up">+3.2%</span></span>
+  <span>TSLA <span class="down">-0.8%</span></span>
+  <span>DJIA <span class="up">+0.6%</span></span>
+</div>
+</div>
 \`\`\`
 
 <!-- end:content:column -->
 
-<!-- content:column {"parent":"container-1","insert":"col-2"} -->
+<!-- content:column{"parent": "main-row","insert": "col-2"} -->
 
-### 📊 **右侧数据**
+## [WORLD NEWS]{"color": "oklch(20% 0.02 30)"}
 
-访问 [**AFFiNE 官网**](https://affine.pro) 了解更多。
+---
 
-- **加粗项目**
-- *斜体项目* 
-- [彩色项目]{"color": "purple"}
-- ==高亮项目==
+### [A World in Flux: Global Tensions and Challenges]{"color": "oklch(20% 0.02 30)", ".bold": true}
+
+[As the world navigates the mid-2020s, a complex tapestry of rapid technological advancement, persistent global challenges, and captivating human endeavors unfolds daily.]{".italic": true, "color": "oklch(38% 0.01 30)"}
+
+Health concerns remain prominent, with a resurgence of COVID-19 outbreaks in Australian aged care facilities—a stark reminder of the virus's enduring presence and the need for continued vigilance.
+
+On the international stage, 25 nations condemned Israel over civilian casualties in Gaza, highlighting the ongoing humanitarian crisis and deep divisions in the Middle East. Diplomacy continues its vital role, with Ukraine calling for talks with Russia next week—a hopeful sign amidst the protracted conflict.
+
+Environmental concerns loom large, with a severe heat dome affecting over 90 million Americans, underscoring the increasing frequency and intensity of extreme weather events.
+
+---
+
+### [Weather]{"color": "oklch(20% 0.02 30)", ".bold": true}
+
+\`\`\`html
+<div>
+<style>
+  .weather-box {
+    font-family: 'Roboto', sans-serif;
+    background: oklch(98% 0 0);
+    border: 1px solid oklch(90% 0 0);
+    border-radius: 0.3rem;
+    padding: 0.7rem 1.1rem;
+    margin: 0.7rem 0 1.2rem 0;
+    display: flex;
+    align-items: center;
+    gap: 1.1rem;
+    box-shadow: 0 1px 3px oklch(90% 0 0 / 0.08);
+  }
+  .weather-icon {
+    font-size: 2.2rem;
+    color: oklch(45% 0.18 80);
+  }
+  .weather-details {
+    font-size: 1.1rem;
+    color: oklch(30% 0.01 30);
+  }
+  .weather-temp {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: oklch(20% 0.02 30);
+  }
+</style>
+<div class="weather-box">
+  <span class="weather-icon">☀️</span>
+  <div class="weather-details">
+    <div class="weather-temp">New York: 89°F / 32°C</div>
+    <div>Sunny, Heat Advisory</div>
+    <div>Humidity: 54% &nbsp;|&nbsp; Wind: 8 mph SW</div>
+  </div>
+</div>
+</div>
+\`\`\`
 
 <!-- end:content:column -->
 
-<!-- note:split -->
+<!-- content:column{"parent": "main-row","insert": "col-3"} -->
 
-# 📄 第三个 Note Block
+## [SPORTS]{"color": "oklch(20% 0.02 120)"}
 
-## 测试总结
+---
 
-✅ **富文本**: 加粗、斜体、删除线、高亮、自定义颜色\n✅ **表格**: 基础表格、格式化单元格、对齐方式\n✅ **文档分割**: 多个 note block、自定义背景\n✅ **多列布局**: 嵌套布局、HTML 组件、响应式设计
-`;
+### [Sporting Drama: Records, Rookies, and Returns]{"color": "oklch(20% 0.02 120)", ".bold": true}
+
+[The world of sports provides a compelling counterpoint of human achievement, drama, and entertainment.]{".italic": true, "color": "oklch(38% 0.01 120)"}
+
+Baseball fans are witnessing a potentially historic season, with five players on track to hit 50+ home runs. The White Sox are enjoying a season-high four-game winning streak, while the Phillies secured a dramatic walk-off win over the Red Sox due to catcher's interference.
+
+In basketball, the NBA Summer League has found a new sensation in Chinese rookie Yang Hansen, whose impressive play has captured global attention. Veteran point guard Chris Paul is set to return to the LA Clippers for his 21st NBA season—a testament to his longevity and enduring impact.
+
+Meanwhile, in cycling, Tim Wellens claimed victory in Stage 15 of the Tour de France, adding another chapter to the race's storied history.
+
+---
+
+### [Quick Stats]{"color": "oklch(20% 0.02 120)", ".bold": true}
+
+- **MLB Home Run Leaders:** 5 players on pace for 50+
+- **NBA:** Chris Paul returns to Clippers (21st season)
+- **Tour de France:** Tim Wellens wins Stage 15
+
+<!-- end:content:column -->
+
+<!-- note:split{"title":"In Summary","backgroundColor":"oklch(98% 0 0)"} -->
+
+# [A Vibrant Mosaic of Innovation, Challenge, and Human Endeavor]{"color": "oklch(20% 0.02 260)", ".bold": true}
+
+[The rapid advancements in AI promise to reshape industries and societies, while persistent geopolitical tensions and health crises demand ongoing attention and diplomatic efforts. Simultaneously, the world of sports continues to captivate, offering thrilling spectacles and inspiring stories of dedication and achievement. As these diverse narratives unfold, they collectively define an era marked by both profound transformation and enduring human spirit.]{".italic": true, "color": "oklch(38% 0.01 260)"}`;
   const contentToTest = compactMixedContent;
   const testTitle = '🎨 完整功能混合测试';
   const testDescription = '富文本语法、表格支持、文档分割与多列布局的完整解析';

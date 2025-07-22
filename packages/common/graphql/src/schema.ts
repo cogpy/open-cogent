@@ -1600,6 +1600,14 @@ export type ListContextObjectQuery = {
           status: ContextEmbedStatus;
           createdAt: number;
         }>;
+        docs: Array<{
+          __typename?: 'CopilotContextChatOrDoc';
+          id: string;
+          chunkSize: number;
+          error: string | null;
+          status: ContextEmbedStatus;
+          createdAt: number;
+        }>;
         files: Array<{
           __typename?: 'CopilotContextFile';
           id: string;

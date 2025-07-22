@@ -421,6 +421,13 @@ export const listContextObjectQuery = {
           status
           createdAt
         }
+        docs {
+          id
+          chunkSize
+          error
+          status
+          createdAt
+        }
         files {
           id
           name

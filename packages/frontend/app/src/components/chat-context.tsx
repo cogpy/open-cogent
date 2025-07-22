@@ -1,5 +1,4 @@
 import { Divider, IconButton, Menu, MenuItem, RowInput } from '@afk/component';
-import type { CopilotContextFile } from '@afk/graphql';
 import {
   AttachmentIcon,
   CloseIcon,
@@ -9,7 +8,6 @@ import {
 } from '@blocksuite/icons/rc';
 import { cssVarV2 } from '@toeverything/theme/v2';
 import { type IDBPDatabase, openDB } from 'idb';
-import { groupBy } from 'lodash';
 import { startTransition, useEffect, useRef, useState } from 'react';
 import { create, type StoreApi, useStore } from 'zustand';
 
@@ -58,7 +56,7 @@ async function initDB() {
   });
   return db;
 }
-async function loadCacheContexts() {
+export async function loadCacheContexts() {
   const db = await initDB();
   const cache = await db.getAll('cache');
   return cache;
@@ -74,6 +72,10 @@ async function removeCacheContexts(ids: string[]) {
   for (const id of ids) {
     await db.delete('cache', id);
   }
+}
+export async function clearCacheContexts() {
+  const db = await initDB();
+  await db.clear('cache');
 }
 
 const useContextCache = create<{
@@ -289,7 +291,15 @@ export const ContextSelectorMenu = ({
           if (target.type === 'attachment') {
             return store.getState().addFileContext(target.blob!);
           }
-          // TODO: add other context types
+          if (target.type === 'file') {
+            // TODO: add file blob id
+          }
+          if (target.type === 'chat') {
+            return store.getState().addChatContext(target.id);
+          }
+          if (target.type === 'doc') {
+            // TODO: add doc doc id
+          }
           return Promise.resolve();
         })
       );
@@ -527,6 +537,15 @@ const ContextCloudPreview = ({
     const context = contexts.find(c => c.id === id);
     if (context?.type === 'attachment') {
       return await store.getState().removeFileContext(context.id);
+    }
+    if (context?.type === 'chat') {
+      return await store.getState().removeChatContext(context.id);
+    }
+    if (context?.type === 'doc') {
+      // TODO: remove doc doc id
+    }
+    if (context?.type === 'file') {
+      // TODO: remove file blob id
     }
     // TODO: remove other context types
   };

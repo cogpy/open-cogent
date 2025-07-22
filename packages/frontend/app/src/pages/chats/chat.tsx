@@ -3,6 +3,11 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { type StoreApi, useStore } from 'zustand';
 
+import {
+  type ChatContext,
+  clearCacheContexts,
+  loadCacheContexts,
+} from '@/components/chat-context';
 import { ChatInput } from '@/components/chat-input';
 import { useRefCounted } from '@/lib/hooks/use-ref-counted';
 import { copilotClient } from '@/store/copilot/client';
@@ -100,6 +105,7 @@ export const ChatPage = () => {
   const onSendPlaceholder = async () => {
     if (!input.trim() || isCreating) return;
     setIsCreating(true);
+
     try {
       // Create backend session first
       const newSessionId = await chatSessionsStore.getState().createSession({
@@ -116,6 +122,24 @@ export const ChatPage = () => {
           sessionId: newSessionId,
           client: copilotClient,
         });
+
+      // upload context first
+      await newStore.getState().loadContextId();
+      const contextId = newStore.getState().contextId;
+      const cacheContexts = (await loadCacheContexts()) as ChatContext[];
+
+      // upload
+      await Promise.all(
+        cacheContexts.map(async context => {
+          if (context.type === 'attachment' && context.blob) {
+            await copilotClient.addContextFile(context.blob, contextId);
+          }
+          if (context.type === 'chat') {
+            await copilotClient.addContextChat(contextId, context.id);
+          }
+        })
+      );
+      await clearCacheContexts();
 
       await newStore.getState().sendMessage({
         content: input.trim(),

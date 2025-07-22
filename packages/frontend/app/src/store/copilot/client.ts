@@ -1,5 +1,6 @@
 import type { UserFriendlyError } from '@afk/error';
 import {
+  addContextChatMutation,
   addContextFileMutation,
   cleanupCopilotSessionMutation,
   createCopilotContextMutation,
@@ -17,7 +18,8 @@ import {
   type PaginationInput,
   type QueryOptions,
   type QueryResponse,
-  removeContextFileMutation,
+  removeContextChatQuery,
+  removeContextFileQuery,
   type RequestOptions,
   updateCopilotSessionMutation,
 } from '@afk/graphql';
@@ -249,31 +251,27 @@ export class CopilotClient {
     return res.currentUser?.copilot?.contexts?.[0]?.id || undefined;
   }
 
-  async addContextFile(
-    content: File,
-    options: OptionsField<typeof addContextFileMutation>
-  ) {
+  async addContextFile(content: File, contextId: string) {
     const res = await this.gql({
       query: addContextFileMutation,
       variables: {
         content,
-        options,
+        contextId,
       },
       timeout: 60000,
     });
     return res.addContextFile;
   }
 
-  async removeContextFile(
-    options: OptionsField<typeof removeContextFileMutation>
-  ) {
+  async removeContextFile(contextId: string, fileId: string) {
     const res = await this.gql({
-      query: removeContextFileMutation,
+      query: removeContextFileQuery,
       variables: {
-        options,
+        contextId,
+        fileId,
       },
     });
-    return res.removeContextFile;
+    return res.currentUser?.copilot?.contexts?.[0];
   }
 
   async getContextFiles(sessionId: string, contextId: string) {
@@ -397,6 +395,28 @@ export class CopilotClient {
       }
     });
     return queryString.toString();
+  }
+
+  async addContextChat(contextId: string, sessionId: string) {
+    const res = await this.gql({
+      query: addContextChatMutation,
+      variables: {
+        contextId,
+        sessionId,
+      },
+    });
+    return res.addContextChat;
+  }
+
+  async removeContextChat(contextId: string, sessionId: string) {
+    const res = await this.gql({
+      query: removeContextChatQuery,
+      variables: {
+        contextId,
+        sessionId,
+      },
+    });
+    return res.currentUser?.copilot?.contexts?.[0];
   }
 }
 

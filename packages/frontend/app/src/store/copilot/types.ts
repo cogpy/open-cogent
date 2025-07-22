@@ -1,4 +1,8 @@
-import type { CopilotContextFile, StreamObject } from '@afk/graphql';
+import type {
+  CopilotContextChat,
+  CopilotContextFile,
+  StreamObject,
+} from '@afk/graphql';
 
 import type { CopilotClient } from './client';
 
@@ -40,6 +44,8 @@ export interface ChatSessionState extends SessionFlags {
   meta: SessionMeta | null;
   messages: ChatMessage[];
   contextFiles: CopilotContextFile[];
+  contextChats: CopilotContextChat[];
+  // contextDocs: CopilotContextDoc[];
 
   /* ---------------- Actions -------------- */
   init(): Promise<void>;
@@ -47,9 +53,16 @@ export interface ChatSessionState extends SessionFlags {
   sendMessage(options: Omit<SendMessageOptions, 'sessionId'>): Promise<void>;
   cleanup(sessionIds: string[]): Promise<void>;
   clearError(): void;
-  loadFileContexts(): Promise<void>;
+
+  // contexts
+  loadContextId(): Promise<void>;
+  loadContexts(): Promise<void>;
+
   addFileContext(file: File): Promise<void>;
   removeFileContext(fileId: string): Promise<void>;
+
+  addChatContext(sessionId: string): Promise<void>;
+  removeChatContext(chatId: string): Promise<void>;
 
   /** Toggle pinned state for this session. */
   togglePin(): Promise<void>;

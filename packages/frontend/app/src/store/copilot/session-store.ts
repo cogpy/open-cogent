@@ -188,6 +188,7 @@ export function createChatSessionStore(params: {
       messages: (initialMeta && (initialMeta as any).messages) ?? [],
       contextId: '',
       contextFiles: [],
+      contextChats: [],
 
       /* ---------- Flags ---------- */
       isInitializing: true,
@@ -213,8 +214,8 @@ export function createChatSessionStore(params: {
               withMessages: true,
             }
           );
-          const contextId = await client.createContext(sessionId);
-          await get().loadFileContexts();
+          await get().loadContextId();
+          await get().loadContexts();
           const historyEntry = Array.isArray(histories)
             ? histories.find((h: any) => h.sessionId === sessionId)
             : undefined;
@@ -247,7 +248,6 @@ export function createChatSessionStore(params: {
             if (state.messages.length === 0) {
               state.messages = mergedMessages;
             }
-            state.contextId = contextId;
           });
 
           // Data loaded → reset loading flag
@@ -258,7 +258,12 @@ export function createChatSessionStore(params: {
           );
         });
       },
-
+      loadContextId: async () => {
+        const contextId = await client.createContext(sessionId);
+        set(state => {
+          state.contextId = contextId;
+        });
+      },
       reload: async () => {
         const { init } = get();
         await init();
@@ -395,28 +400,36 @@ export function createChatSessionStore(params: {
         });
       },
 
-      loadFileContexts: async () => {
+      loadContexts: async () => {
         const contextId = get().contextId;
         const contexts = await client.getContextFiles(sessionId, contextId);
 
         set(state => {
           state.contextFiles = contexts?.files ?? [];
+          state.contextChats = contexts?.chats ?? [];
         });
       },
       addFileContext: async (file: File) => {
         const contextId = get().contextId;
-        await client.addContextFile(file, {
-          contextId,
-        });
-        get().loadFileContexts();
+        await client.addContextFile(file, contextId);
+        get().loadContexts();
       },
       removeFileContext: async (fileId: string) => {
         const contextId = get().contextId;
-        await client.removeContextFile({
-          contextId,
-          fileId,
-        });
-        get().loadFileContexts();
+        await client.removeContextFile(contextId, fileId);
+        get().loadContexts();
+      },
+
+      addChatContext: async (sessionId: string) => {
+        const contextId = get().contextId;
+        await client.addContextChat(contextId, sessionId);
+        get().loadContexts();
+      },
+
+      removeChatContext: async (chatId: string) => {
+        const contextId = get().contextId;
+        await client.removeContextChat(contextId, chatId);
+        get().loadContexts();
       },
     }))
   );

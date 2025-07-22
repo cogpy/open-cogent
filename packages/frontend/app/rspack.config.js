@@ -19,6 +19,7 @@ export default defineConfig({
   },
   output: {
     publicPath: '/',
+    filename: '[name].[contenthash].js',
   },
   resolve: {
     extensionAlias: {

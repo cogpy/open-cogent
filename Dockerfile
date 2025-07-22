@@ -14,9 +14,19 @@ RUN yarn config set --json supportedArchitectures.cpu '["x64", "arm64", "arm"]'
 RUN yarn config set --json supportedArchitectures.libc '["glibc"]'
 RUN yarn install --immutable
 
+# Build the native module for Linux target
 RUN yarn workspace @afk/server-native build
+
+# Create architecture-specific copies for bundler
+RUN cp packages/backend/native/server-native.node \
+      packages/backend/native/server-native.x64.node && \
+    cp packages/backend/native/server-native.node \
+      packages/backend/native/server-native.arm64.node && \
+    cp packages/backend/native/server-native.node \
+      packages/backend/native/server-native.armv7.node
+
 RUN yarn workspace @afk/app build
-RUN yarn workspace @afk/server prisma generate
+RUN yarn oa server prisma generate
 RUN yarn workspace @afk/server build
 
 RUN yarn workspaces focus @afk/server --production

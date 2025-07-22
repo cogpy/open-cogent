@@ -2,22 +2,16 @@ import type { BlockSnapshot } from '@blocksuite/store';
 import { nanoid } from '@blocksuite/store';
 import type {
   Code,
-  Delete,
-  Emphasis,
   Heading,
   Html,
   Image,
-  InlineCode,
   Link,
   List,
   ListItem,
   Node,
   Paragraph,
   Root,
-  Strong,
   Table,
-  TableCell,
-  TableRow,
 } from 'mdast';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
@@ -712,7 +706,7 @@ export class MarkdownToSnapshotConverter {
    * Parse custom syntax [text]{attributes}
    */
   private parseCustomSyntax(text: string): any[] {
-    const customSyntaxRegex = /\[([^\]]+)\]\{([^}]+)\}/g;
+    const customSyntaxRegex = /\[([^\]]+)\](\{[^}]+\})/g;
     const result: any[] = [];
     let lastIndex = 0;
     let match;
@@ -758,84 +752,14 @@ export class MarkdownToSnapshotConverter {
    * Parse attribute string
    */
   private parseAttributes(attributesStr: string): any {
-    const attributes: any = {};
-
-    // Parse key: value format
-    const keyValueRegex = /(\w+):\s*([^,;]+)/g;
-    let match;
-
-    while ((match = keyValueRegex.exec(attributesStr)) !== null) {
-      const key = match[1].trim();
-      const value = match[2].trim();
-
-      switch (key) {
-        case 'color':
-          attributes.color = value;
-          break;
-        case 'background':
-        case 'bg':
-          attributes.background = value;
-          break;
-        case 'bold':
-          attributes.bold = value === 'true' || value === '1';
-          break;
-        case 'italic':
-          attributes.italic = value === 'true' || value === '1';
-          break;
-        case 'strike':
-          attributes.strike = value === 'true' || value === '1';
-          break;
-        case 'underline':
-          attributes.underline = value === 'true' || value === '1';
-          break;
-        case 'code':
-          attributes.code = value === 'true' || value === '1';
-          break;
-        default:
-          attributes[key] = value;
-      }
+    try {
+      // Try to parse as JSON first
+      return JSON.parse(attributesStr);
+    } catch (error) {
+      // If JSON parsing fails, return empty object
+      console.warn('Failed to parse attributes as JSON:', attributesStr, error);
+      return {};
     }
-
-    // Parse simple class name format .red, .bold etc
-    const classRegex = /\.(\w+)/g;
-    while ((match = classRegex.exec(attributesStr)) !== null) {
-      const className = match[1];
-
-      switch (className) {
-        case 'red':
-        case 'blue':
-        case 'green':
-        case 'yellow':
-        case 'purple':
-        case 'orange':
-        case 'pink':
-        case 'gray':
-        case 'black':
-        case 'white':
-          attributes.color = className;
-          break;
-        case 'bold':
-          attributes.bold = true;
-          break;
-        case 'italic':
-          attributes.italic = true;
-          break;
-        case 'strike':
-          attributes.strike = true;
-          break;
-        case 'underline':
-          attributes.underline = true;
-          break;
-        case 'code':
-          attributes.code = true;
-          break;
-        case 'highlight':
-          attributes.background = 'yellow';
-          break;
-      }
-    }
-
-    return attributes;
   }
 }
 type Context = {
@@ -1210,7 +1134,7 @@ export class SnapshotToMarkdownConverter {
             else {
               const customAttributes = this.buildCustomAttributes(d.attributes);
               if (customAttributes) {
-                insert = `[${insert}]{${customAttributes}}`;
+                insert = `[${insert}]${customAttributes}`;
               }
             }
           }
@@ -1228,78 +1152,24 @@ export class SnapshotToMarkdownConverter {
   }
 
   /**
-   * Build custom attribute string
+   * Build custom attribute string as JSON
    */
   private buildCustomAttributes(attributes: any): string {
-    const parts: string[] = [];
+    const jsonAttributes: any = {};
 
-    // Process color
-    if (attributes.color) {
-      if (
-        [
-          'red',
-          'blue',
-          'green',
-          'yellow',
-          'purple',
-          'orange',
-          'pink',
-          'gray',
-          'black',
-          'white',
-        ].includes(attributes.color)
-      ) {
-        parts.push(`.${attributes.color}`);
-      } else {
-        parts.push(`color: ${attributes.color}`);
-      }
-    }
-
-    // Process background color
-    if (attributes.background) {
-      if (attributes.background === 'yellow') {
-        parts.push('.highlight');
-      } else {
-        parts.push(`background: ${attributes.background}`);
-      }
-    }
-
-    // Process other attributes
-    if (attributes.bold) {
-      parts.push('.bold');
-    }
-    if (attributes.italic) {
-      parts.push('.italic');
-    }
-    if (attributes.strike) {
-      parts.push('.strike');
-    }
-    if (attributes.underline) {
-      parts.push('.underline');
-    }
-    if (attributes.code) {
-      parts.push('.code');
-    }
-
-    // Process other custom attributes
+    // Copy all attributes except link (which is handled separately)
     Object.keys(attributes).forEach(key => {
-      if (
-        ![
-          'color',
-          'background',
-          'bold',
-          'italic',
-          'strike',
-          'underline',
-          'code',
-          'link',
-        ].includes(key)
-      ) {
-        parts.push(`${key}: ${attributes[key]}`);
+      if (key !== 'link') {
+        jsonAttributes[key] = attributes[key];
       }
     });
 
-    return parts.join(', ');
+    // Return JSON string if there are any attributes
+    if (Object.keys(jsonAttributes).length > 0) {
+      return JSON.stringify(jsonAttributes);
+    }
+
+    return '';
   }
 }
 

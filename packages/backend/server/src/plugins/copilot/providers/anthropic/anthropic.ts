@@ -10,7 +10,7 @@ import {
   metrics,
   UserFriendlyError,
 } from '../../../../base';
-import { mergeStream } from '../../utils';
+import { mergeStreams } from '../../utils';
 import { CopilotProvider } from '../provider';
 import type {
   CopilotChatOptions,
@@ -107,7 +107,6 @@ export abstract class AnthropicProvider<T> extends CopilotProvider<T> {
         const result = parser.parse(chunk);
         yield result;
         if (options.signal?.aborted) {
-          await fullStream.cancel();
           break;
         }
       }
@@ -144,7 +143,6 @@ export abstract class AnthropicProvider<T> extends CopilotProvider<T> {
           yield result;
         }
         if (options.signal?.aborted) {
-          await fullStream.cancel();
           break;
         }
       }
@@ -175,7 +173,7 @@ export abstract class AnthropicProvider<T> extends CopilotProvider<T> {
       maxSteps: this.MAX_STEPS,
       experimental_continueSteps: true,
     });
-    return mergeStream(fullStream, toolOneTimeStream);
+    return mergeStreams(fullStream, toolOneTimeStream);
   }
 
   private getAnthropicOptions(options: CopilotChatOptions, model: string) {

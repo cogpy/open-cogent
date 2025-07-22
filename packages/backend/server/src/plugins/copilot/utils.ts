@@ -1,4 +1,5 @@
 import { Readable } from 'node:stream';
+import { ReadableStreamReadResult } from 'node:stream/web';
 
 import type { Request } from 'express';
 
@@ -50,28 +51,45 @@ export function getSignal(req: Request): SignalReturnType {
   };
 }
 
-export function mergeStream<F, S>(
+export async function* mergeStreams<F, S>(
   first: ReadableStream<F>,
   second: ReadableStream<S>
-): ReadableStream<F | S> {
-  const readers = [first, second].map(stream => stream.getReader());
+): AsyncGenerator<F | S> {
+  type IndexedRead = { idx: number; result: ReadableStreamReadResult<F | S> };
 
-  return new ReadableStream({
-    async pull(controller) {
-      const { value, done, idx } = await Promise.race(
-        readers.map((r, i) => r.read().then(res => ({ ...res, idx: i })))
-      );
+  const readers = [first, second].map(s => s.getReader());
+  const reads: Promise<IndexedRead>[] = readers.map((r, idx) =>
+    r.read().then(result => ({ idx, result }))
+  );
 
-      if (done) {
+  try {
+    while (reads.length) {
+      const { idx, result } = await Promise.race(reads);
+
+      if (result.done) {
+        readers[idx].releaseLock();
+        reads.splice(idx, 1);
         readers.splice(idx, 1);
-        // close the controller if all readers are done or first reader is done
-        if (readers.length === 0 || idx === 0) controller.close();
-        return;
+
+        for (let i = idx; i < reads.length; i++) {
+          reads[i] = reads[i].then(({ idx: old, result }) => ({
+            idx: old - 1,
+            result,
+          }));
+        }
+        continue;
       }
-      controller.enqueue(value);
-    },
-    cancel() {
-      readers.forEach(r => r.cancel());
-    },
-  });
+
+      reads[idx] = readers[idx].read().then(result => ({ idx, result }));
+      yield result.value!;
+    }
+  } finally {
+    readers.forEach(r => {
+      try {
+        r.releaseLock();
+      } catch (_) {
+        /* ignore */
+      }
+    });
+  }
 }

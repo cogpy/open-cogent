@@ -40,13 +40,6 @@ spec:
     - host: {{ . | quote }}
       http:
         paths:
-          - path: /socket.io
-            pathType: Prefix
-            backend:
-              service:
-                name: affine-sync
-                port:
-                  number: {{ $.Values.sync.service.port }}
           - path: /graphql
             pathType: Prefix
             backend:
@@ -61,13 +54,6 @@ spec:
                 name: affine-graphql
                 port:
                   number: {{ $.Values.graphql.service.port }}
-          - path: /workspace
-            pathType: Prefix
-            backend:
-              service:
-                name: affine-renderer
-                port:
-                  number: {{ $.Values.renderer.service.port }}
           - path: /
             pathType: Prefix
             backend:

@@ -73,7 +73,6 @@ jobs:
       - name: Setup Node.js
         uses: ./.github/actions/setup-node
         with:
-          electron-install: false
           full-cache: true
       - name: Run ESLint
         run: yarn lint:eslint --max-warnings=0
@@ -95,7 +94,6 @@ jobs:
       - name: Setup Node.js
         uses: ./.github/actions/setup-node
         with:
-          electron-install: false
           full-cache: true
       - name: Run Type Check
         run: yarn typecheck
@@ -184,7 +182,6 @@ jobs:
         uses: ./.github/actions/setup-node
         with:
           extra-flags: workspaces focus @afk/server-native
-          electron-install: false
       - name: Build Rust
         uses: ./.github/actions/build-rust
         with:
@@ -233,17 +230,12 @@ jobs:
         ports:
           - 1025:1025
           - 8025:8025
-      indexer:
-        image: manticoresearch/manticore:10.1.0
-        ports:
-          - 9308:9308
     steps:
       - uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: ./.github/actions/setup-node
         with:
-          electron-install: false
           full-cache: true
 
       - name: Download server-native.node
@@ -297,17 +289,12 @@ jobs:
         image: redis
         ports:
           - 6379:6379
-      indexer:
-        image: manticoresearch/manticore:10.1.0
-        ports:
-          - 9308:9308
     steps:
       - uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: ./.github/actions/setup-node
         with:
-          electron-install: false
           full-cache: true
 
       - name: Download server-native.node
@@ -383,10 +370,6 @@ jobs:
         ports:
           - 1025:1025
           - 8025:8025
-      indexer:
-        image: manticoresearch/manticore:10.1.0
-        ports:
-          - 9308:9308
     steps:
       - uses: actions/checkout@v4
 
@@ -402,7 +385,6 @@ jobs:
         if: ${{ steps.apifilter.outputs.changed == 'true' }}
         uses: ./.github/actions/setup-node
         with:
-          electron-install: false
           full-cache: true
 
       - name: Download server-native.node

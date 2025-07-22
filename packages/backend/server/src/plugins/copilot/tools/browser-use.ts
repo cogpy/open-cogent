@@ -9,13 +9,22 @@ const logger = new Logger('BrowserUseTool');
 const BROWSER_USE_API_URL = 'https://api.browser-use.com/api/v1';
 const BROWSER_USE_API_KEY = 'bu_CG7O6Zu5IRfb2O5tzNGi3_A5_5Kc_m4lqaNkTuSAnV4';
 
+const BROWSER_USE_TASK_STATUS = {
+  CREATED: 'created',
+  RUNNING: 'running',
+  FINISHED: 'finished',
+  STOPPED: 'stopped',
+  PAUSED: 'paused',
+  FAILED: 'failed',
+};
+
 interface BrowserUseTaskResponse {
   id: string;
 }
 
-interface BrowserUseScreenshotsResponse {
-  screenshots: string[];
-}
+// interface BrowserUseScreenshotsResponse {
+//   screenshots: string[];
+// }
 
 interface BrowserUseGifResponse {
   gif: string;
@@ -29,7 +38,7 @@ interface BrowserUseStepsResponse {
   id: string;
   task: string;
   output: string | null;
-  status: 'created' | 'running' | 'finished' | 'stopped' | 'paused' | 'failed';
+  status: (typeof BROWSER_USE_TASK_STATUS)[keyof typeof BROWSER_USE_TASK_STATUS];
   created_at: string;
   steps: Array<{
     id: string;
@@ -113,8 +122,7 @@ export const createBrowserUseTool = () => {
             Authorization: `Bearer ${BROWSER_USE_API_KEY}`,
           },
           body: JSON.stringify({
-            task:
-              task_description + ' The final result is saved using result.md',
+            task: task_description + '\n\nSave the final result as result.md',
             save_browser_data: true,
             llm_model: 'claude-sonnet-4-20250514',
             use_adblock: true,
@@ -136,7 +144,7 @@ export const createBrowserUseTool = () => {
         const taskId = taskData.id;
 
         // Step 2: Poll for status and screenshots
-        let currentStatus: string = 'created';
+        let currentStatus: string = BROWSER_USE_TASK_STATUS.CREATED;
         let currentScreenshot: string | null = null;
         let finalGif: string | null = null;
         let finalMarkdown: string | null = null;
@@ -145,7 +153,10 @@ export const createBrowserUseTool = () => {
           url: string;
         }[] = [];
 
-        while (currentStatus === 'created' || currentStatus === 'running') {
+        while (
+          currentStatus === BROWSER_USE_TASK_STATUS.CREATED ||
+          currentStatus === BROWSER_USE_TASK_STATUS.RUNNING
+        ) {
           // Wait 3 seconds before polling
           await new Promise(resolve => setTimeout(resolve, 3000));
 
@@ -168,14 +179,18 @@ export const createBrowserUseTool = () => {
           const statusData: string = await statusResponse.text();
           currentStatus = statusData.replace(/"/g, ''); // Remove quotes
 
-          if (currentStatus === 'stopped' || currentStatus === 'failed') {
+          if (
+            currentStatus === BROWSER_USE_TASK_STATUS.STOPPED ||
+            currentStatus === BROWSER_USE_TASK_STATUS.FAILED ||
+            currentStatus === BROWSER_USE_TASK_STATUS.PAUSED
+          ) {
             return toolError(
               'Browser Use Task Failed',
               `Task ${currentStatus}`
             );
           }
 
-          // if (currentStatus === 'created' || currentStatus === 'running') {
+          // if (currentStatus === BROWSER_USE_TASK_STATUS.CREATED || currentStatus === BROWSER_USE_TASK_STATUS.RUNNING) {
           //   // Get screenshots
           //   const screenshotsResponse = await fetch(`${BROWSER_USE_API_URL}/task/${taskId}/screenshots`, {
           //     headers: {
@@ -191,7 +206,7 @@ export const createBrowserUseTool = () => {
           //   }
           // }
 
-          if (currentStatus === 'finished') {
+          if (currentStatus === BROWSER_USE_TASK_STATUS.FINISHED) {
             // Get final results
             const gifResponse = await fetch(
               `${BROWSER_USE_API_URL}/task/${taskId}/gif`,
@@ -254,6 +269,7 @@ export const createBrowserUseTool = () => {
             }
             // If getting steps fails, return empty array
             return {
+              currentStatus,
               currentScreenshot,
               finalGif,
               finalMarkdown,
@@ -263,6 +279,7 @@ export const createBrowserUseTool = () => {
         }
 
         return {
+          currentStatus,
           currentScreenshot,
           finalGif,
           finalMarkdown,

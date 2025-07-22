@@ -96,7 +96,6 @@ const footnoteComponents: Components = {
 
 const MemoizedMarkdownBlock = memo(
   ({ content, split }: { content: string; split?: boolean }) => {
-    console.log('split', split);
     return (
       <ReactMarkdown
         remarkPlugins={

@@ -79,17 +79,18 @@ export class MarkdownToSnapshotConverter {
   async convertMarkdownToSnapshotsWithSplit(
     markdown: string
   ): Promise<BlockSnapshot[]> {
-    // 按分割标记分割 markdown
-    const sections = this.splitMarkdownBySeparator(markdown);
+    // 按分割标记分割 markdown，同时提取配置信息
+    const sectionsWithConfig =
+      this.splitMarkdownBySeparatorWithConfig(markdown);
     const noteSnapshots: BlockSnapshot[] = [];
 
-    for (let i = 0; i < sections.length; i++) {
-      const section = sections[i];
-      if (section.trim()) {
+    for (let i = 0; i < sectionsWithConfig.length; i++) {
+      const { content, config } = sectionsWithConfig[i];
+      if (content.trim()) {
         this.resetState();
 
         // 预处理自定义语法
-        const processedMarkdown = this.preprocessCustomSyntax(section);
+        const processedMarkdown = this.preprocessCustomSyntax(content);
 
         const processor = unified().use(remarkParse).use(remarkGfm);
         const ast = processor.parse(processedMarkdown) as Root;
@@ -97,16 +98,22 @@ export class MarkdownToSnapshotConverter {
         const children = await this.convertAstToBlocks(ast);
 
         if (children.length > 0) {
+          // 使用配置中的背景颜色，如果没有则使用默认
+          const background =
+            config?.backgroundColor || this.getNoteBackground(i);
+
           const noteSnapshot: BlockSnapshot = {
             type: 'block',
             id: nanoid(),
             flavour: 'affine:note',
             props: {
               xywh: `[0,${i * 100},800,95]`,
-              background: this.getNoteBackground(i),
+              background: this.mapBackgroundColor(background),
               index: `a${i}`,
               hidden: false,
               displayMode: 'both',
+              // 如果配置中有标题，添加到 note 的属性中
+              ...(config?.title && { title: config.title }),
             },
             children,
           };
@@ -122,8 +129,78 @@ export class MarkdownToSnapshotConverter {
   private splitMarkdownBySeparator(markdown: string): string[] {
     // 只支持 <!-- note:split --> 分割标记
     return markdown
-      .split(/<!-- note:split -->/g)
+      .split(/<!-- note:split([\s\S]*?)-->/g)
       .filter(section => section.trim().length > 0);
+  }
+
+  private splitMarkdownBySeparatorWithConfig(
+    markdown: string
+  ): Array<{ content: string; config?: any }> {
+    // 支持 <!-- note:split --> 和 <!-- note:split{"title":"xxx","backgroundColor":"red"} --> 格式
+    const parts = markdown.split(/<!-- note:split([\s\S]*?)-->/g);
+    const result: Array<{ content: string; config?: any }> = [];
+
+    for (let i = 0; i < parts.length; i++) {
+      const part = parts[i];
+
+      if (i % 2 === 0) {
+        // 这是内容部分
+        if (part.trim().length > 0) {
+          result.push({ content: part, config: null });
+        }
+      } else {
+        // 这是分割标记中的配置部分
+        let config = null;
+        if (part.trim().length > 0) {
+          try {
+            // 尝试解析 JSON 配置
+            config = JSON.parse(part.trim());
+          } catch (e) {
+            // 如果解析失败，忽略配置
+            config = null;
+          }
+        }
+
+        // 获取下一个内容部分
+        if (i + 1 < parts.length) {
+          const nextContent = parts[i + 1];
+          if (nextContent.trim().length > 0) {
+            result.push({ content: nextContent, config });
+          }
+          i++; // 跳过下一个内容部分，因为我们已经处理了
+        }
+      }
+    }
+
+    return result;
+  }
+
+  private mapBackgroundColor(color: string): string {
+    // 将用户指定的颜色映射到 AFFiNE 的背景颜色变量
+    const colorMap: { [key: string]: string } = {
+      red: '--affine-note-background-red',
+      blue: '--affine-note-background-blue',
+      green: '--affine-note-background-green',
+      yellow: '--affine-note-background-yellow',
+      pink: '--affine-note-background-pink',
+      purple: '--affine-note-background-purple',
+      orange: '--affine-note-background-orange',
+      gray: '--affine-note-background-gray',
+      grey: '--affine-note-background-gray',
+    };
+
+    // 如果是已知的颜色名称，返回对应的 CSS 变量
+    if (colorMap[color.toLowerCase()]) {
+      return colorMap[color.toLowerCase()];
+    }
+
+    // 如果已经是 CSS 变量格式，直接返回
+    if (color.startsWith('--affine-note-background-')) {
+      return color;
+    }
+
+    // 如果是其他格式（如十六进制颜色），直接返回
+    return color;
   }
 
   private getNoteBackground(index: number): string {

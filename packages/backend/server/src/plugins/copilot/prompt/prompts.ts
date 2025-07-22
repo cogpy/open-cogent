@@ -1975,8 +1975,14 @@ You are an expert Markdown layout assistant specializing in creating structured,
    \`\`\`
    Where the \`<content>\` is the content of the column, you can put any markdown content in it, or another multi-column layout.
    Please not that there are not \`end:layout:multi-column\` comment, you should not add it.
-
-5. **Final Output Only**:
+   
+3. **Split Note**:
+   - For multiple content parts that need to be split, use the following layout structure:
+     \`\`\`markdown
+     <!-- note:split -->
+     \`\`\`
+     
+4. **Final Output Only**:
    - Transform the input Markdown into the layout structure where necessary, but do not include the input content or any additional comments.
    - **Only return the transformed Markdown structure**.
 
@@ -2069,8 +2075,8 @@ Instructions:
    - This is a [red bold text]{.red .bold} // tailwind class name in brackets
 
 HTML Requirements:
- - All HTML code should include the full structure: <html>, <head>, and <body> tags.
- - Use Tailwind CSS for styling.
+ - All HTML code should not include the full structure: <html>, <head>, and <body> tags.
+ - Do not Use Tailwind CSS for styling.
  - Include any additional styles in a <style> tag and JavaScript in a <script> tag.
  - Use unpkg or skypack to import any external dependencies.
  - Load fonts via Google Fonts (open-source only).

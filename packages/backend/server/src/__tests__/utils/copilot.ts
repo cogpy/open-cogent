@@ -113,43 +113,6 @@ export async function createCopilotContext(
   return res.createCopilotContext;
 }
 
-export async function matchFiles(
-  app: TestingApp,
-  contextId: string,
-  content: string,
-  limit: number
-): Promise<
-  | {
-      fileId: string;
-      chunk: number;
-      content: string;
-      distance: number | null;
-    }[]
-  | undefined
-> {
-  const res = await app.gql(
-    `
-        query matchFiles($contextId: String!, $content: String!, $limit: SafeInt, $threshold: Float) {
-          currentUser {
-            copilot {
-              contexts(contextId: $contextId) {
-                matchFiles(content: $content, limit: $limit, threshold: $threshold) {
-                  fileId
-                  chunk
-                  content
-                  distance
-                }
-              }
-            }
-          }
-        }
-      `,
-    { contextId, content, limit, threshold: 1 }
-  );
-
-  return res.currentUser?.copilot?.contexts?.[0]?.matchFiles;
-}
-
 export async function listContext(
   app: TestingApp,
   sessionId: string
@@ -182,10 +145,7 @@ export async function addContextFile(
       'operations',
       JSON.stringify({
         query: addContextFileMutation.query,
-        variables: {
-          content: null,
-          options: { contextId },
-        },
+        variables: { content: null, contextId },
       })
     )
     .field('map', JSON.stringify({ '0': ['variables.content'] }))

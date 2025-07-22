@@ -1,6 +1,8 @@
 import type { UserFriendlyError } from '@afk/error';
 import {
   addContextChatMutation,
+  addContextDocMutation,
+  addContextFileExistsMutation,
   addContextFileMutation,
   cleanupCopilotSessionMutation,
   createCopilotContextMutation,
@@ -14,11 +16,11 @@ import {
   type GraphQLQuery,
   listContextObjectQuery,
   listContextQuery,
-  matchContextQuery,
   type PaginationInput,
   type QueryOptions,
   type QueryResponse,
   removeContextChatQuery,
+  removeContextDocQuery,
   removeContextFileQuery,
   type RequestOptions,
   updateCopilotSessionMutation,
@@ -263,6 +265,17 @@ export class CopilotClient {
     return res.addContextFile;
   }
 
+  async addContextFileExists(blobId: string, contextId: string) {
+    const res = await this.gql({
+      query: addContextFileExistsMutation,
+      variables: {
+        blobId,
+        contextId,
+      },
+    });
+    return res.addContextFile;
+  }
+
   async removeContextFile(contextId: string, fileId: string) {
     const res = await this.gql({
       query: removeContextFileQuery,
@@ -283,27 +296,6 @@ export class CopilotClient {
       },
     });
     return res.currentUser?.copilot?.contexts?.[0];
-  }
-
-  async matchContext(
-    content: string,
-    contextId?: string,
-    limit?: number,
-    scopedThreshold?: number,
-    threshold?: number
-  ) {
-    const res = await this.gql({
-      query: matchContextQuery,
-      variables: {
-        content,
-        contextId,
-        limit,
-        scopedThreshold,
-        threshold,
-      },
-    });
-    const { matchFiles: files } = res.currentUser?.copilot?.contexts?.[0] || {};
-    return { files };
   }
 
   async chatText({
@@ -414,6 +406,28 @@ export class CopilotClient {
       variables: {
         contextId,
         sessionId,
+      },
+    });
+    return res.currentUser?.copilot?.contexts?.[0];
+  }
+
+  async addContextDoc(contextId: string, docId: string) {
+    const res = await this.gql({
+      query: addContextDocMutation,
+      variables: {
+        contextId,
+        docId,
+      },
+    });
+    return res.addContextDoc;
+  }
+
+  async removeContextDoc(contextId: string, docId: string) {
+    const res = await this.gql({
+      query: removeContextDocQuery,
+      variables: {
+        contextId,
+        docId,
       },
     });
     return res.currentUser?.copilot?.contexts?.[0];

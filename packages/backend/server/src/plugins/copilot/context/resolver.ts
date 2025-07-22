@@ -1,5 +1,3 @@
-import { createHash } from 'node:crypto';
-
 import {
   Args,
   Context,
@@ -17,6 +15,7 @@ import { SafeIntResolver } from 'graphql-scalars';
 import GraphQLUpload from 'graphql-upload/GraphQLUpload.mjs';
 
 import {
+  BlobNotFound,
   BlobQuotaExceeded,
   CallMetric,
   CopilotFailedToModifyContext,
@@ -37,9 +36,7 @@ import {
 } from '../../../models';
 import { COPILOT_LOCKER, CopilotType } from '../resolver';
 import { ChatSessionService } from '../session';
-import { CopilotStorage } from '../storage';
 import { MAX_EMBEDDABLE_SIZE } from '../types';
-import { readStream } from '../utils';
 import { CopilotUserService } from '../workspace';
 import { CopilotContextService } from './service';
 
@@ -197,8 +194,7 @@ export class CopilotContextResolver {
   constructor(
     private readonly mutex: RequestMutex,
     private readonly context: CopilotContextService,
-    private readonly copilotUser: CopilotUserService,
-    private readonly storage: CopilotStorage
+    private readonly copilotUser: CopilotUserService
   ) {}
 
   @ResolveField(() => [CopilotContextChatOrDoc], {
@@ -323,8 +319,10 @@ export class CopilotContextResolver {
     @CurrentUser() user: CurrentUser,
     @Context() ctx: { req: Request },
     @Args({ name: 'contextId' }) contextId: string,
-    @Args({ name: 'content', type: () => GraphQLUpload })
-    content: FileUpload
+    @Args({ name: 'content', type: () => GraphQLUpload, nullable: true })
+    content?: FileUpload,
+    @Args({ name: 'blobId', type: () => String, nullable: true })
+    blobId?: string
   ): Promise<CopilotContextFile> {
     const lockFlag = `${COPILOT_LOCKER}:context:${contextId}`;
     await using lock = await this.mutex.acquire(lockFlag);
@@ -340,22 +338,43 @@ export class CopilotContextResolver {
     const session = await this.context.get(contextId);
 
     try {
-      const buffer = await readStream(content.createReadStream());
-      const blobId = createHash('sha256').update(buffer).digest('base64url');
-      const { filename, mimetype } = content;
+      if (content) {
+        const { blobId, file } = await this.copilotUser.addFile(
+          user.id,
+          content
+        );
 
-      await this.storage.put(user.id, blobId, buffer);
-      const file = await session.addFile(blobId, filename, mimetype);
+        await this.copilotUser.queueFileEmbedding({
+          userId: user.id,
+          contextId: session.id,
+          blobId: file.blobId,
+          fileId: file.fileId,
+          fileName: file.fileName,
+        });
 
-      await this.copilotUser.queueFileEmbedding({
+        const finalFile = await session.addFile(
+          blobId,
+          file.fileName,
+          file.mimeType,
+          file.fileId
+        );
+
+        return finalFile;
+      } else if (blobId) {
+        const existsFile = await this.copilotUser.getFile(user.id, { blobId });
+        if (existsFile) {
+          const file = await session.addFile(
+            blobId,
+            existsFile.fileName,
+            existsFile.mimeType
+          );
+          return file;
+        }
+      }
+      throw new BlobNotFound({
         userId: user.id,
-        contextId: session.id,
-        blobId: file.blobId,
-        fileId: file.id,
-        fileName: file.name,
+        blobId: blobId || 'no provided',
       });
-
-      return file;
     } catch (e: any) {
       // passthrough user friendly error
       if (e instanceof UserFriendlyError) {

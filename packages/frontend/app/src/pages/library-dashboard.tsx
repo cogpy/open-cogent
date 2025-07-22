@@ -22,6 +22,7 @@ import dayjs from 'dayjs';
 import { useCallback, useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
 
+import { FileIconRenderer } from '@/components/file-icon-renderer';
 import { ChatIcon } from '@/icons/chat';
 import { EmptyLibrary } from '@/icons/empty-library';
 import { gql } from '@/lib/gql';
@@ -252,7 +253,11 @@ const FileListItem: MasonryItem['Component'] = ({ itemId }) => {
   return (
     <div className={styles.listItem}>
       <div className={styles.listItemIcon}>
-        <FileIcon />
+        <FileIconRenderer
+          className="rounded-sm"
+          mimeType={file.mimeType}
+          blobId={file.blobId}
+        />
       </div>
       <div className={styles.listItemTitle}>{file.fileName}</div>
       <div>

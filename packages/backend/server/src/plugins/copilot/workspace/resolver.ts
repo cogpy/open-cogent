@@ -1,6 +1,5 @@
 import {
   Args,
-  Context,
   Field,
   Mutation,
   ObjectType,
@@ -8,13 +7,8 @@ import {
   ResolveField,
   Resolver,
 } from '@nestjs/graphql';
-import type { Request } from 'express';
-import GraphQLUpload, {
-  type FileUpload,
-} from 'graphql-upload/GraphQLUpload.mjs';
 
 import {
-  BlobQuotaExceeded,
   CopilotFailedToAddUserArtifact,
   Mutex,
   paginate,
@@ -25,7 +19,6 @@ import {
 import { CurrentUser } from '../../../core/auth';
 import { UserType } from '../../../core/user';
 import { COPILOT_LOCKER } from '../resolver';
-import { MAX_EMBEDDABLE_SIZE } from '../types';
 import { CopilotUserService } from './service';
 import {
   CopilotUserDocType,
@@ -133,55 +126,6 @@ export class CopilotUserEmbeddingConfigResolver {
       }
       throw new CopilotFailedToAddUserArtifact({
         type: 'doc',
-        message: e.message,
-      });
-    }
-  }
-
-  @Mutation(() => CopilotUserFileType, {
-    complexity: 2,
-    description: 'Upload user embedding files',
-  })
-  async addUserFiles(
-    @Context() ctx: { req: Request },
-    @CurrentUser() user: CurrentUser,
-    @Args({ name: 'blob', type: () => GraphQLUpload })
-    content: FileUpload,
-    @Args('metadata', { type: () => String, nullable: true })
-    metadata?: string
-  ): Promise<CopilotUserFileType> {
-    const lockFlag = `${COPILOT_LOCKER}:user:${user.id}`;
-    await using lock = await this.mutex.acquire(lockFlag);
-    if (!lock) {
-      throw new TooManyRequest('Server is busy');
-    }
-
-    const length = Number(ctx.req.headers['content-length']);
-    if (length && length >= MAX_EMBEDDABLE_SIZE) {
-      throw new BlobQuotaExceeded();
-    }
-
-    try {
-      const { blobId, file } = await this.copilotUser.addFile(
-        user.id,
-        content,
-        metadata
-      );
-      await this.copilotUser.queueFileEmbedding({
-        userId: user.id,
-        blobId,
-        fileId: file.fileId,
-        fileName: file.fileName,
-      });
-
-      return file;
-    } catch (e: any) {
-      // passthrough user friendly error
-      if (e instanceof UserFriendlyError) {
-        throw e;
-      }
-      throw new CopilotFailedToAddUserArtifact({
-        type: 'file',
         message: e.message,
       });
     }

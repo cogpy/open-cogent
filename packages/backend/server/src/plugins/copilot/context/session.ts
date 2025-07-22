@@ -88,9 +88,10 @@ export class ContextSession implements AsyncDisposable {
   async addFile(
     blobId: string,
     name: string,
-    mimeType: string
+    mimeType: string,
+    overrideFileId?: string
   ): Promise<Required<ContextFile>> {
-    let fileId = nanoid();
+    let fileId = overrideFileId || nanoid();
     const existsBlob = this.config.files.find(f => f.blobId === blobId);
     if (existsBlob) {
       // use exists file id if the blob exists
@@ -250,6 +251,7 @@ export class ContextSession implements AsyncDisposable {
             ) as Required<ContextFile>;
             return { ...c, blobId, name, mimeType };
           }),
+        ...context.filter(f => !files.has(f.fileId)),
       ],
       topK,
       signal

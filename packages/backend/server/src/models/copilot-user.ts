@@ -94,10 +94,11 @@ export class CopilotUserConfigModel extends BaseModel {
 
   async getFile(
     userId: string,
-    fileId: string
+    fileId?: string,
+    blobId?: string
   ): Promise<CopilotUserFile | null> {
     const file = await this.db.aiUserFiles.findFirst({
-      where: { userId, fileId },
+      where: { userId, fileId, blobId },
     });
     return file;
   }

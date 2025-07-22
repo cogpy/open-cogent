@@ -54,8 +54,15 @@ export class CopilotUserService {
     return await this.models.copilotUser.getDoc(userId, docId);
   }
 
-  async getFile(userId: string, fileId: string) {
-    return await this.models.copilotUser.getFile(userId, fileId);
+  async getFile(userId: string, options: { fileId?: string; blobId?: string }) {
+    if (!options.fileId && !options.blobId) {
+      throw new Error('File ID or Blob ID is required');
+    }
+    return await this.models.copilotUser.getFile(
+      userId,
+      options.fileId,
+      options.blobId
+    );
   }
 
   async listDocs(

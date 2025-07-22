@@ -32,7 +32,6 @@ import {
   TextStreamParser,
 } from '../plugins/copilot/providers/utils';
 import { ChatSessionService } from '../plugins/copilot/session';
-import { CopilotStorage } from '../plugins/copilot/storage';
 import { CopilotTranscriptionService } from '../plugins/copilot/transcript';
 import {
   CopilotChatTextExecutor,
@@ -63,15 +62,14 @@ type Context = {
   module: TestingModule;
   db: PrismaClient;
   event: EventBus;
+  copilotUser: CopilotUserService;
   copilotSession: CopilotSessionModel;
   context: CopilotContextService;
   prompt: PromptService;
   transcript: CopilotTranscriptionService;
-  userEmbedding: CopilotUserService;
   factory: CopilotProviderFactory;
   session: ChatSessionService;
   jobs: CopilotEmbeddingJob;
-  storage: CopilotStorage;
   workflow: CopilotWorkflowService;
   cronJobs: CopilotCronJobs;
   executors: {
@@ -127,7 +125,6 @@ test.before(async t => {
 
   const session = module.get(ChatSessionService);
   const workflow = module.get(CopilotWorkflowService);
-  const storage = module.get(CopilotStorage);
 
   const context = module.get(CopilotContextService);
   const jobs = module.get(CopilotEmbeddingJob);
@@ -144,11 +141,10 @@ test.before(async t => {
   t.context.factory = factory;
   t.context.session = session;
   t.context.workflow = workflow;
-  t.context.storage = storage;
   t.context.context = context;
   t.context.jobs = jobs;
   t.context.transcript = transcript;
-  t.context.userEmbedding = userEmbedding;
+  t.context.copilotUser = userEmbedding;
   t.context.cronJobs = cronJobs;
 
   t.context.executors = {
@@ -1368,7 +1364,7 @@ test('TextStreamParser should process a sequence of message chunks', t => {
 
 // ==================== context ====================
 test('should be able to manage context', async t => {
-  const { context, prompt, session, event, jobs, storage } = t.context;
+  const { context, prompt, session, event, jobs, copilotUser } = t.context;
 
   await prompt.set(promptName, 'model', [
     { role: 'system', content: 'hello {{word}}' },
@@ -1415,12 +1411,24 @@ test('should be able to manage context', async t => {
 
     // file record
     {
-      await storage.put(userId, 'blob', buffer);
-      const file = await session.addFile(
-        'blob',
-        'sample.pdf',
-        'application/pdf'
-      );
+      const {
+        blobId,
+        file: { fileId, fileName, mimeType },
+      } = await copilotUser.addFile(userId, {
+        createReadStream: () => {
+          return new Readable({
+            read() {
+              this.push(buffer);
+              this.push(null);
+            },
+          });
+        },
+        mimetype: 'application/pdf',
+        filename: 'sample.pdf',
+        encoding: 'utf-8',
+      });
+
+      const file = await session.addFile(blobId, fileName, mimeType, fileId);
 
       const handler = Sinon.spy(event, 'emit');
 
@@ -1457,14 +1465,7 @@ test('should be able to manage context', async t => {
 
 // ==================== workspace embedding ====================
 test('should be able to manage workspace embedding', async t => {
-  const {
-    db,
-    jobs,
-    userEmbedding: workspaceEmbedding,
-    context,
-    prompt,
-    session,
-  } = t.context;
+  const { db, jobs, copilotUser, context, prompt, session } = t.context;
 
   // use mocked embedding client
   Sinon.stub(context, 'embeddingClient').get(() => new MockEmbeddingClient());
@@ -1472,7 +1473,7 @@ test('should be able to manage workspace embedding', async t => {
 
   // should create workspace embedding
   {
-    const { blobId, file } = await workspaceEmbedding.addFile(userId, {
+    const { blobId, file } = await copilotUser.addFile(userId, {
       filename: 'test.txt',
       mimetype: 'text/plain',
       encoding: 'utf-8',
@@ -1485,7 +1486,7 @@ test('should be able to manage workspace embedding', async t => {
         });
       },
     });
-    await workspaceEmbedding.queueFileEmbedding({
+    await copilotUser.queueFileEmbedding({
       userId,
       blobId,
       fileId: file.fileId,
@@ -1501,7 +1502,7 @@ test('should be able to manage workspace embedding', async t => {
     }
   }
 
-  // should create workspace embedding with file
+  // should create user embedding with file
   {
     await prompt.set(promptName, 'model', [
       { role: 'system', content: 'hello {{word}}' },
@@ -1514,7 +1515,7 @@ test('should be able to manage workspace embedding', async t => {
     const contextSession = await context.create(sessionId);
 
     const ret = await contextSession.matchFiles('test', 1, undefined, 1);
-    t.is(ret.length, 1, 'should match workspace context');
+    t.is(ret.length, 1, 'should match user context');
     t.is(ret[0].content, 'content', 'should match content');
   }
 });

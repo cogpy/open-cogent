@@ -22,9 +22,9 @@ interface BrowserUseTaskResponse {
   id: string;
 }
 
-// interface BrowserUseScreenshotsResponse {
-//   screenshots: string[];
-// }
+interface BrowserUseScreenshotsResponse {
+  screenshots: string[];
+}
 
 interface BrowserUseGifResponse {
   gif: string;
@@ -152,6 +152,7 @@ export const createBrowserUseTool = () => {
           next_goal: string;
           url: string;
         }[] = [];
+        let internalScreenshots: string[] = [];
 
         while (
           currentStatus === BROWSER_USE_TASK_STATUS.CREATED ||
@@ -190,21 +191,36 @@ export const createBrowserUseTool = () => {
             );
           }
 
-          // if (currentStatus === BROWSER_USE_TASK_STATUS.CREATED || currentStatus === BROWSER_USE_TASK_STATUS.RUNNING) {
-          //   // Get screenshots
-          //   const screenshotsResponse = await fetch(`${BROWSER_USE_API_URL}/task/${taskId}/screenshots`, {
-          //     headers: {
-          //       'Authorization': `Bearer ${BROWSER_USE_API_KEY}`,
-          //     },
-          //   });
+          if (
+            currentStatus === BROWSER_USE_TASK_STATUS.CREATED ||
+            currentStatus === BROWSER_USE_TASK_STATUS.RUNNING
+          ) {
+            // Get screenshots
+            const screenshotsResponse = await fetch(
+              `${BROWSER_USE_API_URL}/task/${taskId}/screenshots`,
+              {
+                headers: {
+                  Authorization: `Bearer ${BROWSER_USE_API_KEY}`,
+                },
+              }
+            );
 
-          //   if (screenshotsResponse.ok) {
-          //     const screenshotsData: BrowserUseScreenshotsResponse = await screenshotsResponse.json() as BrowserUseScreenshotsResponse;
-          //     if (screenshotsData.screenshots && screenshotsData.screenshots.length > 0) {
-          //       currentScreenshot = screenshotsData.screenshots[screenshotsData.screenshots.length - 1];
-          //     }
-          //   }
-          // }
+            if (screenshotsResponse.ok) {
+              const screenshotsData: BrowserUseScreenshotsResponse =
+                (await screenshotsResponse.json()) as BrowserUseScreenshotsResponse;
+              // Only update internal array if the returned screenshotsData has more elements than the internal array
+              if (
+                screenshotsData.screenshots &&
+                screenshotsData.screenshots.length > 0 &&
+                screenshotsData.screenshots.length > internalScreenshots.length
+              ) {
+                internalScreenshots = [...screenshotsData.screenshots];
+                // Return the URL of the last screenshot in the array
+                currentScreenshot =
+                  internalScreenshots[internalScreenshots.length - 1];
+              }
+            }
+          }
 
           if (currentStatus === BROWSER_USE_TASK_STATUS.FINISHED) {
             // Get final results

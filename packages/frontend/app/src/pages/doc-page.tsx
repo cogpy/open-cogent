@@ -28,7 +28,7 @@ export function DocPage() {
       </div>
       {showChatPanel && (
         <div className="flex-1 bg-white rounded-[8px] overflow-hidden h-full">
-          <ChatPanel />
+          <ChatPanel docId={id} />
         </div>
       )}
     </>

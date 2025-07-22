@@ -5,7 +5,7 @@ import { useRefCounted } from '@/lib/hooks/use-ref-counted';
 import { copilotClient } from '@/store/copilot/client';
 import { chatSessionsStore } from '@/store/copilot/sessions-instance';
 
-export function ChatPanel() {
+export function ChatPanel({ docId }: { docId?: string }) {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   // Create or get session store
@@ -33,6 +33,7 @@ export function ChatPanel() {
         client: copilotClient,
         options: {
           promptName: 'Chat With AFFiNE AI',
+          docId,
         },
       });
 

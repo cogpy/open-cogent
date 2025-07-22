@@ -67,17 +67,24 @@ export async function* mergeStreams<F, S>(
       const { idx, result } = await Promise.race(reads);
 
       if (result.done) {
-        readers[idx].releaseLock();
-        reads.splice(idx, 1);
-        readers.splice(idx, 1);
+        if (idx === 0) {
+          for (const reader of readers) {
+            reader.releaseLock();
+          }
+          break;
+        } else {
+          readers[idx].releaseLock();
+          reads.splice(idx, 1);
+          readers.splice(idx, 1);
 
-        for (let i = idx; i < reads.length; i++) {
-          reads[i] = reads[i].then(({ idx: old, result }) => ({
-            idx: old - 1,
-            result,
-          }));
+          for (let i = idx; i < reads.length; i++) {
+            reads[i] = reads[i].then(({ idx: old, result }) => ({
+              idx: old - 1,
+              result,
+            }));
+          }
+          continue;
         }
-        continue;
       }
 
       reads[idx] = readers[idx].read().then(result => ({ idx, result }));

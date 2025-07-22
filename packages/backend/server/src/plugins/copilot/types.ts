@@ -48,6 +48,7 @@ export const ChatHistorySchema = z
   .object({
     userId: z.string(),
     sessionId: z.string(),
+    docId: z.string().optional(),
     pinned: z.boolean(),
     title: z.string().nullable(),
     metadata: z.string(),

@@ -66,7 +66,7 @@ export function duplicateToolStream(
 
   const pipelineDone = branchA
     .pipeThrough(transformStream)
-    .pipeTo(targetStream, { signal: abortSignal })
+    .pipeTo(targetStream, { signal: abortSignal, preventClose: true })
     .catch(err => {
       if (!abortSignal?.aborted) {
         logger.warn(`Tool stream ${toolCallId} pipeline error: ${err}`);

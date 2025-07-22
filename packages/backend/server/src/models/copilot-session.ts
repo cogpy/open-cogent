@@ -25,7 +25,12 @@ type ChatPrompt = {
 type ChatAttachment = { attachment: string; mimeType: string } | string;
 
 type ChatStreamObject = {
-  type: 'text-delta' | 'reasoning' | 'tool-call' | 'tool-result';
+  type:
+    | 'text-delta'
+    | 'reasoning'
+    | 'tool-call'
+    | 'tool-result'
+    | 'tool-incomplete-result';
   textDelta?: string;
   toolCallId?: string;
   toolName?: string;
@@ -45,6 +50,7 @@ type ChatMessage = {
 
 type PureChatSession = {
   sessionId: string;
+  docId?: string;
   pinned?: boolean;
   title: string | null;
   messages?: ChatMessage[];

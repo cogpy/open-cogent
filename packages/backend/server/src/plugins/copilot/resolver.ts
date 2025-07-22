@@ -53,6 +53,12 @@ class CreateChatSessionInput {
   })
   promptName!: string;
 
+  @Field(() => String, {
+    description: 'mark the session create from which doc',
+    nullable: true,
+  })
+  docId?: string;
+
   @Field(() => Boolean, { nullable: true })
   pinned?: boolean;
 

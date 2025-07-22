@@ -291,6 +291,8 @@ input CreateChatMessageInput {
 }
 
 input CreateChatSessionInput {
+  """mark the session create from which doc"""
+  docId: String
   pinned: Boolean
 
   """The prompt name to use for the session"""

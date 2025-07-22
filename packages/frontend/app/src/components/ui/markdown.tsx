@@ -1,14 +1,23 @@
-import type { Element } from 'hast';
+import type { Element, Root } from 'hast';
 import { marked } from 'marked';
 import { memo, useMemo } from 'react';
 import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { visit } from 'unist-util-visit';
 
 import { cn } from '@/lib/utils';
 
 function parseMarkdownIntoBlocks(markdown: string): string[] {
   const tokens = marked.lexer(markdown);
   return tokens.map(token => token.raw);
+}
+
+function remarkStripFootnoteRefs() {
+  return (tree: Root) => {
+    visit(tree, 'text', node => {
+      node.value = node.value.replaceAll(/\[\^[^\]]*\]/g, '');
+    });
+  };
 }
 
 /* ────────────────────────────────────────── */
@@ -86,10 +95,13 @@ const footnoteComponents: Components = {
 };
 
 const MemoizedMarkdownBlock = memo(
-  ({ content }: { content: string }) => {
+  ({ content, split }: { content: string; split?: boolean }) => {
+    console.log('split', split);
     return (
       <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
+        remarkPlugins={
+          split ? [remarkGfm, remarkStripFootnoteRefs] : [remarkGfm]
+        }
         components={footnoteComponents}
       >
         {content}
@@ -112,7 +124,11 @@ const MemoizedMarkdown = memo(
     );
 
     return blocks.map((block, index) => (
-      <MemoizedMarkdownBlock content={block} key={`block_${index}`} />
+      <MemoizedMarkdownBlock
+        content={block}
+        key={`block_${index}`}
+        split={split}
+      />
     ));
   }
 );

@@ -24,7 +24,10 @@ export function MessageRenderer({
   return (
     <div className={isAssistant ? 'text-left' : 'text-right'}>
       {message.streamObjects?.length ? (
-        <ChatContentStreamObjects streamObjects={message.streamObjects} />
+        <ChatContentStreamObjects
+          streamObjects={message.streamObjects}
+          isStreaming={isStreaming}
+        />
       ) : (
         <MarkdownText
           className="inline-block bg-gray-100 p-3 max-w-full prose rounded-lg mb-4"

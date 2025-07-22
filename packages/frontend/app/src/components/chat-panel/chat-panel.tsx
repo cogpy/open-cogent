@@ -2,7 +2,6 @@ import { useState } from 'react';
 
 import { ChatInterface } from '@/components/chat/chat-interface';
 import { useRefCounted } from '@/lib/hooks/use-ref-counted';
-import { useChatPanelStore } from '@/store/chat-panel';
 import { copilotClient } from '@/store/copilot/client';
 import { chatSessionsStore } from '@/store/copilot/sessions-instance';
 

@@ -1,6 +1,7 @@
 import { Divider, IconButton, Modal, RowInput } from '@afk/component';
 import {
   AllDocsIcon,
+  ArrowUpBigIcon,
   CloseIcon,
   EditIcon,
   PageIcon,
@@ -120,11 +121,11 @@ export const Cmdk = ({
       execute: (input: string) => {
         nav(`/chats/?msg=${input}`);
       },
-      icon: <EditIcon />,
+      icon: <ArrowUpBigIcon />,
       priority: 10,
       closeAfterExecute: true,
       filter: () => {
-        return paletteItems.length === 0;
+        return paletteItems.length === 0 && search.length > 0;
       },
     },
     {

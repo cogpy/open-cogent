@@ -18,7 +18,12 @@ type CardStatus = 'done' | 'inProgress' | 'todo';
 
 const statusToCardStatus = (status: string): CardStatus => {
   if (status === 'completed' || status === 'done') return 'done';
-  if (status === 'in_progress' || status === 'in-progress') return 'inProgress';
+  if (
+    status === 'in_progress' ||
+    status === 'in-progress' ||
+    status === 'processing'
+  )
+    return 'inProgress';
   return 'todo';
 };
 

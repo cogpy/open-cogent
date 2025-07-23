@@ -43,11 +43,12 @@ export function ChatContentStreamObjects({
     <div className="flex flex-col gap-2 max-w-full text-left prose w-full">
       {streamObjects.map((obj, idx) => {
         const loading = isStreaming && idx === streamObjects.length - 1;
+        const key = `${obj.toolCallId ?? obj.type}-${idx}`;
         switch (obj.type) {
           case 'text-delta': {
             return (
               <MarkdownText
-                key={idx}
+                key={key}
                 text={obj.textDelta ?? ''}
                 loading={loading}
                 className={isAssistant ? 'min-w-full' : undefined}
@@ -57,7 +58,7 @@ export function ChatContentStreamObjects({
 
           case 'reasoning':
             return (
-              <div key={idx} className="rounded-md bg-black/[0.05] p-4">
+              <div key={key} className="rounded-md bg-black/[0.05] p-4">
                 <MarkdownText
                   className={isAssistant ? 'min-w-full' : undefined}
                   text={obj.textDelta ?? ''}
@@ -73,7 +74,7 @@ export function ChatContentStreamObjects({
             ) {
               return (
                 <GeneratingCard
-                  key={idx}
+                  key={key}
                   title={'Generating...'}
                   content={obj.textDelta ?? ''}
                   icon={<Loading />}
@@ -97,7 +98,7 @@ export function ChatContentStreamObjects({
 
               return (
                 <GenericToolCalling
-                  key={idx}
+                  key={key}
                   title={
                     query
                       ? `Searching the web for "${query}"`
@@ -111,7 +112,7 @@ export function ChatContentStreamObjects({
               const url = obj.args?.url;
               return (
                 <GenericToolCalling
-                  key={idx}
+                  key={key}
                   title={`Crawling "${url}"`}
                   icon={<EmbedWebIcon />}
                 />
@@ -121,7 +122,7 @@ export function ChatContentStreamObjects({
             if (obj.toolName === 'browser_use' && obj.textDelta) {
               const result = transformStep(obj.textDelta as any);
               if (result) {
-                return <BrowserUseResult key={idx} result={result} />;
+                return <BrowserUseResult key={key} result={result} />;
               } else {
                 return 'Error';
               }
@@ -130,7 +131,7 @@ export function ChatContentStreamObjects({
             if (obj.toolName === 'python_coding') {
               return (
                 <GeneratingCard
-                  key={idx}
+                  key={key}
                   title={'Coding...'}
                   content={obj.textDelta ?? ''}
                   icon={<Loading />}
@@ -140,7 +141,7 @@ export function ChatContentStreamObjects({
             if (obj.toolName === 'e2b_python_sandbox') {
               return (
                 <GeneratingCard
-                  key={idx}
+                  key={key}
                   title={'Running python code...'}
                   content={obj.textDelta ?? ''}
                   icon={<Loading />}
@@ -150,20 +151,20 @@ export function ChatContentStreamObjects({
 
             return (
               <GenericToolCalling
-                key={idx}
+                key={key}
                 title={`Calling ${obj.toolName ?? 'tool'} …`}
               />
             );
 
           case 'tool-result': {
             if (obj.toolName === 'code_artifact' && obj.result) {
-              return <CodeArtifactResult result={obj.result} />;
+              return <CodeArtifactResult key={key} result={obj.result} />;
             }
             // Special handling for make_it_real tool
             if (obj.toolName === 'make_it_real' && obj.result) {
               return (
                 <MakeItRealResult
-                  key={idx}
+                  key={key}
                   docId={obj.result.docId}
                   title={obj.result.title}
                 />
@@ -172,7 +173,7 @@ export function ChatContentStreamObjects({
             if (obj.toolName === 'doc_compose' && obj.result) {
               return (
                 <MakeItRealResult
-                  key={idx}
+                  key={key}
                   docId={obj.result.docId}
                   title={obj.result.title}
                 />
@@ -185,7 +186,7 @@ export function ChatContentStreamObjects({
                 obj.result.results || obj.result.data || obj.result;
               return (
                 <WebSearchResult
-                  key={idx}
+                  key={key}
                   results={Array.isArray(results) ? results : [results]}
                   query={obj.result.query}
                 />
@@ -196,7 +197,7 @@ export function ChatContentStreamObjects({
                 obj.result.results || obj.result.data || obj.result;
               return (
                 <WebCrawlResult
-                  key={idx}
+                  key={key}
                   results={Array.isArray(results) ? results : [results]}
                 />
               );
@@ -207,27 +208,32 @@ export function ChatContentStreamObjects({
               ['todo_list', 'mark_todo'].includes(obj.toolName ?? '') &&
               obj.result?.list
             ) {
-              return <TodoListResult key={idx} result={obj.result as any} />;
+              return <TodoListResult key={key} result={obj.result as any} />;
             }
 
             if (obj.toolName === 'python_coding' && obj.result) {
-              return <PythonCodeResult result={obj.result} />;
+              return <PythonCodeResult key={key} result={obj.result} />;
             }
 
             // Specialized handling for e2b python sandbox
             if (obj.toolName === 'e2b_python_sandbox' && obj.result) {
-              return <E2bPythonResult result={obj.result as unknown as any} />;
+              return (
+                <E2bPythonResult
+                  key={key}
+                  result={obj.result as unknown as any}
+                />
+              );
             }
 
             if (obj.toolName === 'browser_use' && obj.result) {
               if (obj.result && typeof obj.result === 'object') {
                 return (
-                  <BrowserUseResult key={idx} result={obj.result as any} />
+                  <BrowserUseResult key={key} result={obj.result as any} />
                 );
               }
               return (
                 <MessageCard
-                  key={idx}
+                  key={key}
                   status="loading"
                   className="my-5"
                   title="Browser task processing..."
@@ -239,6 +245,7 @@ export function ChatContentStreamObjects({
 
             return (
               <GenericToolResult
+                key={key}
                 icon={<CheckBoxCheckSolidIcon />}
                 title={`${obj.toolName ?? 'Tool'} result`}
               >

@@ -1,7 +1,7 @@
 import { IconButton, Menu, MenuItem } from '@afk/component';
 import { ArrowUpBigIcon, PlusIcon } from '@blocksuite/icons/rc';
 import { cssVarV2 } from '@toeverything/theme/v2';
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 import type { StoreApi } from 'zustand';
 
 import { cn } from '@/lib/utils';
@@ -63,6 +63,14 @@ export const ChatInput = ({
   store?: StoreApi<ChatSessionState>;
   isCreating?: boolean;
 }) => {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const onClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    textareaRef.current?.focus();
+  }, []);
+
   // const [model, setModel] = useState('claude-3-5-sonnet-v2@20241022');
   const handleInput = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -94,6 +102,7 @@ export const ChatInput = ({
 
   return (
     <div
+      onClick={onClick}
       className={cn(
         styles.container,
         'transition duration-500 border rounded-2xl p-4 w-full'
@@ -102,6 +111,7 @@ export const ChatInput = ({
       <ContextPreview store={store} />
       <div className="w-full relative">
         <textarea
+          ref={textareaRef}
           rows={2}
           className="w-full resize-none bg-transparent focus:outline-none"
           value={input}
@@ -140,7 +150,11 @@ export const ChatInput = ({
             disabled={!input.trim()}
             className={styles.send}
             icon={<ArrowUpBigIcon className="text-white" />}
-            onClick={onSend}
+            onClick={e => {
+              e.preventDefault();
+              e.stopPropagation();
+              onSend();
+            }}
             loading={isCreating}
           />
         </div>

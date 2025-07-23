@@ -76,3 +76,16 @@ export type SendMessageOptions = Parameters<CopilotClient['createMessage']>[0];
 export type UpdateSessionOptions = Parameters<
   CopilotClient['updateSession']
 >[0];
+
+export type TodoListItem = {
+  id: string;
+  title: string;
+  description: string;
+  status: 'completed' | 'processing' | 'pending';
+};
+
+export type MarkTodoArgs = {
+  status: 'completed' | 'processing';
+  todoId: string;
+  todoListId: string;
+};

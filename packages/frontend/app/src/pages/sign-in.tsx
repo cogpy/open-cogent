@@ -201,6 +201,7 @@ export const SignInPage: React.FC = () => {
             <p className="text-sm mb-2 text-gray-700">{email}</p>
             <input
               type="password"
+              autoFocus
               placeholder="Password"
               className="w-full px-3 py-2 border rounded mb-3"
               value={password}

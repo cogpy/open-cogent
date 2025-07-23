@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 
+import { MarkdownText } from '@/components/ui/markdown';
 import { cn } from '@/lib/utils';
 
 import * as styles from './generating-card.css';
@@ -46,7 +47,11 @@ export const GeneratingCard = ({
             ref={contentRef}
           >
             <div className="leading-5 not-prose">
-              <pre>{content}</pre>
+              <MarkdownText
+                text={content}
+                loading={true}
+                className="prose-sm"
+              />
             </div>
           </div>
         </div>

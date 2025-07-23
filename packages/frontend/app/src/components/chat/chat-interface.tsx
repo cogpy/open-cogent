@@ -6,6 +6,8 @@ import { ChatInput } from '@/components/chat-input';
 import { MessageRenderer } from '@/pages/chats/renderers/message';
 import type { ChatSessionState } from '@/store/copilot/types';
 
+import { AggregatedTodoList } from './aggregated-todo-list';
+
 // Placeholder component for when no session exists
 interface ChatPlaceholderProps {
   placeholder?: string;
@@ -120,6 +122,8 @@ const ChatSession = ({
       </div>
 
       <div className="max-w-[800px] mx-auto w-full py-4">
+        {/* Aggregated Todo List - positioned above input */}
+        <AggregatedTodoList store={store} />
         <ChatInput
           input={input}
           setInput={setInput}

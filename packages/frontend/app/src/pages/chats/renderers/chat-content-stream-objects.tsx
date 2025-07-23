@@ -6,7 +6,7 @@ import { CheckBoxCheckSolidIcon } from '@blocksuite/icons/rc';
 import { MessageCard } from '@/components/ui/card/message-card';
 import { MarkdownText } from '@/components/ui/markdown';
 
-import { BrowserUseResult, transfromStep } from './browser-use-result';
+import { BrowserUseResult, transformStep } from './browser-use-result';
 import { CodeArtifactResult } from './code-artifact-result';
 import { GeneratingCard } from './generating-card';
 import { GenericToolCalling } from './generic-tool-calling';
@@ -105,12 +105,16 @@ export function ChatContentStreamObjects({
             }
 
             if (obj.toolName === 'browser_use' && obj.textDelta) {
-              const result = transfromStep(obj.textDelta as any);
+              const result = transformStep(obj.textDelta as any);
               if (result) {
                 return <BrowserUseResult key={idx} result={result} />;
               } else {
                 return 'Error';
               }
+            }
+
+            if (obj.toolName === 'python_coding') {
+              // TODO(@CatsJuice)
             }
 
             return (

@@ -18,101 +18,247 @@ export const markdownLayout: InitFn = async (
   doc.clear();
 
   // 创建紧凑的混合测试内容，包含所有功能的精简示例
-  const compactMixedContent = `<!-- layout:multi-column{"id": "mc-news-main","columns": [{ "id": "col-headline", "width": 60 },{ "id": "col-visual", "width": 40 }]}-->
-<!-- content:column{"parent": "mc-news-main","insert": "col-headline"} -->
-# [Breakthrough: 'Quantum Photonic Resonance Cells' Promise 24/7 Solar Power Revolution]{"color": "oklch(32.1% 0.18 250)","bg": "oklch(98% 0.01 250)"}
+  const compactMixedContent = `[August 2025]{"color":"oklch(38.2% 0.18 250)","bg":"oklch(98% 0.02 250)"}  
 
-[By Alex Chen, Science Correspondent]{"color": "oklch(45% 0.12 250)", ".italic": true}
+<!-- layout:multi-column{"id": "mc-hero","columns": [{ "id": "col-hero-1", "width": 60 },{ "id": "col-hero-2", "width": 40 }]}-->
+<!-- content:column{"parent": "mc-hero","insert": "col-hero-1"} -->
 
-[NEO-GENESIS CITY, Terra Nova –]{"color": "oklch(40% 0.14 250)", ".bold": true} In a monumental stride towards global energy independence, researchers at the pioneering Solara Dynamics Institute have unveiled a revolutionary new technology dubbed ==Quantum Photonic Resonance Cells (QPRC)==. This groundbreaking innovation promises to fundamentally transform how humanity harnesses solar energy, offering the unprecedented ability to generate electricity not just from direct sunlight, but from virtually any ambient light source, day or night, indoors or out. The discovery, led by the visionary Dr. Aris Thorne, is being hailed as the definitive answer to renewable energy's long-standing intermittency challenge.
+[Your essential, premium guide to Japan’s Golden Route in the vibrant summer.]{".italic","color":"oklch(45% 0.13 250)"}
 
----
-
-The QPRC technology represents a paradigm shift from conventional photovoltaic cells. Unlike traditional solar panels that rely on direct, high-intensity sunlight to excite electrons and generate current, QPRCs are engineered to capture and convert an incredibly broad spectrum of electromagnetic radiation, including low-intensity visible light, infrared, and even ultraviolet wavelengths that are abundant in ambient environments. This is achieved through a novel material composite that leverages quantum resonance principles, allowing the cells to efficiently "tune into" and absorb energy from diffuse photons, regardless of their intensity or origin. Early prototypes have demonstrated remarkable efficiency, producing consistent power output even under cloudy skies, artificial lighting, or during nighttime hours from residual atmospheric light.
+- [7 days, 3 cities, endless memories]{".bold","color":"oklch(38.2% 0.18 250)"}
+- [Tokyo → Kyoto → Osaka]{".bold","color":"oklch(38.2% 0.18 250)"}
+- [Curated tips, etiquette, and pro travel hacks]{".italic","color":"oklch(45% 0.13 250)"}
 
 <!-- end:content:column -->
-
-<!-- content:column{"parent": "mc-news-main","insert": "col-visual"} -->
+<!-- content:column{"parent": "mc-hero","insert": "col-hero-2"} -->
 \`\`\`html
-<div class="flex flex-col items-center justify-center h-full p-4 bg-[oklch(97%_0.01_250)] rounded-lg shadow-lg" style="font-family: 'Merriweather', serif;">
-  <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80" alt="Futuristic solar cell" class="rounded-lg mb-4 shadow-md transition-transform duration-500 hover:scale-105" style="aspect-ratio: 4/3; object-fit: cover;">
-  <div class="text-center text-[oklch(32.1%_0.18_250)] text-lg font-bold tracking-wide mb-1">Quantum Photonic Resonance Cells</div>
-  <div class="text-center text-[oklch(45%_0.12_250)] text-sm">A new era of continuous, ambient-powered solar energy</div>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@700&display=swap');
-  </style>
+<div class="flex flex-col items-center justify-center h-full">
+  <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80" alt="Japan" class="rounded-xl shadow-lg w-48 h-32 object-cover mb-2">
+  <div class="text-xs text-gray-500 mt-1">Photo: Tokyo, Unsplash</div>
 </div>
 \`\`\`
 <!-- end:content:column -->
 
-<!-- note:split{"title":"The Science Behind QPRC","backgroundColor":"oklch(97% 0.01 250)"} -->
+<!-- note:split{"title":"🌡️ August Weather & Packing","backgroundColor":"oklch(98% 0.02 250)"} -->
 
-<!-- layout:multi-column{"id": "mc-news-details","columns": [{ "id": "col-details-1", "width": 50 },{ "id": "col-details-2", "width": 50 }]}-->
-<!-- content:column{"parent": "mc-news-details","insert": "col-details-1"} -->
-## [How QPRC Works]{"color": "oklch(32.1% 0.18 250)"}
+<!-- layout:multi-column{"id": "mc-weather","columns": [{ "id": "col-weather-1", "width": 50 },{ "id": "col-weather-2", "width": 50 }]}-->
+<!-- content:column{"parent": "mc-weather","insert": "col-weather-1"} -->
 
-At the heart of the QPRC's efficiency lies its unique molecular structure, which features a lattice of specially engineered quantum dots. These dots are designed to resonate at multiple frequencies, allowing them to absorb photons across a much wider energy range than silicon-based cells.
+## [🌡️ August Weather Snapshot]{"color":"oklch(32% 0.18 250)"}
 
-When a photon strikes a quantum dot, it excites an electron to a higher energy state. Instead of immediately decaying, the electron's energy is efficiently transferred through a resonant tunneling effect to a conductive layer, creating a continuous electrical current. This process is highly efficient even with low-energy photons, explaining the technology's ability to generate power from diffuse light.
+|  |  |
+|--|--|
+| [Temperature]{"color":"oklch(38% 0.18 250)"} | 25–35°C (77–95°F) |
+| [Humidity]{"color":"oklch(38% 0.18 250)"} | 70–80% (very high) |
+| [Rainfall]{"color":"oklch(38% 0.18 250)"} | Occasional showers |
+| [Conditions]{"color":"oklch(38% 0.18 250)"} | Hot, humid, sunny |
 
-<!-- end:content:column -->
-
-<!-- content:column{"parent": "mc-news-details","insert": "col-details-2"} -->
-## [Implications & Applications]{"color": "oklch(32.1% 0.18 250)"}
-
-The implications of this breakthrough are profound and far-reaching:
-
-- [Continuous solar power generation, day and night]{"color": "oklch(45% 0.12 250)"}
-- [Reduced need for battery storage]{"color": "oklch(45% 0.12 250)"}
-- [Integration into buildings, clothing, and devices]{"color": "oklch(45% 0.12 250)"}
-- [Potential for self-sustaining smart cities]{"color": "oklch(45% 0.12 250)"}
-- [Accelerated transition to sustainable energy]{"color": "oklch(45% 0.12 250)"}
-
-QPRCs are also remarkably durable and require minimal maintenance, promising a long operational lifespan.
-
-<!-- end:content:column -->
-
-<!-- note:split{"title":"A New Dawn for Clean Energy","backgroundColor":"oklch(97% 0.01 250)"} -->
-
-<!-- layout:multi-column{"id": "mc-news-future","columns": [{ "id": "col-future-1", "width": 50 },{ "id": "col-future-2", "width": 50 }]}-->
-<!-- content:column{"parent": "mc-news-future","insert": "col-future-1"} -->
-## [What’s Next?]{"color": "oklch(32.1% 0.18 250)"}
-
-With pilot projects slated for deployment in urban infrastructure and remote energy hubs within the next two years, Solara Dynamics Institute anticipates that QPRC technology will rapidly become a cornerstone of the global energy landscape.
-
-This innovation not only promises to deliver clean, abundant, and continuous power but also inspires a future where energy scarcity is a relic of the past, paving the way for a more equitable and environmentally harmonious world.
-
-<!-- end:content:column -->
-
-<!-- content:column{"parent": "mc-news-future","insert": "col-future-2"} -->
 \`\`\`html
-<div class="relative bg-[oklch(98%_0.01_250)] rounded-lg shadow-md p-4 flex flex-col items-center" style="font-family: 'Merriweather', serif;">
-  <svg width="120" height="120" viewBox="0 0 120 120" class="mb-2 animate-spin-slow">
-    <defs>
-      <radialGradient id="qprc-gradient" cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stop-color="oklch(98% 0.01 250)" />
-        <stop offset="100%" stop-color="oklch(45% 0.12 250)" />
-      </radialGradient>
-    </defs>
-    <circle cx="60" cy="60" r="50" fill="url(#qprc-gradient)" />
-    <circle cx="60" cy="60" r="30" fill="none" stroke="oklch(32.1% 0.18 250)" stroke-width="4" stroke-dasharray="10,10" />
-    <circle cx="60" cy="60" r="10" fill="oklch(32.1% 0.18 250)" />
-  </svg>
-  <div class="text-center text-[oklch(32.1%_0.18_250)] font-bold text-base">Continuous Power Flow</div>
-  <div class="text-center text-[oklch(45%_0.12_250)] text-xs mt-1">QPRC enables round-the-clock clean energy</div>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@700&display=swap');
-    .animate-spin-slow {
-      animation: spin 8s linear infinite;
-    }
-    @keyframes spin {
-      0% { transform: rotate(0deg);}
-      100% { transform: rotate(360deg);}
-    }
-  </style>
+<div class="flex gap-2 mt-2">
+  <span class="inline-flex items-center px-2 py-1 rounded bg-[#f7e7e1] text-[#b85c38] text-xs font-semibold mr-2">☀️ Hot</span>
+  <span class="inline-flex items-center px-2 py-1 rounded bg-[#e1f0f7] text-[#387ab8] text-xs font-semibold mr-2">💧 Humid</span>
+  <span class="inline-flex items-center px-2 py-1 rounded bg-[#e1f7e4] text-[#38b87a] text-xs font-semibold">🌦️ Showers</span>
 </div>
 \`\`\`
-<!-- end:content:column -->`;
+<!-- end:content:column -->
+<!-- content:column{"parent": "mc-weather","insert": "col-weather-2"} -->
+
+## [🎒 What to Pack]{"color":"oklch(32% 0.18 250)"}
+
+- [Light, breathable clothing (cotton/linen)]{"color":"oklch(45% 0.13 250)"}
+- [Moisture-wicking shirts]{"color":"oklch(45% 0.13 250)"}
+- [Portable umbrella, sunscreen (SPF 30+), hat]{"color":"oklch(45% 0.13 250)"}
+- [Comfortable walking shoes]{"color":"oklch(45% 0.13 250)"}
+- [Portable fan, cooling towels, insect repellent]{"color":"oklch(45% 0.13 250)"}
+
+\`\`\`html
+<div class="flex flex-wrap gap-2 mt-2">
+  <span class="inline-flex items-center px-2 py-1 rounded bg-[#e1f7e4] text-[#38b87a] text-xs font-semibold">🧢</span>
+  <span class="inline-flex items-center px-2 py-1 rounded bg-[#f7e7e1] text-[#b85c38] text-xs font-semibold">🩳</span>
+  <span class="inline-flex items-center px-2 py-1 rounded bg-[#e1f0f7] text-[#387ab8] text-xs font-semibold">🧴</span>
+  <span class="inline-flex items-center px-2 py-1 rounded bg-[#f7f1e1] text-[#b89a38] text-xs font-semibold">👟</span>
+  <span class="inline-flex items-center px-2 py-1 rounded bg-[#e1e7f7] text-[#385cb8] text-xs font-semibold">🌂</span>
+</div>
+\`\`\`
+<!-- end:content:column -->
+
+<!-- note:split{"title":"🗾 The Golden Route Overview","backgroundColor":"oklch(98% 0.02 250)"} -->
+
+<!-- layout:multi-column{"id": "mc-route","columns": [{ "id": "col-route-1", "width": 60 },{ "id": "col-route-2", "width": 40 }]}-->
+<!-- content:column{"parent": "mc-route","insert": "col-route-1"} -->
+
+## [🗾 Golden Route]{"color":"oklch(32% 0.18 250)"}
+
+[Tokyo (3 days) → Kyoto (2 days) → Osaka (2 days)]{"color":"oklch(38% 0.18 250)"}
+
+[The classic first-timer’s route, blending tradition, modernity, and culinary adventure.]{".italic","color":"oklch(45% 0.13 250)"}
+
+<!-- end:content:column -->
+<!-- content:column{"parent": "mc-route","insert": "col-route-2"} -->
+\`\`\`html
+<div class="flex flex-col items-center">
+  <div class="flex items-center gap-2 text-lg font-bold">
+    <span class="text-[#387ab8]">🗼</span>
+    <span class="text-gray-700">Tokyo</span>
+    <span class="text-gray-400">→</span>
+    <span class="text-[#b89a38]">⛩️</span>
+    <span class="text-gray-700">Kyoto</span>
+    <span class="text-gray-400">→</span>
+    <span class="text-[#38b87a]">🍜</span>
+    <span class="text-gray-700">Osaka</span>
+  </div>
+  <div class="text-xs text-gray-500 mt-1">3 Cities, 7 Days, 1 Unforgettable Journey</div>
+</div>
+\`\`\`
+<!-- end:content:column -->
+
+<!-- note:split{"title":"📅 7-Day Itinerary","backgroundColor":"oklch(98% 0.02 250)"} -->
+
+<!-- layout:multi-column{"id": "mc-itinerary","columns": [{ "id": "col-itin-1", "width": 50 },{ "id": "col-itin-2", "width": 50 }]}-->
+<!-- content:column{"parent": "mc-itinerary","insert": "col-itin-1"} -->
+
+### [Day 1: Tokyo Arrival & Shinjuku]{"color":"oklch(32% 0.18 250)"}
+- Arrive at Narita/Haneda Airport
+- Check into hotel in Shinjuku
+- Explore Omoide Yokocho, Kabukicho
+- Dinner: Izakaya
+
+### [Day 2: Traditional & Modern Tokyo]{"color":"oklch(32% 0.18 250)"}
+- Senso-ji Temple, Nakamise Street
+- Ginza shopping, Tsukiji sushi
+- Tokyo Skytree/Tower
+
+### [Day 3: Tokyo → Kyoto]{"color":"oklch(32% 0.18 250)"}
+- Harajuku, Meiji Shrine, Shibuya
+- Shinkansen to Kyoto
+- Gion district stroll
+
+### [Day 4: Kyoto Temples & Bamboo]{"color":"oklch(32% 0.18 250)"}
+- Kinkaku-ji, Ryoan-ji
+- Arashiyama Bamboo Grove
+- Tenryu-ji, Kaiseki dinner
+
+<!-- end:content:column -->
+<!-- content:column{"parent": "mc-itinerary","insert": "col-itin-2"} -->
+
+### [Day 5: Kyoto → Osaka]{"color":"oklch(32% 0.18 250)"}
+- Fushimi Inari Shrine
+- Nishiki Market food tour
+- Travel to Osaka, Dotonbori
+
+### [Day 6: Osaka Castle & Food]{"color":"oklch(32% 0.18 250)"}
+- Osaka Castle, Kuromon Market
+- Dotonbori food crawl: takoyaki, okonomiyaki, kushikatsu
+
+### [Day 7: Departure]{"color":"oklch(32% 0.18 250)"}
+- Last-minute shopping (Namba/Umeda)
+- Depart from Kansai Airport
+
+\`\`\`html
+<div class="mt-4 p-3 rounded-lg bg-[#e1f0f7] text-[#387ab8] text-sm flex items-center gap-2">
+  <span>💡</span>
+  <span>Tip: Start sightseeing early or late to avoid the midday heat!</span>
+</div>
+\`\`\`
+<!-- end:content:column -->
+
+<!-- note:split{"title":"🚄 Transportation Guide","backgroundColor":"oklch(98% 0.02 250)"} -->
+
+<!-- layout:multi-column{"id": "mc-transport","columns": [{ "id": "col-trans-1", "width": 50 },{ "id": "col-trans-2", "width": 50 }]}-->
+<!-- content:column{"parent": "mc-transport","insert": "col-trans-1"} -->
+
+### [🚄 JR Pass (7-Day)]{"color":"oklch(32% 0.18 250)"}
+- [Cost:]{"color":"oklch(38% 0.18 250)"} ¥30,000–35,000 (~$200–240)
+- [Coverage:]{"color":"oklch(38% 0.18 250)"} All JR trains, Shinkansen
+- [Activation:]{"color":"oklch(38% 0.18 250)"} Within 3 months of purchase
+
+### [🚇 Local Transport]{"color":"oklch(32% 0.18 250)"}
+- [IC Cards:]{"color":"oklch(38% 0.18 250)"} Suica (Tokyo), ICOCA (Osaka/Kyoto)
+- [Cost:]{"color":"oklch(38% 0.18 250)"} ¥1,000–2,000/day
+- [Apps:]{"color":"oklch(38% 0.18 250)"} Google Maps, Hyperdia
+
+<!-- end:content:column -->
+<!-- content:column{"parent": "mc-transport","insert": "col-trans-2"} -->
+\`\`\`html
+<div class="flex flex-col gap-2">
+  <div class="flex items-center gap-2 bg-[#e1f7e4] rounded px-2 py-1 text-[#38b87a] text-sm font-semibold">
+    <span>🚄</span> <span>JR Pass</span>
+  </div>
+  <div class="flex items-center gap-2 bg-[#e1f0f7] rounded px-2 py-1 text-[#387ab8] text-sm font-semibold">
+    <span>🚇</span> <span>IC Cards</span>
+  </div>
+  <div class="flex items-center gap-2 bg-[#f7e7e1] rounded px-2 py-1 text-[#b85c38] text-sm font-semibold">
+    <span>📱</span> <span>Apps</span>
+  </div>
+</div>
+\`\`\`
+<!-- end:content:column -->
+
+<!-- note:split{"title":"🏨 Accommodation","backgroundColor":"oklch(98% 0.02 250)"} -->
+
+<!-- layout:multi-column{"id": "mc-accom","columns": [{ "id": "col-accom-1", "width": 33 },{ "id": "col-accom-2", "width": 34 },{ "id": "col-accom-3", "width": 33 }]}-->
+<!-- content:column{"parent": "mc-accom","insert": "col-accom-1"} -->
+
+### [Tokyo]{"color":"oklch(32% 0.18 250)"}
+- [Budget:]{"color":"oklch(38% 0.18 250)"} Capsule/hostel ¥3,000–6,000
+- [Mid-range:]{"color":"oklch(38% 0.18 250)"} Shinjuku/Shibuya ¥8,000–15,000
+- [Luxury:]{"color":"oklch(38% 0.18 250)"} Ginza/Roppongi ¥20,000+
+
+<!-- end:content:column -->
+<!-- content:column{"parent": "mc-accom","insert": "col-accom-2"} -->
+
+### [Kyoto]{"color":"oklch(32% 0.18 250)"}
+- [Traditional:]{"color":"oklch(38% 0.18 250)"} Ryokan ¥15,000–30,000
+- [Modern:]{"color":"oklch(38% 0.18 250)"} Near Kyoto Stn ¥8,000–18,000
+- [Budget:]{"color":"oklch(38% 0.18 250)"} Gion guesthouse ¥4,000–8,000
+
+<!-- end:content:column -->
+<!-- content:column{"parent": "mc-accom","insert": "col-accom-3"} -->
+
+### [Osaka]{"color":"oklch(32% 0.18 250)"}
+- [Areas:]{"color":"oklch(38% 0.18 250)"} Namba, Umeda, Dotonbori
+- [Range:]{"color":"oklch(38% 0.18 250)"} ¥6,000–20,000
+- [Features:]{"color":"oklch(38% 0.18 250)"} Food & transport access
+
+<!-- end:content:column -->
+
+<!-- note:split{"title":"🍜 Food & Dining","backgroundColor":"oklch(98% 0.02 250)"} -->
+
+<!-- layout:multi-column{"id": "mc-food","columns": [{ "id": "col-food-1", "width": 60 },{ "id": "col-food-2", "width": 40 }]}-->
+<!-- content:column{"parent": "mc-food","insert": "col-food-1"} -->
+
+### [Must-Try Dishes by City]{"color":"oklch(32% 0.18 250)"}
+
+| [Tokyo]{"color":"oklch(38% 0.18 250)"} | [Kyoto]{"color":"oklch(38% 0.18 250)"} | [Osaka]{"color":"oklch(38% 0.18 250)"} |
+|-----------|-----------|-----------|
+| Fresh sushi at Tsukiji | Kaiseki (multi-course) | Takoyaki (octopus balls) |
+| Ramen in Shibuya | Tofu cuisine | Okonomiyaki (savory pancake) |
+| Tempura | Matcha & wagashi | Kushikatsu (fried skewers) |
+| Yakitori in izakaya | Yudofu (hot tofu) | Kansai-style sushi |
+
+<!-- end:content:column -->
+<!-- content:column{"parent": "mc-food","insert": "col-food-2"} -->
+
+### [Dining Etiquette]{"color":"oklch(32% 0.18 250)"}
+
+- [Chopsticks:]{"color":"oklch(38% 0.18 250)"} Never upright in rice
+- [Slurping:]{"color":"oklch(38% 0.18 250)"} Encouraged for noodles
+- [Tipping:]{"color":"oklch(38% 0.18 250)"} Not customary
+- [Payment:]{"color":"oklch(38% 0.18 250)"} Often cash-only
+
+\`\`\`html
+<div class="mt-2 p-2 rounded-lg bg-[#f7e7e1] text-[#b85c38] text-xs flex items-center gap-2">
+  <span>🍣</span>
+  <span>Try local specialties in each city for the best experience!</span>
+</div>
+\`\`\`
+<!-- end:content:column -->
+
+<!-- note:split{"title":"💰 Budget Breakdown","backgroundColor":"oklch(98% 0.02 250)"} -->
+
+<!-- layout:multi-column{"id": "mc-budget","columns": [{ "id": "col-budget-1", "width": 50 },{ "id": "col-budget-2", "width": 50 }]}-->
+<!-- content:column{"parent": "mc-budget","insert": "col-budget-1"} -->
+`;
   const contentToTest = compactMixedContent;
   const testTitle = '🎨 完整功能混合测试';
   const testDescription = '富文本语法、表格支持、文档分割与多列布局的完整解析';

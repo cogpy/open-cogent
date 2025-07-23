@@ -224,17 +224,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@afk/copilot-result@workspace:tools/copilot-result":
-  version: 0.0.0-use.local
-  resolution: "@afk/copilot-result@workspace:tools/copilot-result"
-  dependencies:
-    "@slack/web-api": "npm:^7.8.0"
-    "@types/node": "npm:^22.0.0"
-    jsx-slack: "npm:^6.1.2"
-    marked: "npm:^15.0.3"
-  languageName: unknown
-  linkType: soft
-
 "@afk/debug@workspace:*, @afk/debug@workspace:packages/common/debug":
   version: 0.0.0-use.local
   resolution: "@afk/debug@workspace:packages/common/debug"

@@ -8,6 +8,7 @@ import type { createDocSemanticSearchTool } from './doc-semantic-search';
 import type { createExaCrawlTool } from './exa-crawl';
 import type { createExaSearchTool } from './exa-search';
 import type { createMakeItRealTool } from './make-it-real';
+import type { createPythonCodingTool } from './python-coding';
 import type { createMarkTodoTool, createTodoTool } from './todo';
 
 export interface CustomAITools extends ToolSet {
@@ -21,4 +22,5 @@ export interface CustomAITools extends ToolSet {
   todo_list: ReturnType<typeof createTodoTool>;
   mark_todo: ReturnType<typeof createMarkTodoTool>;
   make_it_real: ReturnType<typeof createMakeItRealTool>;
+  python_coding: ReturnType<typeof createPythonCodingTool>;
 }

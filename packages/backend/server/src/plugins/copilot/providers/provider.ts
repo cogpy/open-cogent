@@ -27,6 +27,7 @@ import {
   createMarkTodoTool,
   createTodoTool,
 } from '../tools';
+import { createPythonCodingTool } from '../tools/python-coding';
 import { CopilotProviderFactory } from './factory';
 import {
   type CopilotChatOptions,
@@ -226,6 +227,14 @@ export abstract class CopilotProvider<C = any> {
               prompt,
               this.factory,
               saveDoc
+            );
+            break;
+          }
+          case 'pythonCoding': {
+            tools.python_coding = createPythonCodingTool(
+              writable,
+              prompt,
+              this.factory
             );
             break;
           }

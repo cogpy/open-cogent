@@ -103,6 +103,12 @@ defineModuleConfig('copilot', {
       key: '',
     },
   },
+  browserUse: {
+    desc: 'The config for the browser use key.',
+    default: {
+      key: '',
+    },
+  },
   storage: {
     desc: 'The config for the storage provider.',
     default: {

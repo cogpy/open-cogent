@@ -28,7 +28,6 @@ export const createMakeItRealTool = (
       { instructions, markdown },
       { toolCallId, abortSignal }
     ) => {
-      console.log('makeItRealTool', instructions, markdown);
       try {
         const prompt = await promptService.get('make-it-real');
         if (!prompt) {
@@ -53,8 +52,6 @@ export const createMakeItRealTool = (
           toolStream,
           abortSignal
         );
-
-        console.log('makeItRealTool content', content);
 
         return await saveDoc(content);
       } catch (err: any) {

@@ -207,7 +207,7 @@ export function BrowserUseResult({ result }: BrowserUseResultProps) {
   );
 }
 
-export function transfromStep(
+export function transformStep(
   middleResult: string
 ): BrowserUseResultProps['result'] | null {
   let parsedResult = null;

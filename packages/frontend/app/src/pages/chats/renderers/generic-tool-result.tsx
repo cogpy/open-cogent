@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { cn } from '@/lib/utils';
 
 import * as styles from './generic-tool-result.css';
+import { toolResult } from './tool.css';
 
 export const GenericToolResult = ({
   icon,
@@ -14,14 +15,16 @@ export const GenericToolResult = ({
   count,
   actions,
   onCollapseChange,
+  className,
+  style,
+  ...props
 }: {
   icon: React.ReactNode;
   title: string;
-  children: React.ReactNode;
   count?: number;
   actions?: React.ReactNode;
   onCollapseChange?: (collapsed: boolean) => void;
-}) => {
+} & React.HTMLAttributes<HTMLDivElement>) => {
   const [collapsed, setCollapsed] = useState(true);
 
   const toggleCollapsed = () => {
@@ -31,22 +34,29 @@ export const GenericToolResult = ({
 
   return (
     <div
-      className={cn('border rounded-2xl overflow-hidden')}
+      className={cn(
+        toolResult,
+        'border rounded-2xl overflow-hidden',
+        className,
+        props.onClick ? 'hover:bg-hover cursor-pointer' : ''
+      )}
       style={{
         boxShadow: `0px 1px 5px 0px rgba(0, 0, 0, 0.05)`,
+        ...style,
       }}
       data-collapsed={collapsed}
+      {...props}
     >
       <header
         className={cn(
           styles.header,
-          'flex items-center gap-1 h-14 px-4 border-b'
+          'flex items-center gap-2 h-14 px-4 border-b'
         )}
       >
-        <div className="size-5 shrink-0 text-xl flex items-center justify-center">
+        <div className="size-5 shrink-0 text-xl flex items-center justify-center text-icon-primary">
           {icon}
         </div>
-        <div className="w-0 flex-1 text-sm font-medium text-text-primary">
+        <div className="w-0 flex-1 text-sm font-medium text-text-primary truncate">
           {title}
           {count ? (
             <span
@@ -61,15 +71,19 @@ export const GenericToolResult = ({
         </div>
         <div className="flex items-center gap-1">
           {actions}
-          <IconButton
-            onClick={toggleCollapsed}
-            icon={collapsed ? <ExpandFullIcon /> : <ExpandCloseIcon />}
-          />
+          {children ? (
+            <IconButton
+              onClick={toggleCollapsed}
+              icon={collapsed ? <ExpandFullIcon /> : <ExpandCloseIcon />}
+            />
+          ) : null}
         </div>
       </header>
-      <main data-collapsed={collapsed} className={cn(styles.contentWrapper)}>
-        <div className={'overflow-hidden'}>{children}</div>
-      </main>
+      {children ? (
+        <main data-collapsed={collapsed} className={cn(styles.contentWrapper)}>
+          <div className={'overflow-hidden'}>{children}</div>
+        </main>
+      ) : null}
     </div>
   );
 };

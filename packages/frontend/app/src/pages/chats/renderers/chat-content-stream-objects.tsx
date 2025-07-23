@@ -1,7 +1,7 @@
 // oxlint-disable no-array-index-key
 import { Loading } from '@afk/component';
 import type { StreamObject } from '@afk/graphql';
-import { CheckBoxCheckSolidIcon } from '@blocksuite/icons/rc';
+import { CheckBoxCheckSolidIcon, EmbedWebIcon } from '@blocksuite/icons/rc';
 
 import { MessageCard } from '@/components/ui/card/message-card';
 import { MarkdownText } from '@/components/ui/markdown';
@@ -13,6 +13,7 @@ import { GenericToolCalling } from './generic-tool-calling';
 import { GenericToolResult } from './generic-tool-result';
 import { MakeItRealResult } from './make-it-real-result';
 import { TodoListResult } from './todo-list-result';
+import { WebCrawlResult } from './web-crawl-result';
 import { WebSearchResult } from './web-search-result';
 
 interface ChatContentStreamObjectsProps {
@@ -104,6 +105,17 @@ export function ChatContentStreamObjects({
               );
             }
 
+            if (obj.toolName === 'web_crawl_exa') {
+              const url = obj.args?.url;
+              return (
+                <GenericToolCalling
+                  key={idx}
+                  title={`Crawling "${url}"`}
+                  icon={<EmbedWebIcon />}
+                />
+              );
+            }
+
             if (obj.toolName === 'browser_use' && obj.textDelta) {
               const result = transformStep(obj.textDelta as any);
               if (result) {
@@ -167,6 +179,16 @@ export function ChatContentStreamObjects({
                   key={idx}
                   results={Array.isArray(results) ? results : [results]}
                   query={obj.result.query}
+                />
+              );
+            }
+            if (obj.toolName === 'web_crawl_exa' && obj.result) {
+              const results =
+                obj.result.results || obj.result.data || obj.result;
+              return (
+                <WebCrawlResult
+                  key={idx}
+                  results={Array.isArray(results) ? results : [results]}
                 />
               );
             }

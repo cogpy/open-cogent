@@ -25,6 +25,7 @@ import { cn } from '@/lib/utils';
 import { useLibraryStore } from '@/store/library';
 import { useSidebarStore } from '@/store/sidebar';
 
+import { AutoSidebarPadding } from './layout/auto-sidebar-padding';
 import * as styles from './library-dashboard.css';
 
 const categories = [
@@ -104,7 +105,7 @@ const DateGroupHeader: MasonryGroup['Component'] = ({ groupId, itemCount }) => {
   );
 };
 
-const FavoriteAction = ({
+export const FavoriteAction = ({
   collected,
   setToggleAsync,
 }: {
@@ -127,7 +128,7 @@ const FavoriteAction = ({
         e.stopPropagation();
         toggleCollect();
       }}
-      loading={toggling}
+      disabled={toggling}
     >
       {collected ? (
         <FavoritedIcon style={{ color: cssVarV2('button/primary') }} />
@@ -277,7 +278,6 @@ const getComponentByType = (type: string) =>
       : FileListItem;
 
 export const LibraryDashboard = () => {
-  const { open } = useSidebarStore();
   const { chats, docs, files, initialized } = useLibraryStore();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -347,14 +347,11 @@ export const LibraryDashboard = () => {
   }
 
   return (
-    <div className="flex-1 bg-white rounded-[8px] overflow-hidden h-full flex flex-col">
-      <header className="h-15 border-b px-6 flex items-center gap-4">
-        <div
-          style={{ paddingLeft: open ? 0 : 30 }}
-          className="transition-all h-full flex items-center"
-        >
+    <div className="flex-1 bg-white border rounded-[8px] overflow-hidden h-full flex flex-col">
+      <header className="h-15 border-b-[0.5px] px-4 flex items-center gap-4">
+        <AutoSidebarPadding className="transition-all h-full flex items-center">
           <span className={styles.library}>Library</span>
-        </div>
+        </AutoSidebarPadding>
 
         <ul className="flex items-center gap-2">
           {categories.map(c => (

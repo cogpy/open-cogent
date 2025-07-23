@@ -55,7 +55,7 @@ export const SidebarLayout = ({
         style={{
           position: 'absolute',
           left: sidebarOpen ? width - 40 : 12,
-          top: 14,
+          top: 16,
           transition: enableTransition ? 'all 0.2s ease' : 'none',
           opacity: resizing ? 0 : 1,
         }}

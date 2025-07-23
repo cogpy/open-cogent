@@ -1,4 +1,7 @@
-import { useEffect, useState } from 'react';
+import { IconButton } from '@afk/component';
+import { updateCopilotSessionMutation } from '@afk/graphql';
+import { FavoritedIcon, FavoriteIcon } from '@blocksuite/icons/rc';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
 
 import { ChatInterface } from '@/components/chat/chat-interface';
@@ -9,9 +12,14 @@ import {
 } from '@/components/chat-context';
 import { DocPanelById } from '@/components/doc-panel/doc-panel';
 import { OpenDocProvider } from '@/contexts/doc-panel-context';
+import { gql } from '@/lib/gql';
 import { useRefCounted } from '@/lib/hooks/use-ref-counted';
 import { copilotClient } from '@/store/copilot/client';
 import { chatSessionsStore } from '@/store/copilot/sessions-instance';
+import { useLibraryStore } from '@/store/library';
+
+import { AutoSidebarPadding } from '../layout/auto-sidebar-padding';
+import { FavoriteAction } from '../library-dashboard';
 
 export const ChatPage = () => {
   const { id } = useParams();
@@ -116,7 +124,7 @@ export const ChatPage = () => {
         closeDoc,
       }}
     >
-      <div className="flex-1 bg-white rounded-[8px] overflow-hidden">
+      <div className="flex-1 bg-white border rounded-[8px] overflow-hidden">
         <ChatInterface
           store={id && sessionStore ? sessionStore : undefined}
           placeholder="What can I help you with?"
@@ -125,6 +133,7 @@ export const ChatPage = () => {
           onPlaceholderSend={onSendPlaceholder}
           isCreating={isCreating}
           message={searchParams.get('msg') ?? undefined}
+          headerContent={<ChatPageHeader sessionId={id} />}
         />
       </div>
       {docId && (
@@ -133,5 +142,46 @@ export const ChatPage = () => {
         </div>
       )}
     </OpenDocProvider>
+  );
+};
+
+const ChatPageHeader = ({ sessionId }: { sessionId?: string }) => {
+  const { chatsMap, refresh } = useLibraryStore();
+  const chat = sessionId ? chatsMap[sessionId] : undefined;
+
+  const isFav = chat?.metadata?.collected;
+
+  const toggleCollect = useCallback(
+    async (value: boolean) => {
+      if (!sessionId) return;
+      await gql({
+        query: updateCopilotSessionMutation,
+        variables: {
+          options: {
+            sessionId,
+            metadata: JSON.stringify({
+              ...chat?.metadata,
+              collected: value,
+            }),
+          },
+        },
+      });
+      refresh();
+    },
+    [chat?.metadata, refresh, sessionId]
+  );
+
+  return (
+    <div className="h-15 border-b-[0.5px] px-4 flex items-center justify-between">
+      <AutoSidebarPadding className="text-sm font-medium text-text-primary truncate">
+        {chat?.title ?? 'New Chat'}
+      </AutoSidebarPadding>
+
+      {chat ? (
+        <div className="flex items-center gap-2">
+          <FavoriteAction collected={!!isFav} setToggleAsync={toggleCollect} />
+        </div>
+      ) : null}
+    </div>
   );
 };

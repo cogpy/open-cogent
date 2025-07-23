@@ -147,9 +147,9 @@ export function DocPanel({ doc, onOpenChat, onClose }: DocPanelProps) {
   }
 
   return (
-    <div className="h-full flex flex-col p-4 gap-4">
+    <div className="h-full flex flex-col gap-4">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200">
+      <div className="flex items-center justify-between px-4 py-3 border-b-[0.5px]">
         <h2 className="text-xl font-semibold text-gray-900 truncate">
           {docTitle}
         </h2>
@@ -160,7 +160,6 @@ export function DocPanel({ doc, onOpenChat, onClose }: DocPanelProps) {
               size="24"
               icon={<ChatIcon />}
               onClick={onOpenChat}
-              className="text-gray-500 hover:text-blue-600"
               title="Open chat panel"
             />
           )}
@@ -168,14 +167,12 @@ export function DocPanel({ doc, onOpenChat, onClose }: DocPanelProps) {
             size="24"
             icon={<PresentationIcon />}
             onClick={handleStartPresentation}
-            className="text-gray-500 hover:text-blue-600"
             title="Enter presentation mode"
           />
           <IconButton
             size="24"
             icon={<CloseIcon />}
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
             title="Close document"
           />
         </div>

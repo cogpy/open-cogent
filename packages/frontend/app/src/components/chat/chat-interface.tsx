@@ -86,13 +86,13 @@ const ChatSession = ({
     setInput('');
   };
 
-  const containerClasses = `flex flex-col h-full p-4 ${className}`;
+  const containerClasses = `flex flex-col h-full ${className}`;
 
   return (
     <div className={containerClasses}>
       {headerContent}
 
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto py-4">
         {showDocumentContext && documentTitle && (
           <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
             <div className="text-sm text-blue-600 font-medium">

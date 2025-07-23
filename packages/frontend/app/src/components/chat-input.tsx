@@ -120,7 +120,11 @@ export const ChatInput = ({
       </div>
       <footer className="flex items-center justify-between mt-2">
         <ContextSelectorMenu store={store}>
-          <IconButton icon={<PlusIcon />} />
+          <IconButton
+            icon={<PlusIcon />}
+            size="24"
+            style={{ borderRadius: 8 }}
+          />
         </ContextSelectorMenu>
 
         <div className="flex items-center gap-2">

@@ -33,19 +33,11 @@ export default {
       !request.startsWith('.') &&
       // not absolute paths
       !request.startsWith('/') &&
-      // Handle specific cases
-      // Always externalize native modules
-      (request.includes('native') ||
-        // Externalize problematic modules that have CJS/ESM issues
-        request === 'get-stream' ||
-        request === 'is-stream' ||
-        // Externalize all npm packages except workspace and specific ones
-        (!request.startsWith('@afk/') &&
-          !request.startsWith('lodash-es') &&
-          !request.includes('@blocksuite')))
+      // not workspace deps except native packages
+      (!request.startsWith('@afk/') || request.includes('native'))
     ) {
-      // Use import() for dynamic imports to handle both CJS and ESM
-      return `import ${request}`;
+      // Mark as external using ES module imports
+      return `module ${request}`;
     }
     return false;
   },

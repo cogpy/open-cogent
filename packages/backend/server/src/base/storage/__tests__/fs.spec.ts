@@ -1,8 +1,8 @@
 import { promises as fs } from 'node:fs';
 import { join } from 'node:path';
+import { buffer as streamToBuffer } from 'node:stream/consumers';
 
 import test from 'ava';
-import { getStreamAsBuffer } from 'get-stream';
 
 import { ListObjectsMetadata } from '../providers';
 import { FsStorageProvider } from '../providers/fs';
@@ -44,7 +44,7 @@ test('put & get', async t => {
 
   const result = await provider.get(key);
 
-  t.deepEqual(await getStreamAsBuffer(result.body!), body);
+  t.deepEqual(await streamToBuffer(result.body!), body);
   t.is(result.metadata?.contentLength, body.length);
 });
 

@@ -84,7 +84,6 @@
     "exa-js": "^1.6.13",
     "express": "^5.0.1",
     "fast-xml-parser": "^5.0.0",
-    "get-stream": "^9.0.1",
     "graphql": "^16.9.0",
     "graphql-scalars": "^1.24.0",
     "graphql-upload": "^17.0.0",

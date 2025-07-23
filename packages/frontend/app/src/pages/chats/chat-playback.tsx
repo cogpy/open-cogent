@@ -90,7 +90,7 @@ export const ChatPlaybackPage = () => {
             store={sessionStore}
             playback
             className="flex-1"
-            headerContent={<BaseHeader sessionId={id} showActions={false} />}
+            headerContent={<BaseHeader sessionId={id} mode="playback" />}
             onPlaybackStart={handleStart}
             onPlaybackProgress={handleProgress}
             onPlaybackFinish={handleFinish}

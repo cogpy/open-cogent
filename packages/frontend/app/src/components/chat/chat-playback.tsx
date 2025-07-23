@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { type StoreApi, useStore } from 'zustand';
 
-import { MessageRenderer } from '@/pages/chats/renderers/message';
-import type { ChatSessionState, ChatMessage } from '@/store/copilot/types';
 import { useTypewriter } from '@/lib/hooks/use-typewriter';
+import { MessageRenderer } from '@/pages/chats/renderers/message';
+import type { ChatMessage, ChatSessionState } from '@/store/copilot/types';
 
 export interface ChatPlaybackProps {
   store: StoreApi<ChatSessionState>;

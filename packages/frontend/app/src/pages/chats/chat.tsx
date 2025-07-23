@@ -18,6 +18,8 @@ import { useLibraryStore } from '@/store/library';
 
 import { AutoSidebarPadding } from '../layout/auto-sidebar-padding';
 import { FavoriteAction } from '../library-dashboard';
+import { Button, IconButton } from '@afk/component';
+import { CommentIcon } from '@blocksuite/icons/rc';
 
 export const ChatPage = () => {
   const { id } = useParams();
@@ -145,10 +147,10 @@ export const ChatPage = () => {
 
 export const ChatPageHeader = ({
   sessionId,
-  showActions = true,
+  mode = 'normal',
 }: {
   sessionId?: string;
-  showActions?: boolean;
+  mode?: 'normal' | 'playback';
 }) => {
   const { chatsMap, refresh } = useLibraryStore();
   const chat = sessionId ? chatsMap[sessionId] : undefined;
@@ -181,11 +183,21 @@ export const ChatPageHeader = ({
         {chat?.title ?? 'New Chat'}
       </AutoSidebarPadding>
 
-      {chat && showActions ? (
+      {chat && mode === 'normal' ? (
         <div className="flex items-center gap-2">
           <FavoriteAction collected={!!isFav} setToggleAsync={toggleCollect} />
+          <IconButton icon={<CommentIcon />} />
+          <Button variant="secondary" size="default">
+            Share
+          </Button>
         </div>
-      ) : null}
+      ) : (
+        <div className="flex items-center gap-2">
+          <button className="bg-black text-white px-4 py-1 h-8 rounded-md text-sm font-medium cursor-pointer">
+            Sign In
+          </button>
+        </div>
+      )}
     </div>
   );
 };

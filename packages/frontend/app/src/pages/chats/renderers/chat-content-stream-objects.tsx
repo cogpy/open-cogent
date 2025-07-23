@@ -8,10 +8,12 @@ import { MarkdownText } from '@/components/ui/markdown';
 
 import { BrowserUseResult, transformStep } from './browser-use-result';
 import { CodeArtifactResult } from './code-artifact-result';
+import { E2bPythonResult } from './e2b-python-result';
 import { GeneratingCard } from './generating-card';
 import { GenericToolCalling } from './generic-tool-calling';
 import { GenericToolResult } from './generic-tool-result';
 import { MakeItRealResult } from './make-it-real-result';
+import { PythonCodeResult } from './python-code-result';
 import { TodoListResult } from './todo-list-result';
 import { WebCrawlResult } from './web-crawl-result';
 import { WebSearchResult } from './web-search-result';
@@ -126,16 +128,23 @@ export function ChatContentStreamObjects({
             }
 
             if (obj.toolName === 'python_coding') {
-              // TODO(@CatsJuice)
+              return (
+                <GeneratingCard
+                  key={idx}
+                  title={'Coding...'}
+                  content={obj.textDelta ?? ''}
+                  icon={<Loading />}
+                />
+              );
             }
             if (obj.toolName === 'e2b_python_sandbox') {
               return (
-                <div
+                <GeneratingCard
                   key={idx}
-                  className="rounded-md border border-gray-300 p-3 text-sm text-gray-600"
-                >
-                  {obj.textDelta}
-                </div>
+                  title={'Running python code...'}
+                  content={obj.textDelta ?? ''}
+                  icon={<Loading />}
+                />
               );
             }
 
@@ -201,16 +210,13 @@ export function ChatContentStreamObjects({
               return <TodoListResult key={idx} result={obj.result as any} />;
             }
 
+            if (obj.toolName === 'python_coding' && obj.result) {
+              return <PythonCodeResult result={obj.result} />;
+            }
+
             // Specialized handling for e2b python sandbox
             if (obj.toolName === 'e2b_python_sandbox' && obj.result) {
-              return (
-                <div
-                  key={idx}
-                  className="rounded-md border border-gray-300 p-3 text-sm text-gray-600"
-                >
-                  {JSON.stringify(obj.result)}
-                </div>
-              );
+              return <E2bPythonResult result={obj.result as unknown as any} />;
             }
 
             if (obj.toolName === 'browser_use' && obj.result) {

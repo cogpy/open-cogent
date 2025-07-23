@@ -45,7 +45,9 @@ export const GeneratingCard = ({
             )}
             ref={contentRef}
           >
-            <div className="leading-5">{content}</div>
+            <div className="leading-5 not-prose">
+              <pre>{content}</pre>
+            </div>
           </div>
         </div>
       ) : null}

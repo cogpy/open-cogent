@@ -1,6 +1,6 @@
 import { RadioGroup } from '@afk/component';
 import type { StreamObject } from '@afk/graphql';
-import { CodeIcon } from '@blocksuite/icons/rc';
+import { FileIconHtmlIcon } from '@blocksuite/icons/rc';
 import { useEffect, useState } from 'react';
 import { createHighlighter } from 'shiki';
 
@@ -49,7 +49,7 @@ export const CodeArtifactResult = ({
   return (
     <GenericToolResult
       title={title}
-      icon={<CodeIcon />}
+      icon={<FileIconHtmlIcon />}
       actions={
         collapsed ? null : (
           <RadioGroup

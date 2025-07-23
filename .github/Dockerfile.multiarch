@@ -1,28 +1,7 @@
 FROM rust:1.88.0-bookworm AS rust-builder
 
-# Install cross-compilation dependencies
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    gcc-aarch64-linux-gnu \
-    gcc-armv7l-linux-gnueabihf \
-    libc6-dev-arm64-cross \
-    libc6-dev-armhf-cross \
-    clang \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install Node.js for building native modules
-RUN curl -fsSL https://deb.nodesource.com/setup_22.x | sh -
-RUN apt-get install -y nodejs
-
 WORKDIR /workspace
 COPY . .
-
-RUN corepack enable yarn
-RUN yarn config set --json supportedArchitectures.cpu '["x64", "arm64", "arm"]'
-RUN yarn config set --json supportedArchitectures.libc '["glibc"]'
-
-# Install dependencies
-RUN yarn install --immutable
 
 # Build native modules for all target architectures
 # This will be replaced by pre-built artifacts in multi-arch builds
@@ -42,6 +21,15 @@ RUN case "${TARGETARCH}" in \
     else \
     echo "Pre-built native module not found: ${NATIVE_FILE}"; \
     echo "Building native module for current platform"; \
+    # configure build environment
+    curl -fsSL https://deb.nodesource.com/setup_22.x | sh -; \
+    apt-get install -y nodejs; \
+    corepack enable yarn; \
+    yarn config set --json supportedArchitectures.cpu '["x64", "arm64", "arm"]'; \
+    yarn config set --json supportedArchitectures.libc '["glibc"]'; \
+    # Install dependencies
+    yarn workspaces focus @afk/server-native; \
+    # Build native module
     yarn workspace @afk/server-native build; \
     fi
 
@@ -96,7 +84,7 @@ COPY --from=backend-builder /workspace/packages/backend/server/package.json ./pa
 COPY --from=frontend-builder /workspace/packages/frontend/app/dist ./static
 
 # Copy production dependencies
-COPY --from=deps /workspace/node_modules ./node_modules
+COPY --from=deps /app/node_modules ./node_modules
 
 ENV LD_PRELOAD=libjemalloc.so.2
 ENV NODE_ENV=production

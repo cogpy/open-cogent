@@ -1,4 +1,4 @@
-import { EmbedWebIcon } from '@blocksuite/icons/rc';
+import { PublishIcon } from '@blocksuite/icons/rc';
 
 import { GenericToolResult } from './generic-tool-result';
 import { useWebResult } from './web-search-result';
@@ -8,7 +8,7 @@ export function WebCrawlResult({ results }: { results: any[] }) {
 
   return (
     <GenericToolResult
-      icon={<EmbedWebIcon />}
+      icon={<PublishIcon />}
       title={'Crawling completed'}
       count={resultCount}
     >

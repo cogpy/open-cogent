@@ -20,11 +20,11 @@ export const GenericToolResult = ({
   ...props
 }: {
   icon: React.ReactNode;
-  title: string;
+  title: React.ReactNode;
   count?: number;
   actions?: React.ReactNode;
   onCollapseChange?: (collapsed: boolean) => void;
-} & React.HTMLAttributes<HTMLDivElement>) => {
+} & Omit<React.HTMLAttributes<HTMLDivElement>, 'title'>) => {
   const [collapsed, setCollapsed] = useState(true);
 
   const toggleCollapsed = () => {

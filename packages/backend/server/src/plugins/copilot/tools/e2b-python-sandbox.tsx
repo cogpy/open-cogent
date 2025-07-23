@@ -23,7 +23,6 @@ export const createE2bPythonSandboxTool = (
       try {
         const writer = toolStream.getWriter();
         const { key } = config.copilot.e2b;
-        let success = true;
         console.log('e2b-python-sandbox-tool', code);
 
         if (!key) {
@@ -41,7 +40,6 @@ export const createE2bPythonSandboxTool = (
         // Execute the Python code
         const execution = await sbx.runCode(code, {
           onError: async error => {
-            success = false;
             await writer.write({
               type: 'tool-incomplete-result',
               toolCallId,
@@ -62,7 +60,6 @@ export const createE2bPythonSandboxTool = (
             });
           },
           onStderr: async data => {
-            success = false;
             await writer.write({
               type: 'tool-incomplete-result',
               toolCallId,
@@ -77,8 +74,8 @@ export const createE2bPythonSandboxTool = (
         writer.releaseLock();
 
         return {
-          success,
-          result: JSON.stringify(execution.results),
+          error: execution.error,
+          result: execution.results,
         };
       } catch (e: any) {
         return toolError('E2B Python Sandbox Failed', e.message);

@@ -316,6 +316,9 @@ export const Cmdk = ({
         overlayOptions={{
           style: {
             backgroundColor: 'rgba(0,0,0,0.01)',
+            // backgroundImage: 'radial-gradient(transparent 1px, #fff 1px)',
+            // backdropFilter: 'brightness(0.9) saturate(0.8) blur(1px)',
+            // backgroundSize: '3px 3px',
           },
         }}
         contentWrapperStyle={{

@@ -40,9 +40,10 @@ export function MessageRenderer({
       ) : (
         <MarkdownText
           className={cn(
-            'inline-block bg-gray-100 p-3 ax-w-full prose rounded-lg mb-4',
+            'inline-block p-3 ax-w-full prose rounded-lg mb-4',
             styles.mdMsg
           )}
+          style={{ backgroundColor: 'rgba(243, 243, 243, 1)' }}
           text={message.content}
           loading={isAssistant && isStreaming}
         />

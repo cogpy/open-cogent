@@ -1,6 +1,7 @@
 import { RadioGroup } from '@afk/component';
 import type { StreamObject } from '@afk/graphql';
 import { FileIconHtmlIcon } from '@blocksuite/icons/rc';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { createHighlighter } from 'shiki';
 
@@ -51,14 +52,23 @@ export const CodeArtifactResult = ({
       title={title}
       icon={<FileIconHtmlIcon />}
       actions={
-        collapsed ? null : (
-          <RadioGroup
-            className="mr-3"
-            items={['Code', 'Preview']}
-            value={view}
-            onChange={setView}
-          />
-        )
+        <AnimatePresence>
+          {collapsed ? null : (
+            <motion.div
+              initial={{ opacity: 0, x: 20, scale: 0.95 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: 20, scale: 0.95 }}
+              transition={{ duration: 0.2 }}
+            >
+              <RadioGroup
+                className="mr-3"
+                items={['Code', 'Preview']}
+                value={view}
+                onChange={setView}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       }
       onCollapseChange={setCollapsed}
     >

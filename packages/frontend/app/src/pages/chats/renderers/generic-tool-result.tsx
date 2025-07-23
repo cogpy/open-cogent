@@ -1,6 +1,7 @@
 import { IconButton } from '@afk/component';
 import { ExpandCloseIcon, ExpandFullIcon } from '@blocksuite/icons/rc';
 import { cssVarV2 } from '@toeverything/theme/v2';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 
 import { cn } from '@/lib/utils';
@@ -79,10 +80,24 @@ export const GenericToolResult = ({
           ) : null}
         </div>
       </header>
-      {children ? (
+      {/* {children ? (
         <main data-collapsed={collapsed} className={cn(styles.contentWrapper)}>
           <div className={'overflow-hidden'}>{children}</div>
         </main>
+      ) : null} */}
+      {children ? (
+        <AnimatePresence>
+          {collapsed ? null : (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ damping: 10, stiffness: 100, mass: 0.5 }}
+            >
+              {children}
+            </motion.div>
+          )}
+        </AnimatePresence>
       ) : null}
     </div>
   );

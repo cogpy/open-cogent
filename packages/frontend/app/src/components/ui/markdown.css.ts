@@ -12,3 +12,8 @@ globalStyle(
     marginTop: 12,
   }
 );
+globalStyle(`${markdownBlock} pre:has(.custom-code-block)`, {
+  padding: 0,
+  backgroundColor: 'transparent',
+  margin: 0,
+});

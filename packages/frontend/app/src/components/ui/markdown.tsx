@@ -7,6 +7,7 @@ import { visit } from 'unist-util-visit';
 
 import { cn } from '@/lib/utils';
 
+import { CodeBlock } from './code-block';
 import * as styles from './markdown.css';
 
 function parseMarkdownIntoBlocks(markdown: string): string[] {
@@ -94,6 +95,14 @@ const footnoteComponents: Components = {
     /* fall back to normal rendering if it’s *not* a footnote block */
     return <section {...rest} />;
   },
+
+  code({ className, children }) {
+    if (!className) {
+      return <code>{children as string}</code>;
+    }
+    const lang = className?.match(/language-(\w+)/)?.[1] ?? 'text';
+    return <CodeBlock language={lang}>{children as string}</CodeBlock>;
+  },
 };
 
 const MemoizedMarkdownBlock = memo(
@@ -141,10 +150,12 @@ export function MarkdownText({
   text,
   loading = false,
   className,
+  style,
 }: {
   text: string;
   loading?: boolean;
   className?: string;
+  style?: React.CSSProperties;
 }) {
   return (
     <span
@@ -154,6 +165,7 @@ export function MarkdownText({
         'prose',
         loading && 'with-cursor'
       )}
+      style={style}
     >
       <MemoizedMarkdown content={text} split={loading} />
     </span>

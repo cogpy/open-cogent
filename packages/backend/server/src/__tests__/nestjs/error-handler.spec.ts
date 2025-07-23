@@ -298,7 +298,7 @@ test('should be able to handle known user error in websocket event', async t => 
     error: UserFriendlyError;
   };
   t.is(error.message, 'You do not have permission to access this resource.');
-  t.is(error.name, 'ACCESS_DENIED');
+  t.is(error.name, 'access_denied');
   t.true(t.context.logger.error.notCalled);
 });
 
@@ -309,7 +309,7 @@ test('should be able to handle unknown internal error in websocket event', async
     error: UserFriendlyError;
   };
   t.is(error.message, 'An internal error occurred.');
-  t.is(error.name, 'INTERNAL_SERVER_ERROR');
+  t.is(error.name, 'internal_server_error');
   t.true(t.context.logger.error.calledOnceWith('internal_server_error'));
 });
 
@@ -334,6 +334,6 @@ test('should be able to handle validation error in graphql mutation', async t =>
   }
 ]`
   );
-  t.is(error.name, 'VALIDATION_ERROR');
+  t.is(error.name, 'validation_error');
   t.true(t.context.logger.error.notCalled);
 });

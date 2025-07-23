@@ -117,30 +117,8 @@ export class GlobalWsExceptionFilter extends BaseWsExceptionFilter {
     metrics.socketio
       .counter('unhandled_error')
       .add(1, { status: error.status });
-    client.emit('error', {
-      error: toWebsocketError(error),
-    });
+    client.emit('error', { error });
   }
-}
-
-/**
- * Only exists for websocket error body backward compatibility
- *
- * relay on `code` field instead of `name`
- *
- * @TODO(@forehalo): remove
- */
-function toWebsocketError(error: UserFriendlyError) {
-  // should be `error.toJSON()` after backward compatibility removed
-  return {
-    status: error.status,
-    code: error.name.toUpperCase(),
-    type: error.type.toUpperCase(),
-    name: error.name.toUpperCase(),
-    message: error.message,
-    data: error.data,
-    requestId: error.requestId,
-  };
 }
 
 export const GatewayErrorWrapper = (event: string): MethodDecorator => {
@@ -166,7 +144,7 @@ export const GatewayErrorWrapper = (event: string): MethodDecorator => {
           .add(1, { event, status: mappedError.status });
 
         return {
-          error: toWebsocketError(mappedError),
+          error: mappedError,
         };
       }
     };

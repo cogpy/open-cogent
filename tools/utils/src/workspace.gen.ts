@@ -1213,11 +1213,6 @@ export const PackageList = [
     ],
   },
   {
-    location: 'packages/common/reader',
-    name: '@afk/reader',
-    workspaceDependencies: ['blocksuite/affine/all'],
-  },
-  {
     location: 'packages/frontend/app',
     name: '@afk/app',
     workspaceDependencies: [
@@ -1260,11 +1255,6 @@ export const PackageList = [
   {
     location: 'tools/commitlint',
     name: '@afk/commitlint-config',
-    workspaceDependencies: [],
-  },
-  {
-    location: 'tools/copilot-result',
-    name: '@afk/copilot-result',
     workspaceDependencies: [],
   },
   {
@@ -1355,7 +1345,6 @@ export type PackageName =
   | '@afk/env'
   | '@afk/error'
   | '@afk/graphql'
-  | '@afk/reader'
   | '@afk/app'
   | '@afk/component'
   | '@types/build-config'
@@ -1363,5 +1352,4 @@ export type PackageName =
   | '@afk/changelog'
   | '@afk-tools/cli'
   | '@afk/commitlint-config'
-  | '@afk/copilot-result'
   | '@afk-tools/utils';

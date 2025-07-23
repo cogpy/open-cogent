@@ -19,6 +19,7 @@
     "af": "yarn oa",
     "oa": "r oa.ts",
     "dev:web": "yarn workspace @afk/app dev",
+    "dev:server": "yarn oa server dev",
     "dev": "yarn oa dev",
     "build": "yarn oa build",
     "lint:eslint": "cross-env NODE_OPTIONS=\"--max-old-space-size=8192\" eslint --report-unused-disable-directives-severity=off . --cache",

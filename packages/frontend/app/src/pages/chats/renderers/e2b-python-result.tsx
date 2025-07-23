@@ -38,7 +38,22 @@ export const E2bPythonResult = ({
 }: {
   result: E2bPythonResultType;
 }) => {
-  const { error, result: processedResults } = result;
+  const { result: processedResultsRaw } = result;
+  let error = result.error;
+  let processedResults: ProcessedResult[] = [];
+
+  try {
+    processedResults =
+      typeof processedResultsRaw === 'string'
+        ? JSON.parse(processedResultsRaw)
+        : processedResultsRaw;
+  } catch (e) {
+    error = {
+      name: 'Error',
+      value: 'Invalid JSON',
+      traceback: e instanceof Error ? e.message : 'Unexpected error',
+    };
+  }
 
   if (error) {
     const errorText = `${error.name}: ${error.value}\n${error.traceback}`;
@@ -66,7 +81,7 @@ export const E2bPythonResult = ({
   return (
     <GenericToolResult icon={<CodeIcon />} title={'Result'}>
       <div className="text-sm px-10 py-4 space-y-4">
-        {processedResults.map((item, index) => (
+        {processedResults?.map((item, index) => (
           <div
             key={index}
             className="border-b border-gray-100 last:border-0 pb-4 last:pb-0"

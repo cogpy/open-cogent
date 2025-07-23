@@ -1,6 +1,9 @@
 import { PageIcon } from '@blocksuite/icons/rc';
 
 import { useOpenDocContext } from '@/contexts/doc-panel-context';
+import { cn } from '@/lib/utils';
+
+import { toolResult } from './tool.css';
 
 interface MakeItRealResultProps {
   docId: string;
@@ -20,7 +23,10 @@ export function MakeItRealResult({ docId, title }: MakeItRealResultProps) {
 
   return (
     <div
-      className="rounded-lg border border-gray-200 bg-white overflow-hidden cursor-pointer hover:bg-gray-50 transition-colors"
+      className={cn(
+        'rounded-lg border border-gray-200 bg-white overflow-hidden cursor-pointer hover:bg-gray-50 transition-colors',
+        toolResult
+      )}
       onClick={handleCardClick}
     >
       <div className="p-4 space-y-3">

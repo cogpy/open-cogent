@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 
 import * as styles from './generating-card.css';
+import { toolResult } from './tool.css';
 
 export const GeneratingCard = ({
   title,
@@ -16,7 +17,6 @@ export const GeneratingCard = ({
   const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    console.log(contentRef.current);
     if (contentRef.current) {
       contentRef.current.scrollTo({
         top: contentRef.current.scrollHeight,
@@ -26,7 +26,7 @@ export const GeneratingCard = ({
   }, [content]);
 
   return (
-    <div className="p-4 rounded-xl border">
+    <div className={cn(toolResult, 'p-4 rounded-xl border')}>
       <header className="w-full truncate flex items-center gap-2">
         {icon ? (
           <div className="size-5 shrink-0 flex items-center justify-center text-xl">

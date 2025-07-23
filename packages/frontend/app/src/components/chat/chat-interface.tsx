@@ -37,7 +37,7 @@ const ChatPlaceholder = ({
   }, [message, onSend]);
 
   return (
-    <div className="flex flex-col justify-center h-full p-4 gap-4 max-w-[900px] mx-auto">
+    <div className="flex flex-col justify-center h-full p-4 gap-4 max-w-[800px] mx-auto">
       <div className="text-[26px] font-medium text-center mb-9">
         {placeholderTitle}
       </div>
@@ -107,7 +107,7 @@ const ChatSession = ({
             <Loading size={24} />
           </div>
         ) : (
-          <div className="max-w-[900px] mx-auto w-full [&>*:not(:first-child)]:mt-4">
+          <div className="max-w-[800px] mx-auto w-full [&>*:not(:first-child)]:mt-4">
             {messages.map((m, idx) => (
               <MessageRenderer
                 key={m.id ?? idx}
@@ -119,7 +119,7 @@ const ChatSession = ({
         )}
       </div>
 
-      <div className="max-w-[900px] mx-auto w-full py-4">
+      <div className="max-w-[800px] mx-auto w-full py-4">
         <ChatInput
           input={input}
           setInput={setInput}

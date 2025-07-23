@@ -7,6 +7,9 @@ import {
 import { useState } from 'react';
 
 import { MarkdownText } from '@/components/ui/markdown';
+import { cn } from '@/lib/utils';
+
+import { toolResult } from './tool.css';
 
 const BROWSER_USE_TASK_STATUS = {
   CREATED: 'created',
@@ -62,7 +65,12 @@ export function BrowserUseResult({ result }: BrowserUseResultProps) {
   let displayImage = currentImage;
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white overflow-hidden">
+    <div
+      className={cn(
+        toolResult,
+        'rounded-lg border border-gray-200 bg-white overflow-hidden'
+      )}
+    >
       {/* Collapsed header */}
       <div
         className="flex items-center justify-between p-3 cursor-pointer hover:bg-gray-50 transition-colors"

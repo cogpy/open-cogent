@@ -4,6 +4,9 @@ import { useEffect, useState } from 'react';
 
 import { snapshotHelper } from '@/components/doc-composer/snapshot-helper';
 import { useOpenDocContext } from '@/contexts/doc-panel-context';
+import { cn } from '@/lib/utils';
+
+import { toolResult } from './tool.css';
 
 interface DocComposeResultProps {
   /** The generated content from doc_compose tool */
@@ -56,7 +59,10 @@ export function DocComposeResult({
 
   return (
     <div
-      className="rounded-lg border border-gray-200 bg-white overflow-hidden cursor-pointer hover:bg-gray-50 transition-colors"
+      className={cn(
+        toolResult,
+        'rounded-lg border border-gray-200 bg-white overflow-hidden cursor-pointer hover:bg-gray-50 transition-colors'
+      )}
       onClick={handleCardClick}
     >
       <div className="p-4 space-y-3">

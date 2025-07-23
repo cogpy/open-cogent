@@ -92,7 +92,7 @@ export function TodoListResult({ result, className }: TodoListResultProps) {
     <LayoutGroup>
       <div className={cn('', className)}>
         {/* Horizontal scroll wrapper */}
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto pb-2">
           {/* Track: flex on mobile, grid on medium+ */}
           <div className="flex md:grid md:grid-cols-3 gap-4 min-w-max pb-2 max-h-[800px]">
             {/** Render each column */}

@@ -1,4 +1,8 @@
-import { useState, useMemo } from 'react';
+import { useMemo, useState } from 'react';
+
+import { cn } from '@/lib/utils';
+
+import { toolResult } from './tool.css';
 
 interface WebSearchResultProps {
   /** The search results from web_search_exa tool */
@@ -51,7 +55,12 @@ export function WebSearchResult({ results, query }: WebSearchResultProps) {
   const resultCount = searchResults.length;
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white overflow-hidden">
+    <div
+      className={cn(
+        toolResult,
+        'rounded-lg border border-gray-200 bg-white overflow-hidden'
+      )}
+    >
       {/* Collapsed header */}
       <div
         className="flex items-center justify-between p-3 cursor-pointer hover:bg-gray-50 transition-colors"
@@ -135,7 +144,7 @@ export function WebSearchResult({ results, query }: WebSearchResultProps) {
 
                   {/* Content */}
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-gray-900 truncate">
+                    <div className="text-sm font-medium text-gray-900 truncate mb-2">
                       <a
                         href={result.url}
                         target="_blank"

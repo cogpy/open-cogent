@@ -12,7 +12,9 @@
 }
 
 @theme {
+  --text-primary: var(--affine-v2-text-primary);
   --text-secondary: var(--affine-v2-text-secondary);
+  --text-tertiary: var(--affine-v2-text-tertiary);
   --color-primary: var(--affine-v2-button-primary);
   --shadow-view: 0px 1px 5px rgba(0, 0, 0, 0.05);
 }

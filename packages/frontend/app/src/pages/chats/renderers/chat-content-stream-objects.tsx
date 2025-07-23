@@ -1,12 +1,16 @@
 // oxlint-disable no-array-index-key
 import { Loading } from '@afk/component';
 import type { StreamObject } from '@afk/graphql';
+import { CheckBoxCheckSolidIcon } from '@blocksuite/icons/rc';
 
 import { MessageCard } from '@/components/ui/card/message-card';
 import { MarkdownText } from '@/components/ui/markdown';
 
 import { BrowserUseResult, transfromStep } from './browser-use-result';
+import { CodeArtifactResult } from './code-artifact-result';
 import { GeneratingCard } from './generating-card';
+import { GenericToolCalling } from './generic-tool-calling';
+import { GenericToolResult } from './generic-tool-result';
 import { MakeItRealResult } from './make-it-real-result';
 import { TodoListResult } from './todo-list-result';
 import { WebSearchResult } from './web-search-result';
@@ -89,14 +93,12 @@ export function ChatContentStreamObjects({
               }
 
               return (
-                <MessageCard
+                <GenericToolCalling
                   key={idx}
-                  status="loading"
-                  className="my-5"
                   title={
                     query
-                      ? `Searching the web for "${query}" …`
-                      : 'Searching the web …'
+                      ? `Searching the web for "${query}"`
+                      : 'Searching the web'
                   }
                 />
               );
@@ -112,15 +114,16 @@ export function ChatContentStreamObjects({
             }
 
             return (
-              <MessageCard
+              <GenericToolCalling
                 key={idx}
-                status="loading"
-                className="my-5"
                 title={`Calling ${obj.toolName ?? 'tool'} …`}
               />
             );
 
           case 'tool-result': {
+            if (obj.toolName === 'code_artifact' && obj.result) {
+              return <CodeArtifactResult result={obj.result} />;
+            }
             // Special handling for make_it_real tool
             if (obj.toolName === 'make_it_real' && obj.result) {
               return (
@@ -179,22 +182,16 @@ export function ChatContentStreamObjects({
             }
 
             // Default tool result display
+
             return (
-              <div
-                key={idx}
-                className="rounded-md border border-gray-300 p-3 text-sm text-gray-600"
+              <GenericToolResult
+                icon={<CheckBoxCheckSolidIcon />}
+                title={`${obj.toolName ?? 'Tool'} result`}
               >
-                <div className="font-medium mb-1">
-                  ✅ {obj.toolName ?? 'Tool'} result
-                </div>
-                {obj.result ? (
-                  <pre className="whitespace-pre-wrap break-all text-xs max-h-48 overflow-auto">
-                    {JSON.stringify(obj.result, null, 2)}
-                  </pre>
-                ) : (
-                  <span>No result data.</span>
-                )}
-              </div>
+                <pre className="whitespace-pre-wrap break-all text-xs max-h-48 overflow-auto">
+                  {JSON.stringify(obj.result, null, 2)}
+                </pre>
+              </GenericToolResult>
             );
           }
           default:

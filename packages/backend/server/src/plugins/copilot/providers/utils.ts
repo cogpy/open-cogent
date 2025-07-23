@@ -469,6 +469,10 @@ export class TextStreamParser {
             result += `\nGenerating python code\n`;
             break;
           }
+          case 'e2b_python_sandbox': {
+            result += `\nExecuting python code in sandbox\n`;
+            break;
+          }
         }
         result = this.markAsCallout(result);
         break;
@@ -521,6 +525,9 @@ export class TextStreamParser {
             if (chunk.result && typeof chunk.result === 'string') {
               result += `\n${chunk.result}\n`;
             }
+            break;
+          }
+          case 'e2b_python_sandbox': {
             break;
           }
         }

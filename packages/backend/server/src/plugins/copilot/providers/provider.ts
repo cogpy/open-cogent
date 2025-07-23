@@ -13,6 +13,7 @@ import {
 import { Models } from '../../../models';
 import { CopilotContextService } from '../context';
 import { PromptService } from '../prompt';
+import { CopilotStorage } from '../storage';
 import {
   buildDocSearchGetter,
   buildSaveDocGetter,
@@ -65,6 +66,7 @@ export abstract class CopilotProvider<C = any> {
   @Inject() protected readonly factory!: CopilotProviderFactory;
   @Inject() protected readonly moduleRef!: ModuleRef;
   @Inject() protected readonly cache!: Cache;
+  @Inject() protected readonly copilotStorage!: CopilotStorage;
 
   get config(): C {
     return this.AFFiNEConfig.copilot.providers[this.type] as C;
@@ -240,9 +242,12 @@ export abstract class CopilotProvider<C = any> {
             break;
           }
           case 'pythonSandbox': {
+            const copilotStorage = this.copilotStorage;
             tools.e2b_python_sandbox = createE2bPythonSandboxTool(
               writable,
-              this.AFFiNEConfig
+              this.AFFiNEConfig,
+              copilotStorage,
+              options.user || ''
             );
             break;
           }

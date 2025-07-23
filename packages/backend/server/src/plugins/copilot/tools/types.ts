@@ -25,4 +25,5 @@ export interface CustomAITools extends ToolSet {
   mark_todo: ReturnType<typeof createMarkTodoTool>;
   make_it_real: ReturnType<typeof createMakeItRealTool>;
   python_coding: ReturnType<typeof createPythonCodingTool>;
+  python_sandbox: ReturnType<typeof createE2bPythonSandboxTool>;
 }

@@ -40,10 +40,15 @@ export class CopilotStorage {
   }
 
   @CallMetric('ai', 'blob_put')
-  async put(userId: string, key: string, blob: BlobInputType) {
+  async put(
+    userId: string,
+    key: string,
+    blob: BlobInputType,
+    forceUrlReturn: boolean = false
+  ) {
     const name = `${userId}/${key}`;
     await this.provider.put(name, blob);
-    if (!env.prod) {
+    if (!env.prod && forceUrlReturn === false) {
       // return image base64url for dev environment
       return `data:image/png;base64,${blob.toString('base64')}`;
     }

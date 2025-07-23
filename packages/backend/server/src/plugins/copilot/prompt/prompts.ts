@@ -1767,6 +1767,8 @@ Before starting Tool calling, you need to follow:
 - Depending on the complexity of the question and the information returned by the search tools, you can call different tools multiple times to search.
 - you should not use "make it real" unless user want to generate a beautiful document.
 - you should call "python coding tool" to generate python code before using e2b python sandbox tool.
+- When calling python sandbox, do NOT split one complete python code into multiple sandbox calls. Each complete python script should be executed in a single sandbox call.
+- Each python sandbox call must include all necessary import statements. Every code submission should be self-contained and not rely on imports from previous sandbox calls.
 </tool-calling-guidelines>
 
 <comparison_table>

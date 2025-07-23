@@ -7,6 +7,8 @@ import { visit } from 'unist-util-visit';
 
 import { cn } from '@/lib/utils';
 
+import * as styles from './markdown.css';
+
 function parseMarkdownIntoBlocks(markdown: string): string[] {
   const tokens = marked.lexer(markdown);
   return tokens.map(token => token.raw);
@@ -145,7 +147,14 @@ export function MarkdownText({
   className?: string;
 }) {
   return (
-    <span className={cn(className, 'prose', loading && 'with-cursor')}>
+    <span
+      className={cn(
+        className,
+        styles.markdownBlock,
+        'prose',
+        loading && 'with-cursor'
+      )}
+    >
       <MemoizedMarkdown content={text} split={loading} />
     </span>
   );

@@ -1,17 +1,27 @@
 // oxlint-disable no-array-index-key
+import { Loading } from '@afk/component';
 import type { StreamObject } from '@afk/graphql';
+import { CheckBoxCheckSolidIcon, EmbedWebIcon } from '@blocksuite/icons/rc';
 
 import { MessageCard } from '@/components/ui/card/message-card';
 import { MarkdownText } from '@/components/ui/markdown';
 
-import { BrowserUseResult } from './browser-use-result';
+import { BrowserUseResult, transformStep } from './browser-use-result';
+import { CodeArtifactResult } from './code-artifact-result';
+import { E2bPythonResult } from './e2b-python-result';
+import { GeneratingCard } from './generating-card';
+import { GenericToolCalling } from './generic-tool-calling';
+import { GenericToolResult } from './generic-tool-result';
 import { MakeItRealResult } from './make-it-real-result';
+import { PythonCodeResult } from './python-code-result';
 import { TodoListResult } from './todo-list-result';
+import { WebCrawlResult } from './web-crawl-result';
 import { WebSearchResult } from './web-search-result';
 
 interface ChatContentStreamObjectsProps {
   streamObjects: StreamObject[];
   isStreaming?: boolean;
+  isAssistant?: boolean;
 }
 
 /**
@@ -25,28 +35,34 @@ interface ChatContentStreamObjectsProps {
 export function ChatContentStreamObjects({
   streamObjects,
   isStreaming = false,
+  isAssistant = false,
 }: ChatContentStreamObjectsProps) {
   if (!streamObjects?.length) return null;
 
   return (
-    <div className="flex flex-col gap-2 max-w-full text-left prose">
+    <div className="flex flex-col gap-2 max-w-full text-left prose w-full">
       {streamObjects.map((obj, idx) => {
         const loading = isStreaming && idx === streamObjects.length - 1;
-        console.log(obj);
         switch (obj.type) {
-          case 'text-delta':
+          case 'text-delta': {
             return (
               <MarkdownText
                 key={idx}
                 text={obj.textDelta ?? ''}
                 loading={loading}
+                className={isAssistant ? 'min-w-full' : undefined}
               />
             );
+          }
 
           case 'reasoning':
             return (
               <div key={idx} className="rounded-md bg-black/[0.05] p-4">
-                <MarkdownText text={obj.textDelta ?? ''} loading={loading} />
+                <MarkdownText
+                  className={isAssistant ? 'min-w-full' : undefined}
+                  text={obj.textDelta ?? ''}
+                  loading={loading}
+                />
               </div>
             );
 
@@ -56,11 +72,11 @@ export function ChatContentStreamObjects({
               obj.toolName === 'make_it_real'
             ) {
               return (
-                <MessageCard
+                <GeneratingCard
                   key={idx}
-                  status="loading"
-                  className="my-5"
-                  title={obj.textDelta}
+                  title={'Generating...'}
+                  content={obj.textDelta ?? ''}
+                  icon={<Loading />}
                 />
               );
             }
@@ -80,29 +96,69 @@ export function ChatContentStreamObjects({
               }
 
               return (
-                <MessageCard
+                <GenericToolCalling
                   key={idx}
-                  status="loading"
-                  className="my-5"
                   title={
                     query
-                      ? `Searching the web for "${query}" …`
-                      : 'Searching the web …'
+                      ? `Searching the web for "${query}"`
+                      : 'Searching the web'
                   }
                 />
               );
             }
 
+            if (obj.toolName === 'web_crawl_exa') {
+              const url = obj.args?.url;
+              return (
+                <GenericToolCalling
+                  key={idx}
+                  title={`Crawling "${url}"`}
+                  icon={<EmbedWebIcon />}
+                />
+              );
+            }
+
+            if (obj.toolName === 'browser_use' && obj.textDelta) {
+              const result = transformStep(obj.textDelta as any);
+              if (result) {
+                return <BrowserUseResult key={idx} result={result} />;
+              } else {
+                return 'Error';
+              }
+            }
+
+            if (obj.toolName === 'python_coding') {
+              return (
+                <GeneratingCard
+                  key={idx}
+                  title={'Coding...'}
+                  content={obj.textDelta ?? ''}
+                  icon={<Loading />}
+                />
+              );
+            }
+            if (obj.toolName === 'e2b_python_sandbox') {
+              return (
+                <GeneratingCard
+                  key={idx}
+                  title={'Running python code...'}
+                  content={obj.textDelta ?? ''}
+                  icon={<Loading />}
+                />
+              );
+            }
+
             return (
-              <MessageCard
+              <GenericToolCalling
                 key={idx}
-                status="loading"
-                className="my-5"
                 title={`Calling ${obj.toolName ?? 'tool'} …`}
               />
             );
 
           case 'tool-result': {
+            if (obj.toolName === 'code_artifact' && obj.result) {
+              return <CodeArtifactResult result={obj.result} />;
+            }
             // Special handling for make_it_real tool
             if (obj.toolName === 'make_it_real' && obj.result) {
               return (
@@ -135,13 +191,32 @@ export function ChatContentStreamObjects({
                 />
               );
             }
+            if (obj.toolName === 'web_crawl_exa' && obj.result) {
+              const results =
+                obj.result.results || obj.result.data || obj.result;
+              return (
+                <WebCrawlResult
+                  key={idx}
+                  results={Array.isArray(results) ? results : [results]}
+                />
+              );
+            }
 
             // Specialized handling for todo list
             if (
               ['todo_list', 'mark_todo'].includes(obj.toolName ?? '') &&
               obj.result?.list
             ) {
-              return <TodoListResult key={idx} result={obj.result} />;
+              return <TodoListResult key={idx} result={obj.result as any} />;
+            }
+
+            if (obj.toolName === 'python_coding' && obj.result) {
+              return <PythonCodeResult result={obj.result} />;
+            }
+
+            // Specialized handling for e2b python sandbox
+            if (obj.toolName === 'e2b_python_sandbox' && obj.result) {
+              return <E2bPythonResult result={obj.result as unknown as any} />;
             }
 
             if (obj.toolName === 'browser_use' && obj.result) {
@@ -161,22 +236,16 @@ export function ChatContentStreamObjects({
             }
 
             // Default tool result display
+
             return (
-              <div
-                key={idx}
-                className="rounded-md border border-gray-300 p-3 text-sm text-gray-600"
+              <GenericToolResult
+                icon={<CheckBoxCheckSolidIcon />}
+                title={`${obj.toolName ?? 'Tool'} result`}
               >
-                <div className="font-medium mb-1">
-                  ✅ {obj.toolName ?? 'Tool'} result
-                </div>
-                {obj.result ? (
-                  <pre className="whitespace-pre-wrap break-all text-xs max-h-48 overflow-auto">
-                    {JSON.stringify(obj.result, null, 2)}
-                  </pre>
-                ) : (
-                  <span>No result data.</span>
-                )}
-              </div>
+                <pre className="whitespace-pre-wrap break-all text-xs max-h-48 overflow-auto">
+                  {JSON.stringify(obj.result, null, 2)}
+                </pre>
+              </GenericToolResult>
             );
           }
           default:

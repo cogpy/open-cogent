@@ -16,7 +16,7 @@ export const createMakeItRealTool = (
   saveDoc: SaveDocFunc
 ) => {
   return tool({
-    description: `This tool(make-it-real) is used to improve the document with more beautiful layout and professional appearance.`,
+    description: `This tool(make-it-real) is used to improve the document with more beautiful layout and professional appearance. Return a new document`,
     parameters: z.object({
       instructions: z
         .string()
@@ -28,7 +28,6 @@ export const createMakeItRealTool = (
       { instructions, markdown },
       { toolCallId, abortSignal }
     ) => {
-      console.log('makeItRealTool', instructions, markdown);
       try {
         const prompt = await promptService.get('make-it-real');
         if (!prompt) {

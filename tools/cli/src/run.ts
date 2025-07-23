@@ -19,7 +19,6 @@ const ignoreLoaderScripts = [
   'prisma',
   'cap',
   'tsc',
-  'typedoc',
   /^r$/,
   /electron(?!-)/,
 ];
@@ -28,19 +27,19 @@ export class RunCommand extends PackageCommand {
   static override paths = [[], ['run'], ['r']];
 
   static override usage = PackageCommand.Usage({
-    description: 'AFFiNE Monorepo scripts',
+    description: 'Open-Agent Monorepo scripts',
     details: `
-      \`affine web <script>\`    Run any script defined in package's package.json
+      \`oa web <script>\`    Run any script defined in package's package.json
 
-      \`affine init\`            Generate the required files if there are any package added or removed
+      \`oa init\`            Generate the required files if there are any package added or removed
 
-      \`affine clean\`           Clean the output files of ts, cargo, webpack, etc.
+      \`oa clean\`           Clean the output files of ts, cargo, webpack, etc.
 
-      \`affine bundle\`          Bundle the packages
+      \`oa bundle\`          Bundle the packages
 
-      \`affine build\`           A proxy for <-p package>'s \`build\` script
+      \`oa build\`           A proxy for <-p package>'s \`build\` script
 
-      \`affine dev\`             A proxy for <-p package>'s \`dev\` script
+      \`oa dev\`             A proxy for <-p package>'s \`dev\` script
     `,
     examples: [
       [`See detail of each command`, '$0 -h'],
@@ -140,9 +139,9 @@ export class RunCommand extends PackageCommand {
       }
     }
 
-    const isAFFiNECommand = args[0] === 'affine';
-    if (isAFFiNECommand) {
-      // remove 'affine' from 'affine xxx' command
+    const isOACommand = args[0] === 'oa';
+    if (isOACommand) {
+      // remove 'oa' from 'oa xxx' command
       args.shift();
       args.push('-p', pkg.name);
 

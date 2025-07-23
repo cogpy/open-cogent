@@ -1,4 +1,4 @@
-import { ScrollableContainer } from '@afk/component';
+import { Button, Loading, ScrollableContainer } from '@afk/component';
 import {
   AllDocsIcon,
   EditIcon,
@@ -32,7 +32,7 @@ const ChatItem = ({ chat }: { chat: Chat }) => {
     <Link to={`/chats/${chat.sessionId}`}>
       <li className={cn(styles.listItem, isActive && styles.activeItem)}>
         <ChatIcon className={styles.listItemIcon} />
-        <div className={styles.listItemLabel}>{chat.title}</div>
+        <div className={styles.listItemLabel}>{chat.title ?? 'New Chat'}</div>
       </li>
     </Link>
   );
@@ -65,7 +65,7 @@ const FileItem = ({ file }: { file: File }) => {
 };
 
 const SidebarContent = () => {
-  const { allItems, refresh } = useLibraryStore();
+  const { allItems, refresh, chats, initialized, loading } = useLibraryStore();
   const collectedItems = useMemo(() => filterCollected(allItems), [allItems]);
 
   useEffect(() => {
@@ -100,40 +100,53 @@ const SidebarContent = () => {
         </Link>
       </div>
 
-      {/* scroll area */}
-      {collectedItems.length === 0 ? null : (
-        <h3 className={cn(styles.sectionTitle, 'mb-2', 'pt-2 px-4', 'mt-2')}>
-          Favorites
-        </h3>
-      )}
       <ScrollableContainer className="px-2 flex-1 h-0">
-        {/* Chats */}
-        {/* <section className="mb-2">
-          <h3
-            className={cn(styles.sectionTitle, 'mb-2')}
-            onClick={() => setExpandChats(prev => !prev)}
-          >
-            Chats
-            <ToggleDownIcon />
-          </h3>
-          {expandChats ? (
-            <ul>
-              {collectedChats.map(chat => (
-                <ChatItem chat={chat} key={chat.id} />
-              ))}
-            </ul>
+        {/* Recent */}
+        <section className="my-2">
+          {initialized ? null : loading ? (
+            <div className="px-2 text-text-secondary text-sm flex items-center gap-3">
+              <Loading className="text-xl" />
+              Loading history...
+            </div>
           ) : null}
-        </section> */}
+          {chats.length > 0 ? (
+            <h3 className={cn(styles.sectionTitle, 'mb-1 mt-4', 'px-2')}>
+              Recent
+            </h3>
+          ) : null}
+          <ul className="flex flex-col gap-1">
+            {chats.slice(0, 5).map(chat => (
+              <ChatItem chat={chat} key={chat.sessionId} />
+            ))}
+            {chats.length > 5 ? (
+              <Link to="/library?type=chats">
+                <Button
+                  className="ml-7 text-text-primary text-sm font-medium"
+                  variant="plain"
+                  style={{ width: 'fit-content' }}
+                >
+                  Show More
+                </Button>
+              </Link>
+            ) : null}
+          </ul>
+        </section>
+        {/* scroll area */}
+        {collectedItems.length === 0 ? null : (
+          <h3 className={cn(styles.sectionTitle, 'mb-2', 'pt-2 px-2', 'mt-2')}>
+            Favorites
+          </h3>
+        )}
         <ul className="flex flex-col gap-1">
           {collectedItems.map(item => {
             if (item.type === 'chat') {
-              return <ChatItem chat={item} key={item.id} />;
+              return <ChatItem chat={item} key={item.sessionId} />;
             }
             if (item.type === 'doc') {
-              return <DocItem doc={item} key={item.id} />;
+              return <DocItem doc={item} key={item.docId} />;
             }
             if (item.type === 'file') {
-              return <FileItem file={item} key={item.id} />;
+              return <FileItem file={item} key={item.fileId} />;
             }
             return null;
           })}

@@ -57,13 +57,7 @@ export default defineConfig({
       fg.convertPathToPattern(rootDir) +
         'packages/{common,frontend}/**/*.spec.{ts,tsx}',
     ],
-    exclude: [
-      '**/node_modules',
-      '**/dist',
-      '**/build',
-      '**/out,',
-      '**/packages/frontend/apps/electron',
-    ],
+    exclude: ['**/node_modules', '**/dist', '**/build', '**/out,'],
     testTimeout: 5000,
     coverage: {
       all: false,

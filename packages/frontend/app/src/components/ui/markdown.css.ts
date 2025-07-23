@@ -1,0 +1,14 @@
+import { globalStyle, style } from '@vanilla-extract/css';
+
+export const markdownBlock = style({});
+
+globalStyle(`${markdownBlock} li > p`, {
+  marginBottom: 0,
+});
+globalStyle(
+  `${markdownBlock} p:not(:last-child), ${markdownBlock} ul:not(:last-child)`,
+  {
+    marginBottom: 12,
+    marginTop: 12,
+  }
+);

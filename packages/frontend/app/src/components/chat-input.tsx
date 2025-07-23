@@ -7,11 +7,7 @@ import type { StoreApi } from 'zustand';
 import { cn } from '@/lib/utils';
 import type { ChatSessionState } from '@/store/copilot/types';
 
-import {
-  type ChatContext,
-  ContextPreview,
-  ContextSelectorMenu,
-} from './chat-context';
+import { ContextPreview, ContextSelectorMenu } from './chat-context';
 import * as styles from './chat-input.css';
 
 const tempModels = [
@@ -56,6 +52,7 @@ export const ChatInput = ({
   sending,
   onAbort,
   store,
+  isCreating,
 }: {
   input: string;
   setInput: (input: string) => void;
@@ -64,6 +61,7 @@ export const ChatInput = ({
   placeholder?: string;
   sending?: boolean;
   store?: StoreApi<ChatSessionState>;
+  isCreating?: boolean;
 }) => {
   // const [model, setModel] = useState('claude-3-5-sonnet-v2@20241022');
   const handleInput = useCallback(
@@ -139,6 +137,7 @@ export const ChatInput = ({
             className={styles.send}
             icon={<ArrowUpBigIcon className="text-white" />}
             onClick={onSend}
+            loading={isCreating}
           />
         </div>
       </footer>

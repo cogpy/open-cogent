@@ -37,25 +37,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "affine_server_native"
-version = "1.0.0"
-dependencies = [
- "chrono",
- "file-format",
- "mimalloc",
- "napi",
- "napi-build",
- "napi-derive",
- "open_agent_common",
- "rand 0.9.1",
- "rayon",
- "sha3",
- "tiktoken-rs",
- "tokio",
- "v_htmlescape",
-]
-
-[[package]]
 name = "ahash"
 version = "0.8.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1415,6 +1396,25 @@ dependencies = [
  "tree-sitter-scala",
  "tree-sitter-typescript",
  "url",
+]
+
+[[package]]
+name = "open_agent_server_native"
+version = "1.0.0"
+dependencies = [
+ "chrono",
+ "file-format",
+ "mimalloc",
+ "napi",
+ "napi-build",
+ "napi-derive",
+ "open_agent_common",
+ "rand 0.9.1",
+ "rayon",
+ "sha3",
+ "tiktoken-rs",
+ "tokio",
+ "v_htmlescape",
 ]
 
 [[package]]

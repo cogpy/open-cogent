@@ -111,7 +111,10 @@ test('should insert and search embedding', async t => {
 
       const ret = await copilotUser.getDoc(user.id, docId);
       t.snapshot(
-        cleanObject([ret], ['userId', 'docId', 'createdAt', 'updatedAt']),
+        cleanObject(
+          [ret],
+          ['userId', 'docId', 'metadata', 'createdAt', 'updatedAt']
+        ),
         'should get doc metadata'
       );
     }

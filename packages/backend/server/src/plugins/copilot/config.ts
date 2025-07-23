@@ -23,6 +23,12 @@ declare global {
       exa: ConfigItem<{
         key: string;
       }>;
+      e2b: ConfigItem<{
+        key: string;
+      }>;
+      browserUse: ConfigItem<{
+        key: string;
+      }>;
       storage: ConfigItem<StorageProviderConfig>;
       providers: {
         openai: ConfigItem<OpenAIConfig>;
@@ -96,6 +102,18 @@ defineModuleConfig('copilot', {
   },
   exa: {
     desc: 'The config for the exa web search key.',
+    default: {
+      key: '',
+    },
+  },
+  browserUse: {
+    desc: 'The config for the browser use key',
+    default: {
+      key: '',
+    },
+  },
+  e2b: {
+    desc: 'The config for the e2b key',
     default: {
       key: '',
     },

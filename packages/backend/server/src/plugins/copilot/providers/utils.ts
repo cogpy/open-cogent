@@ -465,6 +465,10 @@ export class TextStreamParser {
             result += `\nImprove document with make it real\n`;
             break;
           }
+          case 'python_coding': {
+            result += `\nGenerating python code\n`;
+            break;
+          }
         }
         result = this.markAsCallout(result);
         break;
@@ -510,6 +514,12 @@ export class TextStreamParser {
               'content' in chunk.result
             ) {
               result += `\n${chunk.result.content}\n`;
+            }
+            break;
+          }
+          case 'python_coding': {
+            if (chunk.result && typeof chunk.result === 'string') {
+              result += `\n${chunk.result}\n`;
             }
             break;
           }

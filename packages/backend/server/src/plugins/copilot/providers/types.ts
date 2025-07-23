@@ -80,6 +80,10 @@ export const PromptConfigStrictSchema = z.object({
       'docCompose',
       // make it real
       'makeItReal',
+      // python coding
+      'pythonCoding',
+      // e2b python sandbox
+      'pythonSandbox',
     ])
     .array()
     .nullable()

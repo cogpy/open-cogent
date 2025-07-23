@@ -21,12 +21,14 @@ import {
   createConversationSummaryTool,
   createDocComposeTool,
   createDocSemanticSearchTool,
+  createE2bPythonSandboxTool,
   createExaCrawlTool,
   createExaSearchTool,
   createMakeItRealTool,
   createMarkTodoTool,
   createTodoTool,
 } from '../tools';
+import { createPythonCodingTool } from '../tools/python-coding';
 import { CopilotProviderFactory } from './factory';
 import {
   type CopilotChatOptions,
@@ -167,7 +169,10 @@ export abstract class CopilotProvider<C = any> {
         }
         switch (tool) {
           case 'browserUse': {
-            tools.browser_use = createBrowserUseTool();
+            tools.browser_use = createBrowserUseTool(
+              writable,
+              this.AFFiNEConfig
+            );
             break;
           }
           case 'codeArtifact': {
@@ -223,6 +228,21 @@ export abstract class CopilotProvider<C = any> {
               prompt,
               this.factory,
               saveDoc
+            );
+            break;
+          }
+          case 'pythonCoding': {
+            tools.python_coding = createPythonCodingTool(
+              writable,
+              prompt,
+              this.factory
+            );
+            break;
+          }
+          case 'pythonSandbox': {
+            tools.e2b_python_sandbox = createE2bPythonSandboxTool(
+              writable,
+              this.AFFiNEConfig
             );
             break;
           }

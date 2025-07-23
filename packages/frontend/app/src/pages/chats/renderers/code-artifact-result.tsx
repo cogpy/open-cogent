@@ -1,0 +1,86 @@
+import { RadioGroup } from '@afk/component';
+import type { StreamObject } from '@afk/graphql';
+import { FileIconHtmlIcon } from '@blocksuite/icons/rc';
+import { useEffect, useState } from 'react';
+import { createHighlighter } from 'shiki';
+
+import HtmlPreviewer from '@/components/html-previewer';
+import { cn } from '@/lib/utils';
+
+import * as styles from './code-artifact-result.css';
+import { GenericToolResult } from './generic-tool-result';
+
+export const CodeArtifactResult = ({
+  result,
+}: {
+  result: StreamObject['result'];
+}) => {
+  const [highlightedHtml, setHighlightedHtml] = useState('');
+  const [view, setView] = useState<'Code' | 'Preview'>('Code');
+  const [collapsed, setCollapsed] = useState(true);
+
+  const { html, title } = result as { html: string; title: string };
+
+  useEffect(() => {
+    if (!html) return;
+
+    async function highlightCode(code: string) {
+      const highlighter = await createHighlighter({
+        themes: ['min-light'],
+        langs: ['html'],
+      });
+
+      const html = highlighter.codeToHtml(code, {
+        lang: 'html',
+        theme: 'min-light',
+      });
+
+      return html;
+    }
+
+    highlightCode(html).then(html => {
+      if (!html) return;
+      setHighlightedHtml(html);
+    });
+  }, [html]);
+
+  if (!result || !html) return null;
+
+  return (
+    <GenericToolResult
+      title={title}
+      icon={<FileIconHtmlIcon />}
+      actions={
+        collapsed ? null : (
+          <RadioGroup
+            className="mr-3"
+            items={['Code', 'Preview']}
+            value={view}
+            onChange={setView}
+          />
+        )
+      }
+      onCollapseChange={setCollapsed}
+    >
+      <div className={cn('relative', view === 'Preview' && 'h-150')}>
+        <HtmlPreviewer
+          code={html}
+          className={cn(
+            'size-full min-h-150 absolute',
+            view === 'Code' ? 'opacity-0 pointer-events-none' : ''
+          )}
+        />
+        {view === 'Code' ? (
+          <div
+            className={cn(
+              styles.codeBlock,
+              'not-prose max-h-150 overflow-y-auto',
+              'relative z-1'
+            )}
+            dangerouslySetInnerHTML={{ __html: highlightedHtml }}
+          />
+        ) : null}
+      </div>
+    </GenericToolResult>
+  );
+};

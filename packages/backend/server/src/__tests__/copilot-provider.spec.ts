@@ -548,17 +548,8 @@ The term **“CRDT”** was first introduced by Marc Shapiro, Nuno Preguiça, Ca
     type: 'text' as const,
   },
   {
-    promptName: ['Brainstorm ideas about this', 'Brainstorm mindmap'],
+    promptName: ['Brainstorm ideas about this'],
     messages: [{ role: 'user' as const, content: TestAssets.SSOT }],
-    verifier: (t: ExecutionContext<Tester>, result: string) => {
-      assertNotWrappedInCodeBlock(t, result);
-      t.assert(checkMDList(result), 'should be a markdown list');
-    },
-    type: 'text' as const,
-  },
-  {
-    promptName: 'Expand mind map',
-    messages: [{ role: 'user' as const, content: '- Single source of truth' }],
     verifier: (t: ExecutionContext<Tester>, result: string) => {
       assertNotWrappedInCodeBlock(t, result);
       t.assert(checkMDList(result), 'should be a markdown list');
@@ -646,20 +637,7 @@ The term **“CRDT”** was first introduced by Marc Shapiro, Nuno Preguiça, Ca
     type: 'image' as const,
   },
   {
-    promptName: ['debug:action:dalle3'],
-    messages: [
-      {
-        role: 'user' as const,
-        content: 'Panda',
-      },
-    ],
-    verifier: (t: ExecutionContext<Tester>, link: string) => {
-      t.truthy(checkUrl(link), 'should be a valid url');
-    },
-    type: 'image' as const,
-  },
-  {
-    promptName: ['debug:action:gpt-image-1'],
+    promptName: ['Generate image'],
     messages: [
       {
         role: 'user' as const,

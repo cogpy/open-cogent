@@ -1,7 +1,9 @@
 import { MarkdownText } from '@/components/ui/markdown';
+import { cn } from '@/lib/utils';
 import type { ChatMessage } from '@/store/copilot/types';
 
 import { ChatContentStreamObjects } from './chat-content-stream-objects';
+import * as styles from './message.css';
 
 interface MessageRendererProps {
   /** Chat message to render */
@@ -22,15 +24,25 @@ export function MessageRenderer({
 }: MessageRendererProps) {
   const isAssistant = message.role !== 'user';
   return (
-    <div className={isAssistant ? 'text-left' : 'text-right'}>
+    <div
+      className={cn(
+        'flex flex-col',
+        isAssistant ? 'items-start' : 'items-end',
+        !isAssistant && 'pl-10'
+      )}
+    >
       {message.streamObjects?.length ? (
         <ChatContentStreamObjects
           streamObjects={message.streamObjects}
           isStreaming={isStreaming}
+          isAssistant={isAssistant}
         />
       ) : (
         <MarkdownText
-          className="inline-block bg-gray-100 p-3 max-w-full prose rounded-lg mb-4"
+          className={cn(
+            'inline-block bg-gray-100 p-3 ax-w-full prose rounded-lg mb-4',
+            styles.mdMsg
+          )}
           text={message.content}
           loading={isAssistant && isStreaming}
         />

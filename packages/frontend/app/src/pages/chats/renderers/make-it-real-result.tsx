@@ -2,6 +2,8 @@ import { PageIcon } from '@blocksuite/icons/rc';
 
 import { useOpenDocContext } from '@/contexts/doc-panel-context';
 
+import { GenericToolResult } from './generic-tool-result';
+
 interface MakeItRealResultProps {
   docId: string;
   title: string;
@@ -19,21 +21,10 @@ export function MakeItRealResult({ docId, title }: MakeItRealResultProps) {
   };
 
   return (
-    <div
-      className="rounded-lg border border-gray-200 bg-white overflow-hidden cursor-pointer hover:bg-gray-50 transition-colors"
+    <GenericToolResult
+      icon={<PageIcon />}
+      title={title}
       onClick={handleCardClick}
-    >
-      <div className="p-4 space-y-3">
-        <div className="flex items-start gap-3">
-          <div className="flex-shrink-0 mt-0.5 h-4 flex items-center">
-            <PageIcon className="w-4 h-4 text-gray-400" />
-          </div>
-
-          <div className="flex-1 min-w-0">
-            <div className="text-sm font-medium text-gray-900">{title}</div>
-          </div>
-        </div>
-      </div>
-    </div>
+    />
   );
 }

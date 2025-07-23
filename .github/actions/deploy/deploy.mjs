@@ -28,23 +28,14 @@ const replicaConfig = {
   stable: {
     web: 3,
     graphql: Number(process.env.PRODUCTION_GRAPHQL_REPLICA) || 3,
-    sync: Number(process.env.PRODUCTION_SYNC_REPLICA) || 3,
-    renderer: Number(process.env.PRODUCTION_RENDERER_REPLICA) || 3,
-    doc: Number(process.env.PRODUCTION_DOC_REPLICA) || 3,
   },
   beta: {
     web: 2,
     graphql: Number(process.env.BETA_GRAPHQL_REPLICA) || 2,
-    sync: Number(process.env.BETA_SYNC_REPLICA) || 2,
-    renderer: Number(process.env.BETA_RENDERER_REPLICA) || 2,
-    doc: Number(process.env.BETA_DOC_REPLICA) || 2,
   },
   canary: {
     web: 2,
     graphql: 2,
-    sync: 2,
-    renderer: 2,
-    doc: 2,
   },
 };
 
@@ -52,16 +43,10 @@ const cpuConfig = {
   beta: {
     web: '300m',
     graphql: '1',
-    sync: '1',
-    doc: '1',
-    renderer: '300m',
   },
   canary: {
     web: '300m',
     graphql: '1',
-    sync: '1',
-    doc: '1',
-    renderer: '300m',
   },
 };
 
@@ -84,14 +69,11 @@ const createHelmCommand = ({ isDryRun }) => {
   const serviceAnnotations = [
     `--set-json   web.serviceAccount.annotations="{ \\"iam.gke.io/gcp-service-account\\": \\"${APP_IAM_ACCOUNT}\\" }"`,
     `--set-json   graphql.serviceAccount.annotations="{ \\"iam.gke.io/gcp-service-account\\": \\"${APP_IAM_ACCOUNT}\\" }"`,
-    `--set-json   sync.serviceAccount.annotations="{ \\"iam.gke.io/gcp-service-account\\": \\"${APP_IAM_ACCOUNT}\\" }"`,
-    `--set-json   doc.serviceAccount.annotations="{ \\"iam.gke.io/gcp-service-account\\": \\"${APP_IAM_ACCOUNT}\\" }"`,
   ].concat(
     isProduction || isBeta || isInternal
       ? [
           `--set-json   web.service.annotations="{ \\"cloud.google.com/neg\\": \\"{\\\\\\"ingress\\\\\\": true}\\" }"`,
           `--set-json   graphql.service.annotations="{ \\"cloud.google.com/neg\\": \\"{\\\\\\"ingress\\\\\\": true}\\" }"`,
-          `--set-json   sync.service.annotations="{ \\"cloud.google.com/neg\\": \\"{\\\\\\"ingress\\\\\\": true}\\" }"`,
           `--set-json   cloud-sql-proxy.serviceAccount.annotations="{ \\"iam.gke.io/gcp-service-account\\": \\"${CLOUD_SQL_IAM_ACCOUNT}\\" }"`,
           `--set-json   cloud-sql-proxy.nodeSelector="{ \\"iam.gke.io/gke-metadata-server-enabled\\": \\"true\\" }"`,
         ]
@@ -103,8 +85,6 @@ const createHelmCommand = ({ isDryRun }) => {
     ? [
         `--set        web.resources.requests.cpu="${cpu.web}"`,
         `--set        graphql.resources.requests.cpu="${cpu.graphql}"`,
-        `--set        sync.resources.requests.cpu="${cpu.sync}"`,
-        `--set        doc.resources.requests.cpu="${cpu.doc}"`,
       ]
     : [];
 
@@ -140,14 +120,6 @@ const createHelmCommand = ({ isDryRun }) => {
     `--set        graphql.replicaCount=${replica.graphql}`,
     `--set-string graphql.image.tag="${imageTag}"`,
     `--set        graphql.app.host=${hosts[0]}`,
-    `--set        sync.replicaCount=${replica.sync}`,
-    `--set-string sync.image.tag="${imageTag}"`,
-    `--set-string renderer.image.tag="${imageTag}"`,
-    `--set        renderer.app.host=${hosts[0]}`,
-    `--set        renderer.replicaCount=${replica.renderer}`,
-    `--set-string doc.image.tag="${imageTag}"`,
-    `--set        doc.app.host=${hosts[0]}`,
-    `--set        doc.replicaCount=${replica.doc}`,
     ...serviceAnnotations,
     ...resources,
     `--timeout 10m`,

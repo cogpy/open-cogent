@@ -12,11 +12,11 @@ runs:
     - name: Initialize database
       shell: bash
       run: |
-        psql -h localhost -U postgres -c "CREATE DATABASE affine;"
-        psql -h localhost -U postgres -c "CREATE USER affine WITH PASSWORD 'affine';"
-        psql -h localhost -U postgres -c "ALTER USER affine WITH SUPERUSER;"
+        psql -h localhost -U postgres -c "CREATE DATABASE oa;"
+        psql -h localhost -U postgres -c "CREATE USER oa WITH PASSWORD 'oa';"
+        psql -h localhost -U postgres -c "ALTER USER oa WITH SUPERUSER;"
       env:
-        PGPASSWORD: affine
+        PGPASSWORD: oa
 
     - name: Run init-db script
       shell: bash

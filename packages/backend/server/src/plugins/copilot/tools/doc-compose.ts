@@ -40,12 +40,24 @@ export const buildSaveDocGetter = (
             titlePrompt.finish({ content })
           )
         : 'Untitled Document');
-    const { docId } = await models.copilotUser.addDoc(
-      options.user,
-      options.session,
-      { title: finalTitle, content }
-    );
-    return { docId, title: finalTitle, content };
+    const session = await models.copilotSession.getExists(options.session, {
+      docId: true,
+    });
+
+    if (session?.docId) {
+      await models.copilotUser.updateDoc(options.user, session.docId, {
+        title: finalTitle,
+        content,
+      });
+      return { docId: session.docId, title: finalTitle, content };
+    } else {
+      const { docId } = await models.copilotUser.addDoc(
+        options.user,
+        options.session,
+        { title: finalTitle, content }
+      );
+      return { docId, title: finalTitle, content };
+    }
   };
   return saveDoc;
 };

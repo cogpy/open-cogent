@@ -17,7 +17,7 @@ export const Loading = ({
   size,
   speed = 1.2,
   progress = 0.2,
-  strokeWidth = 4,
+  strokeWidth = 3,
   strokeColor,
   className,
 }: LoadingProps) => {

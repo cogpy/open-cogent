@@ -28,8 +28,6 @@ export const AudioBlobInfosSchema = z
   .array();
 
 export const TranscriptPayloadSchema = z.object({
-  url: z.string().nullable().optional(),
-  mimeType: z.string().nullable().optional(),
   infos: AudioBlobInfosSchema.nullable().optional(),
   title: z.string().nullable().optional(),
   summary: z.string().nullable().optional(),
@@ -55,12 +53,8 @@ declare global {
   interface Jobs {
     'copilot.transcript.submit': {
       jobId: string;
-      infos?: AudioBlobInfos;
+      infos: AudioBlobInfos;
       modelId?: string;
-      /// @deprecated use `infos` instead
-      url?: string;
-      /// @deprecated use `infos` instead
-      mimeType?: string;
     };
     'copilot.transcript.summary.submit': {
       jobId: string;

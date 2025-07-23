@@ -27,14 +27,6 @@ global:
     username: ''
     password: ''
     database: 0
-  indexer:
-    provider: ''
-    endpoint: ''
-    username: ''
-    password: ''
-  docService:
-    name: 'affine-doc'
-    port: 3020
   deployment:
     # change to 'selfhosted' and 'unknown' if this chart is ready to be used for selfhosted deployment
     type: 'affine'
@@ -44,26 +36,6 @@ graphql:
   service:
     type: ClusterIP
     port: 3000
-    annotations:
-      cloud.google.com/backend-config: '{"default": "affine-api-backendconfig"}'
-
-sync:
-  service:
-    type: ClusterIP
-    port: 3010
-    annotations:
-      cloud.google.com/backend-config: '{"default": "affine-api-backendconfig"}'
-
-renderer:
-  service:
-    type: ClusterIP
-    port: 3000
-    annotations:
-      cloud.google.com/backend-config: '{"default": "affine-api-backendconfig"}'
-
-doc:
-  service:
-    type: ClusterIP
     annotations:
       cloud.google.com/backend-config: '{"default": "affine-api-backendconfig"}'
 

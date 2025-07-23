@@ -11,20 +11,6 @@ on:
         required: true
         type: boolean
         default: false
-      desktop:
-        description: 'Release Desktop?'
-        required: true
-        type: boolean
-        default: false
-      mobile:
-        description: 'Release Mobile?'
-        required: true
-        type: boolean
-        default: false
-      ios-app-version:
-        description: 'iOS App Store Version (Optional, use tag version if empty)'
-        required: false
-        type: string
 
 permissions:
   contents: write
@@ -74,14 +60,14 @@ jobs:
         name: Wait for approval
         with:
           secret: ${{ secrets.GITHUB_TOKEN }}
-          approvers: forehalo,fengmk2
+          approvers: AFK-surf
           minimum-approvals: 1
           fail-on-denial: true
           issue-title: Please confirm to release docker image
           issue-body: |
             Env: ${{ needs.prepare.outputs.BUILD_TYPE }}
-            Candidate: ghcr.io/toeverything/affine:${{ needs.prepare.outputs.BUILD_TYPE }}-${{ needs.prepare.outputs.GIT_SHORT_HASH }}
-            Tag: ghcr.io/toeverything/affine:${{ needs.prepare.outputs.BUILD_TYPE }}
+            Candidate: ghcr.io/afk-surf/open-agent:${{ needs.prepare.outputs.BUILD_TYPE }}-${{ needs.prepare.outputs.GIT_SHORT_HASH }}
+            Tag: ghcr.io/afk-surf/open-agent:${{ needs.prepare.outputs.BUILD_TYPE }}
 
             > comment with "approve", "approved", "lgtm", "yes" to approve
             > comment with "deny", "deny", "no" to deny
@@ -97,30 +83,5 @@ jobs:
         uses: docker/setup-buildx-action@v3
       - name: Tag Image
         run: |
-          docker buildx imagetools create --tag ghcr.io/toeverything/affine:${{needs.prepare.outputs.BUILD_TYPE}} ghcr.io/toeverything/affine:${{needs.prepare.outputs.BUILD_TYPE}}-${{needs.prepare.outputs.GIT_SHORT_HASH}}
-          docker buildx imagetools create --tag ghcr.io/toeverything/affine:${{needs.prepare.outputs.APP_VERSION}} ghcr.io/toeverything/affine:${{needs.prepare.outputs.BUILD_TYPE}}-${{needs.prepare.outputs.GIT_SHORT_HASH}}
-
-  desktop:
-    name: Release Desktop
-    if: ${{ inputs.desktop || github.event_name != 'workflow_dispatch' }}
-    needs:
-      - prepare
-    uses: ./.github/workflows/release-desktop.yml
-    secrets: inherit
-    with:
-      build-type: ${{ needs.prepare.outputs.BUILD_TYPE }}
-      app-version: ${{ needs.prepare.outputs.APP_VERSION }}
-      git-short-hash: ${{ needs.prepare.outputs.GIT_SHORT_HASH }}
-
-  mobile:
-    name: Release Mobile
-    if: ${{ inputs.mobile }}
-    needs:
-      - prepare
-    uses: ./.github/workflows/release-mobile.yml
-    secrets: inherit
-    with:
-      build-type: ${{ needs.prepare.outputs.BUILD_TYPE }}
-      app-version: ${{ needs.prepare.outputs.APP_VERSION }}
-      git-short-hash: ${{ needs.prepare.outputs.GIT_SHORT_HASH }}
-      ios-app-version: ${{ inputs.ios-app-version }}
+          docker buildx imagetools create --tag ghcr.io/afk-surf/open-agent:${{needs.prepare.outputs.BUILD_TYPE}} ghcr.io/afk-surf/open-agent:${{needs.prepare.outputs.BUILD_TYPE}}-${{needs.prepare.outputs.GIT_SHORT_HASH}}
+          docker buildx imagetools create --tag ghcr.io/afk-surf/open-agent:${{needs.prepare.outputs.APP_VERSION}} ghcr.io/afk-surf/open-agent:${{needs.prepare.outputs.BUILD_TYPE}}-${{needs.prepare.outputs.GIT_SHORT_HASH}}

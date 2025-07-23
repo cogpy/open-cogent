@@ -11,12 +11,7 @@ import {
   updateUserDocsMutation,
   updateUserFilesMutation,
 } from '@afk/graphql';
-import {
-  FavoritedIcon,
-  FavoriteIcon,
-  FileIcon,
-  PageIcon,
-} from '@blocksuite/icons/rc';
+import { FavoritedIcon, FavoriteIcon, PageIcon } from '@blocksuite/icons/rc';
 import { cssVarV2 } from '@toeverything/theme/v2';
 import dayjs from 'dayjs';
 import { useCallback, useMemo, useState } from 'react';
@@ -173,7 +168,7 @@ const ChatListItem: MasonryItem['Component'] = ({ itemId }) => {
         <div className={styles.listItemIcon}>
           <ChatIcon />
         </div>
-        <div className={styles.listItemTitle}>{chat?.title}</div>
+        <div className={styles.listItemTitle}>{chat?.title ?? 'New Chat'}</div>
         <div>
           <FavoriteAction
             collected={collected}

@@ -14,13 +14,12 @@ jobs:
       - name: Setup Node.js
         uses: ./.github/actions/setup-node
         with:
-          extra-flags: workspaces focus @affine/server-native
-          electron-install: false
+          extra-flags: workspaces focus @afk/server-native
       - name: Build Rust
         uses: ./.github/actions/build-rust
         with:
           target: 'x86_64-unknown-linux-gnu'
-          package: '@affine/server-native'
+          package: '@afk/server-native'
       - name: Upload server-native.node
         uses: actions/upload-artifact@v4
         with:
@@ -36,13 +35,13 @@ jobs:
     env:
       NODE_ENV: test
       DISTRIBUTION: web
-      DATABASE_URL: postgresql://affine:affine@localhost:5432/affine
+      DATABASE_URL: postgresql://oa:oa@localhost:5432/oa
       REDIS_SERVER_HOST: localhost
     services:
       postgres:
         image: pgvector/pgvector:pg16
         env:
-          POSTGRES_PASSWORD: affine
+          POSTGRES_PASSWORD: oa
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -59,10 +58,6 @@ jobs:
         ports:
           - 1025:1025
           - 8025:8025
-      indexer:
-        image: manticoresearch/manticore:10.1.0
-        ports:
-          - 9308:9308
     steps:
       - uses: actions/checkout@v4
 
@@ -70,7 +65,6 @@ jobs:
         uses: ./.github/actions/setup-node
         with:
           playwright-install: true
-          electron-install: false
           full-cache: true
 
       - name: Download server-native.node
@@ -85,7 +79,7 @@ jobs:
         uses: ./.github/actions/server-test-env
 
       - name: Run server tests
-        run: yarn oa @affine/server test:copilot:coverage --forbid-only
+        run: yarn oa @afk/server test:copilot:coverage --forbid-only
         env:
           CARGO_TARGET_DIR: '${{ github.workspace }}/target'
 
@@ -95,7 +89,7 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./packages/backend/server/.coverage/lcov.info
           flags: server-test
-          name: affine
+          name: oa
           fail_ci_if_error: false
 
   test-done:
@@ -111,8 +105,7 @@ jobs:
       - name: Setup Node.js
         uses: ./.github/actions/setup-node
         with:
-          extra-flags: 'workspaces focus @affine/copilot-result'
-          electron-install: false
+          extra-flags: 'workspaces focus @afk/copilot-result'
       - name: Post Success event to a Slack channel
         if: ${{ always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') }}
         run: node ./tools/copilot-result/index.js

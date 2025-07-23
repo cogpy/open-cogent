@@ -152,13 +152,8 @@ export class CopilotTranscriptionService {
 
     const payload = TranscriptPayloadSchema.safeParse(job.payload);
     if (payload.success) {
-      let { url, mimeType, infos } = payload.data;
-      infos = infos || [];
-      if (url && mimeType) {
-        infos.push({ url, mimeType });
-      }
-
-      ret.infos = this.mergeInfos(infos, url, mimeType);
+      let { infos } = payload.data;
+      ret.infos = infos || [];
       if (job.status === AiJobStatus.claimed) {
         ret.transcription = payload.data;
       }
@@ -222,22 +217,6 @@ export class CopilotTranscriptionService {
     }
   }
 
-  // TODO(@darkskygit): remove after old server down
-  private mergeInfos(
-    infos?: AudioBlobInfos | null,
-    url?: string | null,
-    mimeType?: string | null
-  ) {
-    if (url && mimeType) {
-      if (infos) {
-        infos.push({ url, mimeType });
-      } else {
-        infos = [{ url, mimeType }];
-      }
-    }
-    return infos || [];
-  }
-
   private convertTime(time: number, offset = 0) {
     time = time + offset;
     const minutes = Math.floor(time / 60);
@@ -281,14 +260,10 @@ export class CopilotTranscriptionService {
     jobId,
     infos,
     modelId,
-    // @deprecated
-    url,
-    mimeType,
   }: Jobs['copilot.transcript.submit']) {
     try {
-      const blobInfos = this.mergeInfos(infos, url, mimeType);
       const transcriptions = await Promise.all(
-        Array.from(blobInfos.entries()).map(([idx, { url, mimeType }]) =>
+        Array.from(infos.entries()).map(([idx, { url, mimeType }]) =>
           this.callTranscript(url, mimeType, idx * 10 * 60, modelId)
         )
       );

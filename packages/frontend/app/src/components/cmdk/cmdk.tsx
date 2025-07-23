@@ -296,7 +296,7 @@ export const Cmdk = ({
         style={{ boxShadow: `0px 1px 5px rgba(0,0,0,0.05)` }}
       >
         <div className="size-5 items-center flex justify-center">
-          <SearchIcon className="text-xl" />
+          <SearchIcon className="text-xl text-icon-primary" />
         </div>
         <div
           className="text-sm truncate w-0 flex-1 flex items-center"
@@ -338,10 +338,7 @@ export const Cmdk = ({
       >
         <div className="h-0 flex-1 flex flex-col justify-start" style={{}}>
           {/* search bar */}
-          <div
-            className="border-b flex items-center gap-2 pr-6"
-            style={{ borderWidth: 0.5 }}
-          >
+          <div className="flex items-center gap-2 pr-6 border-b-[0.5px]">
             <RowInput
               ref={searchInputRef}
               className="pl-6 w-0 flex-1 h-18 focus:outline-none text-xl"

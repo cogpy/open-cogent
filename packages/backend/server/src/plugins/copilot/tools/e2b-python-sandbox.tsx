@@ -15,7 +15,7 @@ export const createE2bPythonSandboxTool = (
 ) => {
   return tool({
     description:
-      'Execute Python code in a secure sandbox environment using E2B',
+      'Execute a complete, standalone Python script in a secure E2B sandbox. The code should be self-contained and runnable as a single file. Each execution uses a fresh environment',
     parameters: z.object({
       code: z.string().describe('The Python code to execute in the sandbox.'),
     }),
@@ -23,6 +23,8 @@ export const createE2bPythonSandboxTool = (
       try {
         const writer = toolStream.getWriter();
         const { key } = config.copilot.e2b;
+
+        console.log('e2b-python-sandbox-tool', code);
 
         if (!key) {
           return toolError(
@@ -38,8 +40,8 @@ export const createE2bPythonSandboxTool = (
 
         // Execute the Python code
         const execution = await sbx.runCode(code, {
-          onError: error => {
-            writer.write({
+          onError: async error => {
+            await writer.write({
               type: 'tool-incomplete-result',
               toolCallId,
               data: {
@@ -48,8 +50,8 @@ export const createE2bPythonSandboxTool = (
               },
             });
           },
-          onStdout: data => {
-            writer.write({
+          onStdout: async data => {
+            await writer.write({
               type: 'tool-incomplete-result',
               toolCallId,
               data: {
@@ -58,8 +60,8 @@ export const createE2bPythonSandboxTool = (
               },
             });
           },
-          onStderr: data => {
-            writer.write({
+          onStderr: async data => {
+            await writer.write({
               type: 'tool-incomplete-result',
               toolCallId,
               data: {
@@ -70,9 +72,11 @@ export const createE2bPythonSandboxTool = (
           },
         });
 
+        writer.releaseLock();
+
         return {
           success: true,
-          result: execution.toJSON(),
+          result: execution.text,
         };
       } catch (e: any) {
         return toolError('E2B Python Sandbox Failed', e.message);

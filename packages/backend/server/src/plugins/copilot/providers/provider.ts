@@ -21,6 +21,7 @@ import {
   createConversationSummaryTool,
   createDocComposeTool,
   createDocSemanticSearchTool,
+  createE2bPythonSandboxTool,
   createExaCrawlTool,
   createExaSearchTool,
   createMakeItRealTool,
@@ -235,6 +236,13 @@ export abstract class CopilotProvider<C = any> {
               writable,
               prompt,
               this.factory
+            );
+            break;
+          }
+          case 'pythonSandbox': {
+            tools.e2b_python_sandbox = createE2bPythonSandboxTool(
+              writable,
+              this.AFFiNEConfig
             );
             break;
           }

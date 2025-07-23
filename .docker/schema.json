@@ -756,6 +756,20 @@
             "key": ""
           }
         },
+        "browserUse":{
+          "type": "object",
+          "description": "The config for the browser use key.\n@default {\"key\":\"\"}",
+          "default": {
+            "key": ""
+          }
+        },
+        "e2b":{
+          "type": "object",
+          "description": "The config for the e2b key.\n@default {\"key\":\"\"}",
+          "default": {
+            "key": ""
+          }
+        },
         "storage": {
           "type": "object",
           "description": "The config for the storage provider.\n@default {\"provider\":\"fs\",\"bucket\":\"copilot\",\"config\":{\"path\":\"~/.affine/storage\"}}",

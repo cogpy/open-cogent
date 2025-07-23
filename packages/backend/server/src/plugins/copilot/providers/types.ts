@@ -82,6 +82,8 @@ export const PromptConfigStrictSchema = z.object({
       'makeItReal',
       // python coding
       'pythonCoding',
+      // e2b python sandbox
+      'pythonSandbox',
     ])
     .array()
     .nullable()

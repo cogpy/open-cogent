@@ -23,6 +23,9 @@ declare global {
       exa: ConfigItem<{
         key: string;
       }>;
+      e2b: ConfigItem<{
+        key: string;
+      }>;
       browserUse: ConfigItem<{
         key: string;
       }>;
@@ -104,7 +107,13 @@ defineModuleConfig('copilot', {
     },
   },
   browserUse: {
-    desc: 'The config for the browser use key.',
+    desc: 'The config for the browser use key',
+    default: {
+      key: '',
+    },
+  },
+  e2b: {
+    desc: 'The config for the e2b key',
     default: {
       key: '',
     },

@@ -116,6 +116,16 @@ export function ChatContentStreamObjects({
             if (obj.toolName === 'python_coding') {
               // TODO(@CatsJuice)
             }
+            if (obj.toolName === 'e2b_python_sandbox') {
+              return (
+                <div
+                  key={idx}
+                  className="rounded-md border border-gray-300 p-3 text-sm text-gray-600"
+                >
+                  {obj.textDelta}
+                </div>
+              );
+            }
 
             return (
               <GenericToolCalling
@@ -166,7 +176,19 @@ export function ChatContentStreamObjects({
               ['todo_list', 'mark_todo'].includes(obj.toolName ?? '') &&
               obj.result?.list
             ) {
-              return <TodoListResult key={idx} result={obj.result} />;
+              return <TodoListResult key={idx} result={obj.result as any} />;
+            }
+
+            // Specialized handling for e2b python sandbox
+            if (obj.toolName === 'e2b_python_sandbox' && obj.result) {
+              return (
+                <div
+                  key={idx}
+                  className="rounded-md border border-gray-300 p-3 text-sm text-gray-600"
+                >
+                  {JSON.stringify(obj.result)}
+                </div>
+              );
             }
 
             if (obj.toolName === 'browser_use' && obj.result) {

@@ -351,6 +351,7 @@ __metadata:
     "@apollo/server": "npm:^4.11.3"
     "@aws-sdk/client-s3": "npm:^3.779.0"
     "@aws-sdk/s3-request-presigner": "npm:^3.779.0"
+    "@e2b/code-interpreter": "npm:^1.5.1"
     "@faker-js/faker": "npm:^9.6.0"
     "@fal-ai/serverless-client": "npm:^0.15.0"
     "@google-cloud/opentelemetry-cloud-trace-exporter": "npm:^2.4.1"
@@ -3912,6 +3913,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@bufbuild/protobuf@npm:^2.2.2":
+  version: 2.6.1
+  resolution: "@bufbuild/protobuf@npm:2.6.1"
+  checksum: 10/114ebc9984ec7f52a711af67377b7d9bb968bc784662873a068ebeecc6c4a39a3f4ddb2aea332dec22a87b1358d7af8fb3dbd2403dadeffe3c43c679a5dfe991
+  languageName: node
+  linkType: hard
+
 "@bundled-es-modules/cookie@npm:^2.0.1":
   version: 2.0.1
   resolution: "@bundled-es-modules/cookie@npm:2.0.1"
@@ -4199,6 +4207,25 @@ __metadata:
     "@types/conventional-commits-parser": "npm:^5.0.0"
     chalk: "npm:^5.3.0"
   checksum: 10/d1943a5789a02c75b0c72755673ab8d50c850b025abb7806b7eef83b373591948f5d1d9cd22022f89302a256546934d797445913c5c495d8e92711cf17b0fbf0
+  languageName: node
+  linkType: hard
+
+"@connectrpc/connect-web@npm:2.0.0-rc.3":
+  version: 2.0.0-rc.3
+  resolution: "@connectrpc/connect-web@npm:2.0.0-rc.3"
+  peerDependencies:
+    "@bufbuild/protobuf": ^2.2.0
+    "@connectrpc/connect": 2.0.0-rc.3
+  checksum: 10/642ef50fa248f4da7b007e0c38800b072aa153330aa53b4b7f1db863392c37f2d29b17cd4fbb95a4c079861c34295eaf335f683f7d5c74bf3d285c34e4fc519b
+  languageName: node
+  linkType: hard
+
+"@connectrpc/connect@npm:2.0.0-rc.3":
+  version: 2.0.0-rc.3
+  resolution: "@connectrpc/connect@npm:2.0.0-rc.3"
+  peerDependencies:
+    "@bufbuild/protobuf": ^2.2.0
+  checksum: 10/7640adcc16cd52078ad1164dea0a4c6be143cc24b483f0ee688008930cb5944be7a462024a63b5876020d2228112a21670647b821982994d21c5b6ec2d8645ff
   languageName: node
   linkType: hard
 
@@ -4738,6 +4765,15 @@ __metadata:
   version: 0.5.7
   resolution: "@discoveryjs/json-ext@npm:0.5.7"
   checksum: 10/b95682a852448e8ef50d6f8e3b7ba288aab3fd98a2bafbe46881a3db0c6e7248a2debe9e1ee0d4137c521e4743ca5bbcb1c0765c9d7b3e0ef53231506fec42b4
+  languageName: node
+  linkType: hard
+
+"@e2b/code-interpreter@npm:^1.5.1":
+  version: 1.5.1
+  resolution: "@e2b/code-interpreter@npm:1.5.1"
+  dependencies:
+    e2b: "npm:^1.4.0"
+  checksum: 10/8a4394c4d134d1031fb2d2186f30c626ef2cd510cb0c5398c60cea0f96e3d7993534ce87f11a0f554f5ba2e3fcc2061ecf21732635aef3637d2274da74370144
   languageName: node
   linkType: hard
 
@@ -16539,6 +16575,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"compare-versions@npm:^6.1.0":
+  version: 6.1.1
+  resolution: "compare-versions@npm:6.1.1"
+  checksum: 10/9325c0fadfba81afa0ec17e6fc2ef823ba785c693089698b8d9374e5460509f1916a88591644d4cb4045c9a58e47fafbcc0724fe8bf446d2a875a3d6eeddf165
+  languageName: node
+  linkType: hard
+
 "component-emitter@npm:^1.3.0":
   version: 1.3.1
   resolution: "component-emitter@npm:1.3.1"
@@ -17815,6 +17858,20 @@ __metadata:
   version: 0.1.2
   resolution: "duplexer@npm:0.1.2"
   checksum: 10/62ba61a830c56801db28ff6305c7d289b6dc9f859054e8c982abd8ee0b0a14d2e9a8e7d086ffee12e868d43e2bbe8a964be55ddbd8c8957714c87373c7a4f9b0
+  languageName: node
+  linkType: hard
+
+"e2b@npm:^1.4.0":
+  version: 1.9.0
+  resolution: "e2b@npm:1.9.0"
+  dependencies:
+    "@bufbuild/protobuf": "npm:^2.2.2"
+    "@connectrpc/connect": "npm:2.0.0-rc.3"
+    "@connectrpc/connect-web": "npm:2.0.0-rc.3"
+    compare-versions: "npm:^6.1.0"
+    openapi-fetch: "npm:^0.9.7"
+    platform: "npm:^1.3.6"
+  checksum: 10/ff326143dfaf1a073a56aef59e8071ed82a8d0b24ad4b44fccf4b548e8f7aa04841638c2de7adcf6619868aa65a41a47738443de3222f00552b275a4615dfee9
   languageName: node
   linkType: hard
 
@@ -24308,6 +24365,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"openapi-fetch@npm:^0.9.7":
+  version: 0.9.8
+  resolution: "openapi-fetch@npm:0.9.8"
+  dependencies:
+    openapi-typescript-helpers: "npm:^0.0.8"
+  checksum: 10/97f9dbff46d168d43864b2ac9eb7db3b84d92e7f33368e66b9271f41ea5992e3cce6a2c0f243bf3d7a8468828ed7a677f5bc161f68e1bde50a5370a064a76618
+  languageName: node
+  linkType: hard
+
+"openapi-typescript-helpers@npm:^0.0.8":
+  version: 0.0.8
+  resolution: "openapi-typescript-helpers@npm:0.0.8"
+  checksum: 10/e309d7d297cf78308c41c324ffe094c3ef194117bf104b5300e45535d158265f665c69e810a143f1d3db7020575c3041e370d2ee93fc8094f5aabc14a366fc39
+  languageName: node
+  linkType: hard
+
 "opener@npm:^1.5.2":
   version: 1.5.2
   resolution: "opener@npm:1.5.2"
@@ -24924,6 +24997,13 @@ __metadata:
     exsolve: "npm:^1.0.7"
     pathe: "npm:^2.0.3"
   checksum: 10/54ffa530f443f0c55b7fad1475f619f4f70738b97dc8c65c783b54891b36663165cde02160c273c08ddb17efd29fb0fbcd929bed49bd06a96cec27a6ca4ed2f8
+  languageName: node
+  linkType: hard
+
+"platform@npm:^1.3.6":
+  version: 1.3.6
+  resolution: "platform@npm:1.3.6"
+  checksum: 10/1f2d8333e23ea6a7620c828d2fc1ccbbd33e01928fb142323420506114d7325ebdeb1b38544efbf64e90ab73af0847f874d0f475b9327bcf53510fa827a4ef95
   languageName: node
   linkType: hard
 

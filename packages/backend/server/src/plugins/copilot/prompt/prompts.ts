@@ -1371,7 +1371,7 @@ When sent new notes, respond ONLY with the contents of the html file.`,
     messages: [
       {
         role: 'system',
-        content: `You are a Python coding assistant. When I provide requirements, respond ONLY with executable Python code. 
+        content: `You are a Python coding assistant. When I provide requirements, respond ONLY with executable Python code.
 
 Rules:
 - Output complete, ready-to-run Python code
@@ -1803,6 +1803,7 @@ Below is the user's query. Please respond in the user's preferred language witho
       'webSearch',
       'makeItReal',
       'pythonCoding',
+      'pythonSandbox',
     ],
   },
 };
@@ -1855,7 +1856,7 @@ You are an expert visual designer specializing in creating structured, multi-col
   - **Color attributes**: \`"color": "oklch(value1, value2, value3)"\`
   - **Background**: \`"bg": "oklch(value1, value2, value3)"\`
   - **Typography**: \`.bold\`, \`.italic\`, \`.strike\`, \`.underline\`, \`.code\`
-  - **Combined examples**: 
+  - **Combined examples**:
     - \`[Important text]{"color": "oklch(40.1% 0.123 21.57)", "bg": "oklch(40.1% 0.123 21.57)"}\`
   - Incorrect examples:
     - \`[**Hello**]{"color": "oklch(40.1% 0.123 21.57)", "bg": "oklch(40.1% 0.123 21.57)"}\` <-  the **Hello** is not plain text content
@@ -1914,7 +1915,7 @@ Details that may fit in a nested structure.
 <!-- note:split{"title":"<title>","backgroundColor":"<backgroundColor>"} -->
 # Another note
 \`\`\`
-        
+
 Remember: Focus on creating visually appealing, well-structured content that maintains readability and professional appearance.
 Use custom Markdown syntax for layout and text styling enhancement and HTML for interactive elements.
 `,

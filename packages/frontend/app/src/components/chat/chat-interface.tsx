@@ -17,6 +17,7 @@ import type { ChatSessionState } from '@/store/copilot/types';
 
 import { AggregatedTodoList } from './aggregated-todo-list';
 import { ChatScrollerProvider } from './use-chat-scroller';
+import { ChatPlayback } from './chat-playback';
 
 // Placeholder component for when no session exists
 interface ChatPlaceholderProps {
@@ -274,6 +275,15 @@ export interface ChatInterfaceProps {
   className?: string;
   headerContent?: React.ReactNode;
   footerContent?: React.ReactNode;
+  /** When true, render messages progressively in read-only playback mode */
+  playback?: boolean;
+  /** Called once when playback starts */
+  onPlaybackStart?: () => void;
+  /** Called every time a new message is revealed */
+  onPlaybackProgress?: (current: number, total: number) => void;
+  /** Called once when playback reaches the final message */
+  onPlaybackFinish?: () => void;
+  skipPlayback?: boolean;
   // For placeholder mode when no store is provided
   placeholderTitle?: string;
   onPlaceholderSend?: (input: string) => Promise<void>;
@@ -292,11 +302,33 @@ export const ChatInterface = ({
   className = '',
   headerContent,
   footerContent,
+  playback = false,
+  onPlaybackStart,
+  onPlaybackProgress,
+  onPlaybackFinish,
+  skipPlayback = false,
   placeholderTitle = 'What can I help you with?',
   onPlaceholderSend,
   isCreating = false,
   message,
 }: ChatInterfaceProps) => {
+  // Playback mode: read-only incremental reveal
+  if (playback && store) {
+    return (
+      <ChatPlayback
+        store={store}
+        className={className}
+        headerContent={headerContent}
+        footerContent={footerContent}
+        showDocumentContext={showDocumentContext}
+        documentTitle={documentTitle}
+        onStart={onPlaybackStart}
+        onProgress={onPlaybackProgress}
+        onFinish={onPlaybackFinish}
+        skip={skipPlayback}
+      />
+    );
+  }
   // If no store is provided, render the placeholder component
   if (!store) {
     return (

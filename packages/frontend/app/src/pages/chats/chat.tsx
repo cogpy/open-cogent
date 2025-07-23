@@ -1,6 +1,4 @@
-import { IconButton } from '@afk/component';
 import { updateCopilotSessionMutation } from '@afk/graphql';
-import { FavoritedIcon, FavoriteIcon } from '@blocksuite/icons/rc';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
 
@@ -145,7 +143,13 @@ export const ChatPage = () => {
   );
 };
 
-const ChatPageHeader = ({ sessionId }: { sessionId?: string }) => {
+export const ChatPageHeader = ({
+  sessionId,
+  showActions = true,
+}: {
+  sessionId?: string;
+  showActions?: boolean;
+}) => {
   const { chatsMap, refresh } = useLibraryStore();
   const chat = sessionId ? chatsMap[sessionId] : undefined;
 
@@ -177,7 +181,7 @@ const ChatPageHeader = ({ sessionId }: { sessionId?: string }) => {
         {chat?.title ?? 'New Chat'}
       </AutoSidebarPadding>
 
-      {chat ? (
+      {chat && showActions ? (
         <div className="flex items-center gap-2">
           <FavoriteAction collected={!!isFav} setToggleAsync={toggleCollect} />
         </div>

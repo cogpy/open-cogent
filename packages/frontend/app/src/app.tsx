@@ -7,6 +7,7 @@ import { Route, Routes } from 'react-router';
 
 import { AuthGuard } from './components/auth-guard';
 import { ChatPage } from './pages/chats/chat';
+import { ChatPlaybackPage } from './pages/chats/chat-playback';
 import { ChatsDashboard } from './pages/chats/chats-dashboard';
 import { DocEditTest } from './pages/doc-edit-test';
 import { DocPage } from './pages/doc-page';
@@ -26,6 +27,7 @@ const ChatsPage = () => {
       <Route element={<OALayout />}>
         <Route index element={<ChatsDashboard />} />
         <Route path=":id" element={<ChatPage />} />
+        <Route path=":id/playback" element={<ChatPlaybackPage />} />
       </Route>
     </Routes>
   );

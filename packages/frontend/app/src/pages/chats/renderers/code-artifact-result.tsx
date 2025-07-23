@@ -2,10 +2,10 @@ import { RadioGroup } from '@afk/component';
 import type { StreamObject } from '@afk/graphql';
 import { FileIconHtmlIcon } from '@blocksuite/icons/rc';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
-import { createHighlighter } from 'shiki';
+import { useState } from 'react';
 
 import HtmlPreviewer from '@/components/html-previewer';
+import { useHighlightedCode } from '@/lib/hooks/use-highlighted-code';
 import { cn } from '@/lib/utils';
 
 import * as styles from './code-artifact-result.css';
@@ -16,34 +16,12 @@ export const CodeArtifactResult = ({
 }: {
   result: StreamObject['result'];
 }) => {
-  const [highlightedHtml, setHighlightedHtml] = useState('');
   const [view, setView] = useState<'Code' | 'Preview'>('Code');
   const [collapsed, setCollapsed] = useState(true);
 
   const { html, title } = result as { html: string; title: string };
 
-  useEffect(() => {
-    if (!html) return;
-
-    async function highlightCode(code: string) {
-      const highlighter = await createHighlighter({
-        themes: ['min-light'],
-        langs: ['html'],
-      });
-
-      const html = highlighter.codeToHtml(code, {
-        lang: 'html',
-        theme: 'min-light',
-      });
-
-      return html;
-    }
-
-    highlightCode(html).then(html => {
-      if (!html) return;
-      setHighlightedHtml(html);
-    });
-  }, [html]);
+  const highlightedHtml = useHighlightedCode(html, 'html');
 
   if (!result || !html) return null;
 

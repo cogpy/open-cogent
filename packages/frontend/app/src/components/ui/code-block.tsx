@@ -1,8 +1,9 @@
 import { IconButton } from '@afk/component';
 import { ExpandCloseIcon, ExpandFullIcon } from '@blocksuite/icons/rc';
 import { cssVarV2 } from '@toeverything/theme/v2';
-import { useEffect, useState } from 'react';
-import { createHighlighter } from 'shiki';
+import { useState } from 'react';
+
+import { useHighlightedCode } from '../../lib/hooks/use-highlighted-code';
 
 export const CodeBlock = ({
   children,
@@ -11,35 +12,9 @@ export const CodeBlock = ({
   children: React.ReactNode;
   language: string;
 }) => {
-  const [html, setHtml] = useState('');
   const [expanded, setExpanded] = useState(false);
 
-  useEffect(() => {
-    const id = requestIdleCallback(
-      () => {
-        async function highlightCode(code: string) {
-          const highlighter = await createHighlighter({
-            themes: ['min-light'],
-            langs: [language],
-          });
-
-          const html = highlighter.codeToHtml(code, {
-            theme: 'min-light',
-            lang: language,
-          });
-
-          setHtml(html);
-        }
-
-        highlightCode(children as string);
-      },
-      { timeout: 1000 }
-    );
-
-    return () => {
-      cancelIdleCallback(id);
-    };
-  }, [children, language]);
+  const html = useHighlightedCode(children as string, language);
 
   return (
     <div className="custom-code-block w-full rounded-xl border not-prose overflow-hidden">

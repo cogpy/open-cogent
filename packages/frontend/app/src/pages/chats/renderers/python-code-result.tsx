@@ -1,8 +1,7 @@
 import type { StreamObject } from '@afk/graphql';
-import { useEffect, useState } from 'react';
-import { createHighlighter } from 'shiki';
 
 import { FilePythonIcon } from '@/icons/file-python';
+import { useHighlightedCode } from '@/lib/hooks/use-highlighted-code';
 import { cn } from '@/lib/utils';
 
 import { GenericToolResult } from './generic-tool-result';
@@ -12,32 +11,9 @@ export const PythonCodeResult = ({
 }: {
   result: StreamObject['result'];
 }) => {
-  const [highlightedHtml, setHighlightedHtml] = useState('');
-
   const code = result as unknown as string;
 
-  useEffect(() => {
-    if (!code) return;
-
-    async function highlightCode(code: string) {
-      const highlighter = await createHighlighter({
-        themes: ['min-light'],
-        langs: ['python'],
-      });
-
-      const html = highlighter.codeToHtml(code, {
-        lang: 'python',
-        theme: 'min-light',
-      });
-
-      return html;
-    }
-
-    highlightCode(code).then(html => {
-      if (!html) return;
-      setHighlightedHtml(html);
-    });
-  }, [code]);
+  const highlightedHtml = useHighlightedCode(code, 'python');
 
   if (!result || !code) return null;
 

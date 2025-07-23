@@ -1,5 +1,5 @@
 import { Loading } from '@afk/component';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { type StoreApi, useStore } from 'zustand';
 
 import { ChatInput } from '@/components/chat-input';
@@ -7,6 +7,7 @@ import { MessageRenderer } from '@/pages/chats/renderers/message';
 import type { ChatSessionState } from '@/store/copilot/types';
 
 import { AggregatedTodoList } from './aggregated-todo-list';
+import { ChatScrollerProvider } from './use-chat-scroller';
 
 // Placeholder component for when no session exists
 interface ChatPlaceholderProps {
@@ -75,6 +76,7 @@ const ChatSession = ({
   headerContent,
   footerContent,
 }: ChatSessionProps) => {
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const messages = useStore(store, s => s.messages);
   const isSubmitting = useStore(store, s => s.isSubmitting);
   const isStreaming = useStore(store, s => s.isStreaming);
@@ -86,6 +88,10 @@ const ChatSession = ({
     if (!input.trim()) return;
     await store.getState().sendMessage({ content: input });
     setInput('');
+    scrollContainerRef.current?.scrollTo({
+      top: scrollContainerRef.current?.scrollHeight,
+      behavior: 'smooth',
+    });
   };
 
   const containerClasses = `flex flex-col h-full ${className}`;
@@ -94,7 +100,10 @@ const ChatSession = ({
     <div className={containerClasses}>
       {headerContent}
 
-      <div className="flex-1 overflow-y-auto py-4">
+      <ChatScrollerProvider
+        ref={scrollContainerRef}
+        className="flex-1 overflow-y-auto py-4"
+      >
         {showDocumentContext && documentTitle && (
           <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
             <div className="text-sm text-blue-600 font-medium">
@@ -119,7 +128,7 @@ const ChatSession = ({
             ))}
           </div>
         )}
-      </div>
+      </ChatScrollerProvider>
 
       <div className="max-w-[800px] mx-auto w-full py-4">
         {/* Aggregated Todo List - positioned above input */}

@@ -2,14 +2,13 @@ import { Logger } from '@nestjs/common';
 import { tool } from 'ai';
 import { z } from 'zod';
 
-import { toolError } from './error';
+import { Config } from '../../../base';
 import { StreamObjectToolResult } from '../providers';
+import { toolError } from './error';
 
 const logger = new Logger('BrowserUseTool');
 
 const BROWSER_USE_API_URL = 'https://api.browser-use.com/api/v1';
-const BROWSER_USE_API_KEY = 'bu_CG7O6Zu5IRfb2O5tzNGi3_A5_5Kc_m4lqaNkTuSAnV4';
-
 const BROWSER_USE_TASK_STATUS = {
   CREATED: 'created',
   RUNNING: 'running',
@@ -107,22 +106,23 @@ async function downloadMarkdownContent(url: string): Promise<string | null> {
  * It creates a task, polls for status, and returns screenshots and markdown results.
  */
 export const createBrowserUseTool = (
-  toolStream: WritableStream<StreamObjectToolResult>
+  toolStream: WritableStream<StreamObjectToolResult>,
+  config: Config
 ) => {
   return tool({
-    description:
-      'Use the browser to accomplish a task, return the markdown file and the screenshot of the browser',
+    description: 'Use the browser to accomplish a task',
     parameters: z.object({
       task_description: z.string().describe('The task to accomplish'),
     }),
     execute: async ({ task_description }, { toolCallId, abortSignal }) => {
       try {
         // Step 1: Create the task
+        const { key } = config.copilot.browserUse;
         const taskResponse = await fetch(`${BROWSER_USE_API_URL}/run-task`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${BROWSER_USE_API_KEY}`,
+            Authorization: `Bearer ${key}`,
           },
           body: JSON.stringify({
             task: task_description + '\n\nSave the final result as result.md',
@@ -170,7 +170,7 @@ export const createBrowserUseTool = (
             `${BROWSER_USE_API_URL}/task/${taskId}/status`,
             {
               headers: {
-                Authorization: `Bearer ${BROWSER_USE_API_KEY}`,
+                Authorization: `Bearer ${key}`,
               },
             }
           );
@@ -203,7 +203,7 @@ export const createBrowserUseTool = (
               `${BROWSER_USE_API_URL}/task/${taskId}`,
               {
                 headers: {
-                  Authorization: `Bearer ${BROWSER_USE_API_KEY}`,
+                  Authorization: `Bearer ${key}`,
                 },
               }
             );
@@ -215,7 +215,7 @@ export const createBrowserUseTool = (
                 `${BROWSER_USE_API_URL}/task/${taskId}/screenshots`,
                 {
                   headers: {
-                    Authorization: `Bearer ${BROWSER_USE_API_KEY}`,
+                    Authorization: `Bearer ${key}`,
                   },
                 }
               );
@@ -276,7 +276,7 @@ export const createBrowserUseTool = (
               `${BROWSER_USE_API_URL}/task/${taskId}/gif`,
               {
                 headers: {
-                  Authorization: `Bearer ${BROWSER_USE_API_KEY}`,
+                  Authorization: `Bearer ${key}`,
                 },
               }
             );
@@ -291,7 +291,7 @@ export const createBrowserUseTool = (
               `${BROWSER_USE_API_URL}/task/${taskId}/output-file/result.md`,
               {
                 headers: {
-                  Authorization: `Bearer ${BROWSER_USE_API_KEY}`,
+                  Authorization: `Bearer ${key}`,
                 },
               }
             );
@@ -316,7 +316,7 @@ export const createBrowserUseTool = (
               `${BROWSER_USE_API_URL}/task/${taskId}`,
               {
                 headers: {
-                  Authorization: `Bearer ${BROWSER_USE_API_KEY}`,
+                  Authorization: `Bearer ${key}`,
                 },
               }
             );

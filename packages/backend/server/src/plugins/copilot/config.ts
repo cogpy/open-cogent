@@ -23,6 +23,9 @@ declare global {
       exa: ConfigItem<{
         key: string;
       }>;
+      browserUse: ConfigItem<{
+        key: string;
+      }>;
       storage: ConfigItem<StorageProviderConfig>;
       providers: {
         openai: ConfigItem<OpenAIConfig>;

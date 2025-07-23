@@ -53,7 +53,7 @@ export class CodeBlockViewExtension extends ViewExtensionProvider {
       CodeBlockUnitSpecExtension,
     ]);
     if (!this.isMobile(context.scope)) {
-      context.register(codeToolbarWidget);
+      // context.register(codeToolbarWidget);
     } else {
       context.register(
         CodeBlockConfigExtension({

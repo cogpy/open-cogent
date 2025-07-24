@@ -75,7 +75,7 @@ const CountdownOverlay = ({
   );
 };
 
-const COUNT_DOWN_TIME = 5000;
+const COUNT_DOWN_TIME = 5;
 
 /**
  * Playback page renders chat messages one-by-one in read-only mode.

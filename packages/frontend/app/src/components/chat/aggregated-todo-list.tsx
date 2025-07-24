@@ -76,8 +76,8 @@ export function AggregatedTodoList({ store }: AggregatedTodoListProps) {
   return (
     <motion.div
       layout
-      transition={{ layout: { type: 'spring', stiffness: 100, damping: 30 } }}
-      className="border rounded-t-2xl border-gray-200 bg-gray-50/50 mx-4 cursor-pointer select-none"
+      transition={{ duration: 0.2 }}
+      className="border rounded-t-2xl border-b-0 bg-gray-50/50 mx-4 cursor-pointer select-none"
       onClick={() => setExpanded(prev => !prev)}
     >
       {/* Header / Summary row */}
@@ -98,7 +98,7 @@ export function AggregatedTodoList({ store }: AggregatedTodoListProps) {
         {/* Collapse icon */}
         <motion.div
           animate={{ rotate: expanded ? 180 : 0 }}
-          transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+          transition={{ duration: 0.2 }}
           className="text-xl text-gray-500 ml-2"
         >
           <ArrowDownSmallIcon />
@@ -117,7 +117,7 @@ export function AggregatedTodoList({ store }: AggregatedTodoListProps) {
               open: { opacity: 1, height: 'auto' },
               collapsed: { opacity: 0, height: 0 },
             }}
-            transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+            transition={{ duration: 0.2 }}
             className="overflow-hidden"
           >
             <div className="max-w-[800px] mx-auto px-4 pb-3 flex flex-col gap-2 max-h-30 overflow-y-auto">
@@ -151,16 +151,11 @@ const TodoListItem = ({
       data-status={status}
       className={cn('h-5  flex items-center gap-3 text-sm')}
     >
-      <div
-        className={cn('shrink-0 text-2xl')}
-        style={{ color: cssVarV2.icon.primary }}
-      >
-        {icon}
-      </div>
+      <div className={cn('shrink-0 text-2xl text-icon-secondary')}>{icon}</div>
       <div
         className={cn(
-          'flex gap-1 font-medium',
-          status === 'done' && `line-through text-gray-500`
+          'flex gap-1 text-text-primary',
+          status === 'done' && `line-through text-text-placeholder`
         )}
       >
         <div className={cn('w-full truncate text-sm')}>{title}</div>

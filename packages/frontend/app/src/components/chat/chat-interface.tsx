@@ -103,21 +103,26 @@ const DownArrow = forwardRef<
     <AnimatePresence>
       {show ? (
         <motion.div
-          initial={{ opacity: 0, y: 30, scale: 0.8 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 30, scale: 0.8 }}
-          transition={{ duration: 0.14 }}
-          className={cn(
-            'absolute left-1/2 -translate-x-1/2 bottom-10 cursor-pointer',
-            'bg-white border rounded-full size-9',
-            'flex items-center justify-center'
-          )}
-          style={{
-            boxShadow: '0 0 10px 0 rgba(0, 0, 0, 0.1)',
-          }}
-          onClick={onClick}
+          animate={loading ? { y: [0, 10, 0] } : undefined}
+          transition={{ repeat: Infinity }}
         >
-          <ArrowDownBigIcon className="text-2xl text-icon-primary" />
+          <motion.div
+            initial={{ opacity: 0, y: 30, scale: 0.8 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 30, scale: 0.8 }}
+            transition={{ duration: 0.14 }}
+            className={cn(
+              'absolute left-1/2 -translate-x-1/2 bottom-10 cursor-pointer',
+              'bg-white border rounded-full size-9',
+              'flex items-center justify-center'
+            )}
+            style={{
+              boxShadow: '0 0 10px 0 rgba(0, 0, 0, 0.1)',
+            }}
+            onClick={onClick}
+          >
+            <ArrowDownBigIcon className="text-2xl text-icon-primary" />
+          </motion.div>
         </motion.div>
       ) : null}
     </AnimatePresence>

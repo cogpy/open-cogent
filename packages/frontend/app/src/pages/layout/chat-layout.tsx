@@ -5,6 +5,7 @@ import {
   FileIcon,
   PageIcon,
 } from '@blocksuite/icons/rc';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useMemo } from 'react';
 import { Link, Outlet, useLocation, useMatch } from 'react-router';
 
@@ -116,22 +117,33 @@ const SidebarContent = () => {
               Recent
             </h3>
           ) : null}
-          <ul className="flex flex-col gap-1">
-            {chats.slice(0, 5).map(chat => (
-              <ChatItem chat={chat} key={chat.sessionId} />
-            ))}
-            {chats.length > 5 ? (
-              <Link to="/library?type=chats">
-                <Button
-                  className="ml-7 text-text-primary text-sm font-medium"
-                  variant="plain"
-                  style={{ width: 'fit-content' }}
+          <AnimatePresence>
+            <ul className="flex flex-col gap-1">
+              {chats.slice(0, 5).map(chat => (
+                <motion.div
+                  key={chat.sessionId}
+                  layout
+                  initial={{ opacity: 0, scaleY: 0.8 }}
+                  animate={{ opacity: 1, scaleY: 1 }}
+                  exit={{ opacity: 0, scaleY: 0.5 }}
+                  transition={{ duration: 0.3 }}
                 >
-                  Show More
-                </Button>
-              </Link>
-            ) : null}
-          </ul>
+                  <ChatItem chat={chat} />
+                </motion.div>
+              ))}
+              {chats.length > 5 ? (
+                <Link to="/library?type=chats">
+                  <Button
+                    className="ml-7 text-text-primary text-sm font-medium"
+                    variant="plain"
+                    style={{ width: 'fit-content' }}
+                  >
+                    Show More
+                  </Button>
+                </Link>
+              ) : null}
+            </ul>
+          </AnimatePresence>
         </section>
         {/* scroll area */}
         {collectedItems.length === 0 ? null : (
@@ -139,20 +151,37 @@ const SidebarContent = () => {
             Favorites
           </h3>
         )}
-        <ul className="flex flex-col gap-1">
-          {collectedItems.map(item => {
-            if (item.type === 'chat') {
-              return <ChatItem chat={item} key={item.sessionId} />;
-            }
-            if (item.type === 'doc') {
-              return <DocItem doc={item} key={item.docId} />;
-            }
-            if (item.type === 'file') {
-              return <FileItem file={item} key={item.fileId} />;
-            }
-            return null;
-          })}
-        </ul>
+        <AnimatePresence>
+          <ul className="flex flex-col gap-1">
+            {collectedItems.map(item => {
+              const type = item.type;
+              const id =
+                type === 'chat'
+                  ? item.sessionId
+                  : type === 'doc'
+                    ? item.docId
+                    : item.fileId;
+              return (
+                <motion.div
+                  key={id}
+                  layout
+                  initial={{ opacity: 0, scaleY: 0.8 }}
+                  animate={{ opacity: 1, scaleY: 1 }}
+                  exit={{ opacity: 0, scaleY: 0.5 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  {item.type === 'chat' ? (
+                    <ChatItem chat={item} key={item.sessionId} />
+                  ) : item.type === 'doc' ? (
+                    <DocItem doc={item} key={item.docId} />
+                  ) : (
+                    <FileItem file={item} key={item.fileId} />
+                  )}
+                </motion.div>
+              );
+            })}
+          </ul>
+        </AnimatePresence>
       </ScrollableContainer>
     </div>
   );

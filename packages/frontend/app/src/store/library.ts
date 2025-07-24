@@ -67,6 +67,8 @@ export interface LibraryState {
 
 const togglingMap = new Map<string, boolean>();
 
+let abortPrevFetch: (() => void) | null = null;
+
 export const useLibraryStore = create<LibraryState>()((set, get) => ({
   loading: false,
   initialized: false,
@@ -74,7 +76,13 @@ export const useLibraryStore = create<LibraryState>()((set, get) => ({
   docs: [],
   files: [],
   refresh: async () => {
-    if (get().loading) return;
+    console.debug('library:refresh has-prev-fetch', Boolean(abortPrevFetch));
+    if (abortPrevFetch) {
+      abortPrevFetch();
+    }
+
+    const controller = new AbortController();
+    abortPrevFetch = () => controller.abort();
 
     set({ loading: true });
     try {
@@ -86,6 +94,7 @@ export const useLibraryStore = create<LibraryState>()((set, get) => ({
               first: 2 ** 10,
             },
           },
+          signal: controller.signal,
         }),
         gql({
           query: getUserDocsQuery,
@@ -94,6 +103,7 @@ export const useLibraryStore = create<LibraryState>()((set, get) => ({
               first: 2 ** 10,
             },
           },
+          signal: controller.signal,
         }),
         gql({
           query: getUserFilesQuery,
@@ -102,6 +112,7 @@ export const useLibraryStore = create<LibraryState>()((set, get) => ({
               first: 2 ** 10,
             },
           },
+          signal: controller.signal,
         }),
       ]);
       let docs: Doc[] = [],
@@ -137,6 +148,7 @@ export const useLibraryStore = create<LibraryState>()((set, get) => ({
       console.error(error);
     } finally {
       set({ loading: false });
+      abortPrevFetch = null;
     }
   },
   toggleCollect: async (type, id) => {
@@ -145,6 +157,7 @@ export const useLibraryStore = create<LibraryState>()((set, get) => ({
     togglingMap.set(id, true);
 
     try {
+      console.debug('library:toggleCollect request start', type, id);
       if (type === 'chat') {
         const chat = get().chats.find(chat => chat.sessionId === id);
         if (!chat) return;
@@ -224,8 +237,11 @@ export const useLibraryStore = create<LibraryState>()((set, get) => ({
         });
       }
 
+      console.debug('library:toggleCollect request end', type, id);
       await get().refresh();
+      console.debug('library:toggleCollect refresh end', type, id);
     } catch (error) {
+      console.error(error);
     } finally {
       togglingMap.delete(id);
     }

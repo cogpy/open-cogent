@@ -155,7 +155,7 @@ export const ChatInput = ({
               e.stopPropagation();
               onSend();
             }}
-            loading={isCreating}
+            loading={isCreating || sending}
           />
         </div>
       </footer>

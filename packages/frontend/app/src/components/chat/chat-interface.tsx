@@ -261,7 +261,7 @@ const ChatSession = ({
           input={input}
           setInput={setInput}
           onSend={onSend}
-          sending={isSubmitting}
+          sending={isSubmitting || isStreaming}
           store={store}
           placeholder={placeholder}
         />

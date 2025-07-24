@@ -21,14 +21,24 @@ import { cn } from '@/lib/utils';
 import { CodeBlock } from './code-block';
 import * as styles from './markdown.css';
 
+// Re-use a single parser instance across calls to avoid the overhead of
+// constructing and tearing down a temporary one every render. We keep this
+// module-scoped so it lives for the lifetime of the bundle (or until a hot
+// reload), and we scope it with a unique ID that is unlikely to clash with
+// any other consumer inside the app.
+const MARKDOWN_SPLITTER_PARSER_ID = 'markdown-splitter';
+const sharedMarkdownParser = MarkdownStreamParser.getInstance(
+  MARKDOWN_SPLITTER_PARSER_ID
+);
+
 function parseMarkdownIntoBlocks(markdown: string): string[] {
   // Early-out for empty strings – prevents the parser from creating an instance needlessly.
   if (!markdown) return [''];
 
-  // The parser is implemented as a singleton per ID. We create a short-lived instance and dispose
-  // it afterwards to avoid leaking global state between React renders.
-  const instanceId = 'markdown-splitter-temp';
-  const parser = MarkdownStreamParser.getInstance(instanceId);
+  // Reuse our shared parser instance. We subscribe/unsubscribe on every call so
+  // we still don't leak any listeners or cross-contaminate block buffers
+  // between invocations.
+  const parser = sharedMarkdownParser;
 
   const blocks: string[] = [];
   let current = '';
@@ -56,7 +66,6 @@ function parseMarkdownIntoBlocks(markdown: string): string[] {
   parser.stopParsing();
 
   unsubscribe();
-  MarkdownStreamParser.removeInstance(instanceId);
 
   if (current) blocks.push(current);
 

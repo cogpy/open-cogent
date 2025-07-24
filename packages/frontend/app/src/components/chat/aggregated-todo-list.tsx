@@ -1,8 +1,8 @@
 import { Loading } from '@afk/component';
 import {
+  ArrowDownSmallIcon,
   SingleSelectCheckSolidIcon,
   SingleSelectUnIcon,
-  ArrowDownSmallIcon,
 } from '@blocksuite/icons/rc';
 import { cssVarV2 } from '@toeverything/theme/v2';
 import { AnimatePresence, motion } from 'framer-motion';

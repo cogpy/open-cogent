@@ -191,13 +191,17 @@ export const ChatPageHeader = ({
             Share
           </Button>
         </div>
-      ) : (
+      ) : null}
+
+      {chat && mode === 'playback' ? (
         <div className="flex items-center gap-2">
-          <button className="bg-black text-white px-4 py-1 h-8 rounded-md text-sm font-medium cursor-pointer">
-            Sign In
-          </button>
+          <div className="flex items-center gap-2">
+            <button className="bg-black text-white px-4 py-1 h-8 rounded-md text-sm font-medium cursor-pointer">
+              Sign In
+            </button>
+          </div>
         </div>
-      )}
+      ) : null}
     </div>
   );
 };

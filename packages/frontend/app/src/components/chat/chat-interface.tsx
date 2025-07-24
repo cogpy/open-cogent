@@ -16,8 +16,8 @@ import { MessageRenderer } from '@/pages/chats/renderers/message';
 import type { ChatSessionState } from '@/store/copilot/types';
 
 import { AggregatedTodoList } from './aggregated-todo-list';
-import { ChatScrollerProvider } from './use-chat-scroller';
 import { ChatPlayback } from './chat-playback';
+import { ChatScrollerProvider } from './use-chat-scroller';
 
 // Placeholder component for when no session exists
 interface ChatPlaceholderProps {

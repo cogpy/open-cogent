@@ -62,7 +62,7 @@ export const TableBlockSchema = defineBlockSchema({
     isFlatData: true,
     role: 'content',
     version: 1,
-    parent: ['affine:note'],
+    parent: ['affine:note', 'affine:column'],
     children: [],
   },
   toModel: () => new TableBlockModel(),

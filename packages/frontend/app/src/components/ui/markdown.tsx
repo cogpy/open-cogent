@@ -1,6 +1,6 @@
 import type { Element, Root } from 'hast';
 import { marked } from 'marked';
-import { memo, useMemo } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { visit } from 'unist-util-visit';
@@ -171,3 +171,50 @@ export function MarkdownText({
     </span>
   );
 }
+
+export const TypeMarkdownText = ({
+  text,
+  loading = false,
+  className,
+  style,
+  speed = 10,
+}: {
+  text: string;
+  loading?: boolean;
+  className?: string;
+  style?: React.CSSProperties;
+  speed?: number | number[];
+}) => {
+  const [initialStreaming] = useState(loading);
+  const [displayedContent, setDisplayedContent] = useState('');
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    if (!initialStreaming) {
+      setDisplayedContent(text);
+      return;
+    }
+
+    if (currentIndex < text.length) {
+      const delay = Array.isArray(speed)
+        ? Math.random() * (speed[1] - speed[0]) + speed[0]
+        : speed;
+      const timer = setTimeout(() => {
+        setDisplayedContent(prev => prev + text[currentIndex]);
+        setCurrentIndex(prev => prev + 1);
+      }, delay);
+
+      return () => clearTimeout(timer);
+    }
+    return () => {};
+  }, [currentIndex, initialStreaming, speed, text]);
+
+  return (
+    <MarkdownText
+      text={displayedContent}
+      loading={loading}
+      className={className}
+      style={style}
+    />
+  );
+};

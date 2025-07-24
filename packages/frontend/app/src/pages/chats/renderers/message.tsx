@@ -1,3 +1,5 @@
+import { memo } from 'react';
+
 import { MarkdownText } from '@/components/ui/markdown';
 import { cn } from '@/lib/utils';
 import type { ChatMessage } from '@/store/copilot/types';
@@ -18,7 +20,7 @@ interface MessageRendererProps {
  * Renders a single chat message with proper alignment, markdown formatting and
  * optional streaming cursor.
  */
-export function MessageRenderer({
+export const MessageRenderer = memo(function MessageRenderer({
   message,
   isStreaming = false,
 }: MessageRendererProps) {
@@ -50,4 +52,4 @@ export function MessageRenderer({
       )}
     </div>
   );
-}
+});

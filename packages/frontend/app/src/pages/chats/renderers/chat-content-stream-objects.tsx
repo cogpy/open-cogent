@@ -4,7 +4,7 @@ import type { StreamObject } from '@afk/graphql';
 import { CheckBoxCheckSolidIcon, EmbedWebIcon } from '@blocksuite/icons/rc';
 
 import { MessageCard } from '@/components/ui/card/message-card';
-import { MarkdownText } from '@/components/ui/markdown';
+import { MarkdownText, TypeMarkdownText } from '@/components/ui/markdown';
 
 import { BrowserUseResult, transformStep } from './browser-use-result';
 import { CodeArtifactResult } from './code-artifact-result';
@@ -24,6 +24,7 @@ interface ChatContentStreamObjectsProps {
   isAssistant?: boolean;
 }
 
+const speed = [5, 14];
 /**
  * Basic renderer that converts server-side `streamObjects` into simple
  * React components, imitating the logic of the core Lit implementation.
@@ -47,11 +48,12 @@ export function ChatContentStreamObjects({
         switch (obj.type) {
           case 'text-delta': {
             return (
-              <MarkdownText
+              <TypeMarkdownText
                 key={key}
                 text={obj.textDelta ?? ''}
                 loading={loading}
                 className={isAssistant ? 'min-w-full' : undefined}
+                speed={speed}
               />
             );
           }

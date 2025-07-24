@@ -2,9 +2,10 @@ import { Loading, observeResize } from '@afk/component';
 import { ArrowDownBigIcon } from '@blocksuite/icons/rc';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
-  startTransition,
+  forwardRef,
   useCallback,
   useEffect,
+  useImperativeHandle,
   useRef,
   useState,
 } from 'react';
@@ -77,15 +78,27 @@ interface ChatSessionProps {
   footerContent?: React.ReactNode;
 }
 
-const DownArrow = ({
-  show,
-  onClick,
-  loading,
-}: {
-  show: boolean;
-  onClick: () => void;
-  loading: boolean;
-}) => {
+interface DownArrowRef {
+  hide: () => void;
+  show: () => void;
+}
+
+const DownArrow = forwardRef<
+  DownArrowRef,
+  { onClick: () => void; loading: boolean }
+>(({ onClick, loading }, ref) => {
+  const [show, setShow] = useState(false);
+
+  // impl ref
+  useImperativeHandle(ref, () => ({
+    hide: () => {
+      setShow(false);
+    },
+    show: () => {
+      setShow(true);
+    },
+  }));
+
   return (
     <AnimatePresence>
       {show ? (
@@ -109,7 +122,8 @@ const DownArrow = ({
       ) : null}
     </AnimatePresence>
   );
-};
+});
+DownArrow.displayName = 'DownArrow';
 
 const ChatSession = ({
   store,
@@ -122,6 +136,7 @@ const ChatSession = ({
 }: ChatSessionProps) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const downArrowRef = useRef<DownArrowRef>(null);
 
   const messages = useStore(store, s => s.messages);
   const isSubmitting = useStore(store, s => s.isSubmitting);
@@ -129,7 +144,6 @@ const ChatSession = ({
   const isLoading = useStore(store, s => s.isLoading);
 
   const [input, setInput] = useState('');
-  const [showDownArrow, setShowDownArrow] = useState(false);
   const onSend = async () => {
     if (!input.trim()) return;
     await store.getState().sendMessage({ content: input });
@@ -142,41 +156,6 @@ const ChatSession = ({
 
   const containerClasses = `flex flex-col h-full ${className}`;
 
-  // useEffect(() => {
-  //   startTransition(() => {
-  //     const scrollContainer = scrollContainerRef.current;
-  //     if (!scrollContainer) return;
-
-  //     const scrollHeight = scrollContainer.scrollHeight;
-  //     const scrollTop = scrollContainer.scrollTop;
-
-  //     const isAtBottom =
-  //       scrollTop + scrollContainer.clientHeight >= scrollHeight;
-
-  //     setShowDownArrow(!isAtBottom);
-  //   });
-  // }, [messages]);
-
-  // useEffect(() => {
-  //   const scrollContainer = scrollContainerRef.current;
-  //   if (!scrollContainer) return;
-
-  //   const handleScroll = () => {
-  //     const scrollHeight = scrollContainer.scrollHeight;
-  //     const scrollTop = scrollContainer.scrollTop;
-
-  //     const isAtBottom =
-  //       scrollTop + scrollContainer.clientHeight >= scrollHeight;
-
-  //     setShowDownArrow(!isAtBottom);
-  //   };
-
-  //   scrollContainer.addEventListener('scroll', handleScroll);
-
-  //   return () => {
-  //     scrollContainer.removeEventListener('scroll', handleScroll);
-  //   };
-  // }, []);
   const checkIsBottom = useCallback(() => {
     const scrollContainer = scrollContainerRef.current;
     if (!scrollContainer) return null;
@@ -187,9 +166,12 @@ const ChatSession = ({
 
     const isAtBottom = scrollTop + clientHeight >= scrollHeight;
 
-    startTransition(() => {
-      setShowDownArrow(!isAtBottom);
-    });
+    // avoid re-rendering when scroll to bottom changes
+    if (isAtBottom) {
+      downArrowRef.current?.hide();
+    } else {
+      downArrowRef.current?.show();
+    }
     return isAtBottom;
   }, []);
 
@@ -224,7 +206,7 @@ const ChatSession = ({
                 <Loading size={24} />
               </div>
             ) : (
-              <div className="max-w-[800px] mx-auto w-full [&>*:not(:first-child)]:mt-4">
+              <div className="max-w-[832px] mx-auto px-4 w-full [&>*:not(:first-child)]:mt-4">
                 {messages.map((m, idx) => (
                   <MessageRenderer
                     key={m.id ?? idx}
@@ -238,7 +220,7 @@ const ChatSession = ({
         </ChatScrollerProvider>
 
         <DownArrow
-          show={showDownArrow}
+          ref={downArrowRef}
           onClick={() => {
             scrollContainerRef.current?.scrollTo({
               top: scrollContainerRef.current?.scrollHeight,
@@ -249,7 +231,7 @@ const ChatSession = ({
         />
       </div>
 
-      <div className="max-w-[800px] mx-auto w-full py-4">
+      <div className="max-w-[832px] px-4 mx-auto w-full py-4">
         {/* Aggregated Todo List - positioned above input */}
         <AggregatedTodoList store={store} />
         <ChatInput

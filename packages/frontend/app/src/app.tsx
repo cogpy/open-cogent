@@ -27,8 +27,9 @@ const ChatsPage = () => {
       <Route element={<OALayout />}>
         <Route index element={<ChatsDashboard />} />
         <Route path=":id" element={<ChatPage />} />
-        <Route path=":id/playback" element={<ChatPlaybackPage />} />
       </Route>
+
+      <Route path=":id/playback" element={<ChatPlaybackPage />} />
     </Routes>
   );
 };

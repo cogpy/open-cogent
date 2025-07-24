@@ -8,6 +8,7 @@ import { copilotClient } from '@/store/copilot/client';
 import { chatSessionsStore } from '@/store/copilot/sessions-instance';
 
 import { ChatPageHeader as BaseHeader } from './chat';
+import { useSidebarStore } from '@/store/sidebar';
 
 /**
  * Playback page renders chat messages one-by-one in read-only mode.
@@ -15,6 +16,12 @@ import { ChatPageHeader as BaseHeader } from './chat';
 export const ChatPlaybackPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+
+  const { setOpen } = useSidebarStore();
+
+  useEffect(() => {
+    setOpen(false);
+  }, [setOpen]);
 
   // Track playback status for bottom pane
   const [progress, setProgress] = useState<{
@@ -83,7 +90,7 @@ export const ChatPlaybackPage = () => {
 
   return (
     <OpenDocProvider value={{ openDoc: () => {}, closeDoc: () => {} }}>
-      <div className="flex-1 bg-white border rounded-[8px] overflow-hidden relative">
+      <div className="flex-1 bg-white border rounded-[8px] overflow-hidden relative h-full">
         {id && sessionStore ? (
           <ChatInterface
             key={version}

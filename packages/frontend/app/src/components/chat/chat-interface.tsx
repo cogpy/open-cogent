@@ -36,18 +36,15 @@ const ChatPlaceholder = ({
   isCreating = false,
   message,
 }: ChatPlaceholderProps) => {
-  const [input, setInput] = useState(message ?? '');
-
-  const onSend = useCallback(async () => {
-    if (!input.trim()) return;
-    if (onPlaceholderSend) {
-      await onPlaceholderSend(input);
-      setInput('');
-    }
-  }, [input, onPlaceholderSend]);
+  const onSend = useCallback(
+    async (input: string) => {
+      if (onPlaceholderSend) await onPlaceholderSend(input);
+    },
+    [onPlaceholderSend]
+  );
 
   useEffect(() => {
-    if (message) onSend();
+    if (message) onSend(message);
   }, [message, onSend]);
 
   return (
@@ -56,8 +53,6 @@ const ChatPlaceholder = ({
         {placeholderTitle}
       </div>
       <ChatInput
-        input={input}
-        setInput={setInput}
         onSend={onSend}
         sending={isCreating}
         placeholder={placeholder}
@@ -164,8 +159,6 @@ const ChatSession = ({
   const isStreaming = useStore(store, s => s.isStreaming);
   const isLoading = useStore(store, s => s.isLoading);
 
-  const [input, setInput] = useState('');
-
   const scrollToBottom = useCallback(() => {
     scrollContainerRef.current?.scrollTo({
       top: scrollContainerRef.current?.scrollHeight,
@@ -173,10 +166,8 @@ const ChatSession = ({
     });
   }, []);
 
-  const onSend = async () => {
-    if (!input.trim()) return;
+  const onSend = async (input: string) => {
     await store.getState().sendMessage({ content: input });
-    setInput('');
     scrollToBottom();
   };
 
@@ -258,8 +249,6 @@ const ChatSession = ({
         {/* Aggregated Todo List - positioned above input */}
         <AggregatedTodoList store={store} />
         <ChatInput
-          input={input}
-          setInput={setInput}
           onSend={onSend}
           sending={isSubmitting || isStreaming}
           store={store}

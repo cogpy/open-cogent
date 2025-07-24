@@ -1,7 +1,8 @@
 import { IconButton, Menu, MenuItem } from '@afk/component';
 import { ArrowUpBigIcon, PlusIcon } from '@blocksuite/icons/rc';
 import { cssVarV2 } from '@toeverything/theme/v2';
-import { useCallback, useRef } from 'react';
+import { motion } from 'framer-motion';
+import { useCallback, useRef, useState } from 'react';
 import type { StoreApi } from 'zustand';
 
 import { cn } from '@/lib/utils';
@@ -45,25 +46,25 @@ const ModelSelectorMenu = ({
 };
 
 export const ChatInput = ({
-  input,
-  setInput,
-  onSend,
+  onSend: propsOnSend,
   placeholder = 'What are your thoughts?',
   sending,
   onAbort,
   store,
   isCreating,
+  initialInput,
 }: {
-  input: string;
-  setInput: (input: string) => void;
-  onSend: () => void;
+  onSend: (input: string) => void;
   onAbort?: () => void;
   placeholder?: string;
   sending?: boolean;
   store?: StoreApi<ChatSessionState>;
   isCreating?: boolean;
+  initialInput?: string;
 }) => {
+  const [input, setInput] = useState(initialInput ?? '');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [textareaHeight, setTextareaHeight] = useState(45);
 
   const onClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -71,19 +72,34 @@ export const ChatInput = ({
     textareaRef.current?.focus();
   }, []);
 
+  const updateTextAreaHeight = useCallback(() => {
+    const maxHeight = 120;
+    const target = textareaRef.current;
+    if (!target) return;
+    target.style.height = 'auto';
+    const height = Math.min(target.scrollHeight, maxHeight);
+    target.style.height = `${height}px`;
+    target.style.overflowY = 'auto';
+    setTextareaHeight(height);
+  }, []);
+
   // const [model, setModel] = useState('claude-3-5-sonnet-v2@20241022');
   const handleInput = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      const maxHeight = 120;
-      const target = e.currentTarget;
-      target.style.height = 'auto';
-      target.style.height = `${Math.min(target.scrollHeight, maxHeight)}px`;
-      target.style.overflowY = 'auto';
-
+      updateTextAreaHeight();
       setInput(e.currentTarget.value);
     },
-    [setInput]
+    [updateTextAreaHeight]
   );
+
+  const onSend = useCallback(() => {
+    if (!input.trim()) return;
+    propsOnSend(input);
+    setInput('');
+    setTimeout(() => {
+      updateTextAreaHeight();
+    }, 0);
+  }, [input, propsOnSend, updateTextAreaHeight]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -110,15 +126,26 @@ export const ChatInput = ({
     >
       <ContextPreview store={store} />
       <div className="w-full relative">
-        <textarea
-          ref={textareaRef}
-          rows={2}
-          className="w-full resize-none bg-transparent focus:outline-none"
-          value={input}
-          onChange={handleInput}
-          onKeyDown={handleKeyDown}
-          autoFocus
-        />
+        <motion.div
+          animate={{ height: textareaHeight }}
+          layout
+          transition={{ duration: 0.13, ease: 'easeOut' }}
+        >
+          <textarea
+            name="chat-input"
+            ref={textareaRef}
+            rows={2}
+            className={cn(
+              'w-full resize-none bg-transparent',
+              'focus:outline-none',
+              'transition-[height] duration-150'
+            )}
+            value={input}
+            onChange={handleInput}
+            onKeyDown={handleKeyDown}
+            autoFocus
+          />
+        </motion.div>
         {input.length > 0 ? null : (
           <div
             style={{ color: cssVarV2('text/placeholder') }}

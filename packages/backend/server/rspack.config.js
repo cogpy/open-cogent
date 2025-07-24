@@ -36,6 +36,21 @@ export default {
       // not workspace deps except native packages
       (!request.startsWith('@afk/') || request.includes('native'))
     ) {
+      // Bundle problematic ESM modules to avoid runtime issues
+      const bundledModules = [
+        'lru-cache',
+        '@apollo/utils.keyvaluecache',
+        'semver',
+      ];
+
+      if (
+        bundledModules.some(
+          mod => request === mod || request.startsWith(mod + '/')
+        )
+      ) {
+        return false; // Bundle these modules
+      }
+
       // Mark as external using ES module imports
       return `module ${request}`;
     }

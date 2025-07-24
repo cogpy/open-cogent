@@ -55,15 +55,6 @@ RUN if [ ! -d "/app/packages/backend/server/dist" ] || [ ! -d "/app/packages/fro
         mv ./node_modules ./packages/backend/server && \
         rm -rf ./packages/backend/server/node_modules/@afk && \
         mv ./@afk ./packages/backend/server/node_modules; \
-    else \
-        echo "Build artifacts already exist, skipping build"; \
-        yarn workspaces focus @afk/server --production && \
-        rm -rf ./packages/backend/server/node_modules && \
-        rm -rf ./node_modules/@afk/server && \
-        cp -aL ./node_modules/@afk ./@afk && \
-        mv ./node_modules ./packages/backend/server && \
-        rm -rf ./packages/backend/server/node_modules/@afk && \
-        mv ./@afk ./packages/backend/server/node_modules; \
     fi
 
 FROM node:22-bookworm-slim AS production

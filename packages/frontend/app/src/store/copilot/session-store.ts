@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { createStore, type StoreApi } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 
+import { useLibraryStore } from '../library';
 import type { CopilotClient } from './client';
 import { toTextStream } from './event-source';
 import type {
@@ -384,6 +385,7 @@ export function createChatSessionStore(params: {
               store.setState(
                 produce((draft: ChatSessionState) => {
                   draft.isStreaming = false;
+                  useLibraryStore.getState().refresh();
                 })
               );
             }

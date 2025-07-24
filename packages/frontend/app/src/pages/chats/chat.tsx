@@ -1,5 +1,4 @@
 import { Button, IconButton } from '@afk/component';
-import { updateCopilotSessionMutation } from '@afk/graphql';
 import { CommentIcon } from '@blocksuite/icons/rc';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
@@ -12,11 +11,10 @@ import {
 } from '@/components/chat-context';
 import { DocPanelById } from '@/components/doc-panel/doc-panel';
 import { OpenDocProvider } from '@/contexts/doc-panel-context';
-import { gql } from '@/lib/gql';
 import { useRefCounted } from '@/lib/hooks/use-ref-counted';
 import { copilotClient } from '@/store/copilot/client';
 import { chatSessionsStore } from '@/store/copilot/sessions-instance';
-import { useLibraryStore } from '@/store/library';
+import { useChatsMap, useLibraryStore } from '@/store/library';
 
 import { AutoSidebarPadding } from '../layout/auto-sidebar-padding';
 import { FavoriteAction } from '../library-dashboard';
@@ -146,31 +144,17 @@ export const ChatPage = () => {
 };
 
 export const ChatPageHeader = ({ sessionId }: { sessionId?: string }) => {
-  const { chatsMap, refresh } = useLibraryStore();
+  const { toggleCollect } = useLibraryStore();
+  const chatsMap = useChatsMap();
   const chat = sessionId ? chatsMap[sessionId] : undefined;
 
   const isFav = chat?.metadata?.collected;
   const navigate = useNavigate();
 
-  const toggleCollect = useCallback(
-    async (value: boolean) => {
-      if (!sessionId) return;
-      await gql({
-        query: updateCopilotSessionMutation,
-        variables: {
-          options: {
-            sessionId,
-            metadata: JSON.stringify({
-              ...chat?.metadata,
-              collected: value,
-            }),
-          },
-        },
-      });
-      refresh();
-    },
-    [chat?.metadata, refresh, sessionId]
-  );
+  const toggle = useCallback(async () => {
+    if (!sessionId) return;
+    await toggleCollect('chat', sessionId);
+  }, [sessionId, toggleCollect]);
 
   return (
     <div className="h-15 border-b-[0.5px] px-4 flex items-center justify-between">
@@ -180,7 +164,7 @@ export const ChatPageHeader = ({ sessionId }: { sessionId?: string }) => {
 
       {chat ? (
         <div className="flex items-center gap-2">
-          <FavoriteAction collected={!!isFav} setToggleAsync={toggleCollect} />
+          <FavoriteAction collected={!!isFav} setToggleAsync={toggle} />
           <IconButton icon={<CommentIcon />} />
           <Button
             variant="secondary"

@@ -5,7 +5,11 @@ import {
   getUserDocsQuery,
   type GetUserFilesQuery,
   getUserFilesQuery,
+  updateCopilotSessionMutation,
+  updateUserDocsMutation,
+  updateUserFilesMutation,
 } from '@afk/graphql';
+import { useMemo } from 'react';
 import { create } from 'zustand';
 
 import { gql } from '@/lib/gql';
@@ -55,14 +59,13 @@ export interface LibraryState {
   chats: Chat[];
   docs: Doc[];
   files: File[];
-  allItems: AllItem[];
   loading: boolean;
-  chatsMap: Record<string, Chat>;
-  docsMap: Record<string, Doc>;
-  filesMap: Record<string, File>;
   initialized: boolean;
   refresh: () => Promise<void>;
+  toggleCollect: (type: 'chat' | 'doc' | 'file', id: string) => Promise<void>;
 }
+
+const togglingMap = new Map<string, boolean>();
 
 export const useLibraryStore = create<LibraryState>()((set, get) => ({
   loading: false,
@@ -70,10 +73,6 @@ export const useLibraryStore = create<LibraryState>()((set, get) => ({
   chats: [],
   docs: [],
   files: [],
-  allItems: [],
-  chatsMap: {},
-  docsMap: {},
-  filesMap: {},
   refresh: async () => {
     if (get().loading) return;
 
@@ -114,6 +113,7 @@ export const useLibraryStore = create<LibraryState>()((set, get) => ({
             ...edge.node,
             metadata: JSON.parse(edge.node.metadata || '{}') as ChatMetadata,
           })) ?? [];
+        set({ chats });
       }
       if (docsRes.status === 'fulfilled') {
         docs =
@@ -121,6 +121,7 @@ export const useLibraryStore = create<LibraryState>()((set, get) => ({
             ...edge.node,
             metadata: JSON.parse(edge.node.metadata || '{}') as DocMetadata,
           })) ?? [];
+        set({ docs });
       }
       if (filesRes.status === 'fulfilled') {
         files =
@@ -128,35 +129,9 @@ export const useLibraryStore = create<LibraryState>()((set, get) => ({
             ...edge.node,
             metadata: JSON.parse(edge.node.metadata || '{}') as FileMetadata,
           })) ?? [];
+        set({ files });
       }
 
-      set({ docs, chats, files });
-      set({
-        chatsMap: chats.reduce((acc, chat) => {
-          acc[chat.sessionId] = chat;
-          return acc;
-        }, {} as any),
-        docsMap: docs.reduce((acc, doc) => {
-          acc[doc.docId] = doc;
-          return acc;
-        }, {} as any),
-        filesMap: files.reduce((acc, file) => {
-          acc[file.fileId] = file;
-          return acc;
-        }, {} as any),
-      });
-      set({
-        allItems: [
-          ...docs.map(doc => ({ type: 'doc', ...doc })),
-          ...chats.map(chat => ({ type: 'chat', ...chat })),
-          ...files.map(file => ({ type: 'file', ...file })),
-        ].sort((a, b) => {
-          return (
-            new Date((b as any).updatedAt ?? b.createdAt).getTime() -
-            new Date((a as any).updatedAt ?? a.createdAt).getTime()
-          );
-        }) as unknown as AllItem[],
-      });
       set({ initialized: true });
     } catch (error) {
       console.error(error);
@@ -164,4 +139,158 @@ export const useLibraryStore = create<LibraryState>()((set, get) => ({
       set({ loading: false });
     }
   },
+  toggleCollect: async (type, id) => {
+    if (togglingMap.has(id)) return;
+
+    togglingMap.set(id, true);
+
+    try {
+      if (type === 'chat') {
+        const chat = get().chats.find(chat => chat.sessionId === id);
+        if (!chat) return;
+
+        const newMeta = {
+          ...chat.metadata,
+          collected: !chat.metadata.collected,
+        };
+
+        // update in-memory data
+        set({
+          chats: get().chats.map(item =>
+            item.sessionId === id
+              ? {
+                  ...item,
+                  updatedAt: new Date().toISOString(),
+                  metadata: newMeta,
+                }
+              : item
+          ),
+        });
+
+        // update server
+        await gql({
+          query: updateCopilotSessionMutation,
+          variables: {
+            options: {
+              sessionId: id,
+              metadata: JSON.stringify(newMeta),
+            },
+          },
+        });
+      }
+
+      if (type === 'doc') {
+        const doc = get().docs.find(doc => doc.docId === id);
+        if (!doc) return;
+        const newMeta = { ...doc.metadata, collected: !doc.metadata.collected };
+
+        set({
+          docs: get().docs.map(item =>
+            item.docId === id
+              ? {
+                  ...item,
+                  updatedAt: new Date().toISOString(),
+                  metadata: newMeta,
+                }
+              : item
+          ),
+        });
+
+        // update server
+        await gql({
+          query: updateUserDocsMutation,
+          variables: {
+            docId: id,
+            metadata: JSON.stringify(newMeta),
+          },
+        });
+      }
+
+      if (type === 'file') {
+        const file = get().files.find(file => file.fileId === id);
+        if (!file) return;
+        const newMeta = {
+          ...file.metadata,
+          collected: !file.metadata.collected,
+        };
+
+        // update server
+        await gql({
+          query: updateUserFilesMutation,
+          variables: {
+            fileId: id,
+            metadata: JSON.stringify(newMeta),
+          },
+        });
+      }
+
+      await get().refresh();
+    } catch (error) {
+    } finally {
+      togglingMap.delete(id);
+    }
+  },
 }));
+
+export const useAllItems = () => {
+  const { docs, chats, files } = useLibraryStore();
+  return useMemo(
+    () =>
+      [
+        ...docs.map(doc => ({ type: 'doc', ...doc })),
+        ...chats.map(chat => ({ type: 'chat', ...chat })),
+        ...files.map(file => ({ type: 'file', ...file })),
+      ].sort((a, b) => {
+        return (
+          new Date((b as any).updatedAt ?? b.createdAt).getTime() -
+          new Date((a as any).updatedAt ?? a.createdAt).getTime()
+        );
+      }),
+    [chats, docs, files]
+  );
+};
+
+export const useChatsMap = () => {
+  const { chats } = useLibraryStore();
+  return useMemo(
+    () =>
+      chats.reduce(
+        (acc, chat) => {
+          acc[chat.sessionId] = chat;
+          return acc;
+        },
+        {} as Record<string, Chat>
+      ),
+    [chats]
+  );
+};
+
+export const useDocsMap = () => {
+  const { docs } = useLibraryStore();
+  return useMemo(
+    () =>
+      docs.reduce(
+        (acc, doc) => {
+          acc[doc.docId] = doc;
+          return acc;
+        },
+        {} as Record<string, Doc>
+      ),
+    [docs]
+  );
+};
+
+export const useFilesMap = () => {
+  const { files } = useLibraryStore();
+  return useMemo(
+    () =>
+      files.reduce(
+        (acc, file) => {
+          acc[file.fileId] = file;
+          return acc;
+        },
+        {} as Record<string, File>
+      ),
+    [files]
+  );
+};

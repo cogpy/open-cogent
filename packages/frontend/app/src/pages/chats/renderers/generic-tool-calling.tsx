@@ -30,7 +30,7 @@ export const GenericToolCalling = ({
 
   return (
     <div
-      className={cn('h-14 flex items-center gap-1 border rounded-2xl px-4')}
+      className={cn('h-14 flex items-center gap-2 border rounded-2xl px-4')}
       style={{
         boxShadow: `0px 1px 5px 0px rgba(0, 0, 0, 0.05)`,
       }}

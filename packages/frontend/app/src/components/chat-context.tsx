@@ -3,7 +3,6 @@ import type { CopilotContextChatOrDoc, CopilotContextFile } from '@afk/graphql';
 import {
   AttachmentIcon,
   CloseIcon,
-  FileIcon,
   PageIcon,
   SearchIcon,
 } from '@blocksuite/icons/rc';
@@ -13,10 +12,8 @@ import { startTransition, useEffect, useMemo, useRef, useState } from 'react';
 import { create, type StoreApi, useStore } from 'zustand';
 
 import { ChatIcon } from '@/icons/chat';
-import { cn } from '@/lib/utils';
-import { useAuthStore } from '@/store/auth';
 import type { ChatSessionState } from '@/store/copilot/types';
-import { useLibraryStore } from '@/store/library';
+import { useChatsMap, useDocsMap, useLibraryStore } from '@/store/library';
 
 import * as styles from './chat-input.css';
 import { FileIconRenderer } from './file-icon-renderer';
@@ -103,7 +100,7 @@ const ChatContextPreview = ({
   context: ChatContextChat;
   onRemove: () => void;
 }) => {
-  const { chatsMap } = useLibraryStore();
+  const chatsMap = useChatsMap();
   const chat = chatsMap[context.id];
   if (!chat) return null;
 
@@ -125,7 +122,7 @@ const DocContextPreview = ({
   context: ChatContextDoc;
   onRemove: () => void;
 }) => {
-  const { docsMap } = useLibraryStore();
+  const docsMap = useDocsMap();
   const doc = docsMap[context.id];
   if (!doc) return null;
 

@@ -16,6 +16,7 @@ import {
   type Chat,
   type Doc,
   type File,
+  useAllItems,
   useLibraryStore,
 } from '@/store/library';
 
@@ -65,7 +66,8 @@ const FileItem = ({ file }: { file: File }) => {
 };
 
 const SidebarContent = () => {
-  const { allItems, refresh, chats, initialized, loading } = useLibraryStore();
+  const { refresh, chats, initialized, loading } = useLibraryStore();
+  const allItems = useAllItems();
   const collectedItems = useMemo(() => filterCollected(allItems), [allItems]);
 
   useEffect(() => {

@@ -6,11 +6,6 @@ import {
   type MasonryGroup,
   type MasonryItem,
 } from '@afk/component';
-import {
-  updateCopilotSessionMutation,
-  updateUserDocsMutation,
-  updateUserFilesMutation,
-} from '@afk/graphql';
 import { FavoritedIcon, FavoriteIcon, PageIcon } from '@blocksuite/icons/rc';
 import { cssVarV2 } from '@toeverything/theme/v2';
 import dayjs from 'dayjs';
@@ -20,10 +15,13 @@ import { Link, useNavigate, useSearchParams } from 'react-router';
 import { FileIconRenderer } from '@/components/file-icon-renderer';
 import { ChatIcon } from '@/icons/chat';
 import { EmptyLibrary } from '@/icons/empty-library';
-import { gql } from '@/lib/gql';
 import { cn } from '@/lib/utils';
-import { useLibraryStore } from '@/store/library';
-import { useSidebarStore } from '@/store/sidebar';
+import {
+  useChatsMap,
+  useDocsMap,
+  useFilesMap,
+  useLibraryStore,
+} from '@/store/library';
 
 import { AutoSidebarPadding } from './layout/auto-sidebar-padding';
 import * as styles from './library-dashboard.css';
@@ -140,28 +138,14 @@ export const FavoriteAction = ({
 };
 
 const ChatListItem: MasonryItem['Component'] = ({ itemId }) => {
-  const { chatsMap, refresh } = useLibraryStore();
+  const { toggleCollect } = useLibraryStore();
+  const chatsMap = useChatsMap();
   const chat = chatsMap[itemId];
   const collected = chat?.metadata?.collected;
 
-  const toggleCollect = useCallback(
-    async (value: boolean) => {
-      await gql({
-        query: updateCopilotSessionMutation,
-        variables: {
-          options: {
-            sessionId: itemId,
-            metadata: JSON.stringify({
-              ...chat?.metadata,
-              collected: value,
-            }),
-          },
-        },
-      });
-      refresh();
-    },
-    [chat?.metadata, itemId, refresh]
-  );
+  const toggle = useCallback(async () => {
+    await toggleCollect('chat', itemId);
+  }, [itemId, toggleCollect]);
 
   return (
     <Link to={`/chats/${itemId}`}>
@@ -171,10 +155,7 @@ const ChatListItem: MasonryItem['Component'] = ({ itemId }) => {
         </div>
         <div className={styles.listItemTitle}>{chat?.title ?? 'New Chat'}</div>
         <div>
-          <FavoriteAction
-            collected={collected}
-            setToggleAsync={toggleCollect}
-          />
+          <FavoriteAction collected={collected} setToggleAsync={toggle} />
         </div>
       </div>
     </Link>
@@ -182,25 +163,14 @@ const ChatListItem: MasonryItem['Component'] = ({ itemId }) => {
 };
 
 const DocListItem: MasonryItem['Component'] = ({ itemId }) => {
-  const { docsMap } = useLibraryStore();
+  const { toggleCollect } = useLibraryStore();
+  const docsMap = useDocsMap();
   const navigate = useNavigate();
   const doc = docsMap[itemId];
 
-  const toggleCollect = useCallback(
-    async (value: boolean) => {
-      await gql({
-        query: updateUserDocsMutation,
-        variables: {
-          docId: itemId,
-          metadata: JSON.stringify({
-            ...doc?.metadata,
-            collected: value,
-          }),
-        },
-      });
-    },
-    [doc?.metadata, itemId]
-  );
+  const toggle = useCallback(async () => {
+    await toggleCollect('doc', itemId);
+  }, [itemId, toggleCollect]);
 
   const handleOpenDoc = useCallback(() => {
     navigate(`/library/${itemId}`);
@@ -219,7 +189,7 @@ const DocListItem: MasonryItem['Component'] = ({ itemId }) => {
       <div onClick={e => e.stopPropagation()}>
         <FavoriteAction
           collected={doc?.metadata?.collected}
-          setToggleAsync={toggleCollect}
+          setToggleAsync={toggle}
         />
       </div>
     </div>
@@ -227,24 +197,13 @@ const DocListItem: MasonryItem['Component'] = ({ itemId }) => {
 };
 
 const FileListItem: MasonryItem['Component'] = ({ itemId }) => {
-  const { filesMap } = useLibraryStore();
+  const { toggleCollect } = useLibraryStore();
+  const filesMap = useFilesMap();
   const file = filesMap[itemId];
 
-  const toggleCollect = useCallback(
-    async (value: boolean) => {
-      await gql({
-        query: updateUserFilesMutation,
-        variables: {
-          fileId: itemId,
-          metadata: JSON.stringify({
-            ...file?.metadata,
-            collected: value,
-          }),
-        },
-      });
-    },
-    [file?.metadata, itemId]
-  );
+  const toggle = useCallback(async () => {
+    await toggleCollect('file', itemId);
+  }, [itemId, toggleCollect]);
 
   return (
     <div className={styles.listItem}>
@@ -259,7 +218,7 @@ const FileListItem: MasonryItem['Component'] = ({ itemId }) => {
       <div>
         <FavoriteAction
           collected={file?.metadata?.collected}
-          setToggleAsync={toggleCollect}
+          setToggleAsync={toggle}
         />
       </div>
     </div>
@@ -293,7 +252,12 @@ export const LibraryDashboard = () => {
         ...withType(chats, 'chats'),
         ...withType(docs, 'docs'),
         ...withType(files, 'files'),
-      ];
+      ].sort((a, b) => {
+        return (
+          new Date((b as any).updatedAt ?? b.createdAt).getTime() -
+          new Date((a as any).updatedAt ?? a.createdAt).getTime()
+        );
+      });
       return Object.entries<any>(groupDate(itemsWithType))
         .filter(([_, items]) => items.length > 0)
         .map(([key, items]) => ({
@@ -311,7 +275,8 @@ export const LibraryDashboard = () => {
                     : item.fileId,
               height: 42,
               Component: getComponentByType(type),
-            };
+              className: 'transition-transform duration-200',
+            } satisfies MasonryItem;
           }),
         }));
     }
@@ -332,6 +297,7 @@ export const LibraryDashboard = () => {
                 : item.fileId,
           height: 42,
           Component: getComponentByType(type),
+          className: 'transition-transform duration-200',
         })),
       }));
   }, [chats, docs, files, type]);
@@ -340,7 +306,7 @@ export const LibraryDashboard = () => {
 
   if (!initialized) {
     return (
-      <div className="h-full flex items-center justify-center">
+      <div className="h-full flex-1 flex bg-white border rounded-[8px] items-center justify-center">
         <Loading />
       </div>
     );
@@ -378,6 +344,7 @@ export const LibraryDashboard = () => {
           paddingX={12}
           gapY={4}
           groupHeaderGapWithItems={8}
+          locateMode="transform"
         />
       </main>
     </div>

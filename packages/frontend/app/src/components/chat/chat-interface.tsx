@@ -144,14 +144,19 @@ const ChatSession = ({
   const isLoading = useStore(store, s => s.isLoading);
 
   const [input, setInput] = useState('');
-  const onSend = async () => {
-    if (!input.trim()) return;
-    await store.getState().sendMessage({ content: input });
-    setInput('');
+
+  const scrollToBottom = useCallback(() => {
     scrollContainerRef.current?.scrollTo({
       top: scrollContainerRef.current?.scrollHeight,
       behavior: 'smooth',
     });
+  }, []);
+
+  const onSend = async () => {
+    if (!input.trim()) return;
+    await store.getState().sendMessage({ content: input });
+    setInput('');
+    scrollToBottom();
   };
 
   const containerClasses = `flex flex-col h-full ${className}`;
@@ -221,12 +226,7 @@ const ChatSession = ({
 
         <DownArrow
           ref={downArrowRef}
-          onClick={() => {
-            scrollContainerRef.current?.scrollTo({
-              top: scrollContainerRef.current?.scrollHeight,
-              behavior: 'smooth',
-            });
-          }}
+          onClick={scrollToBottom}
           loading={isStreaming}
         />
       </div>

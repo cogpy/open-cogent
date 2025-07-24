@@ -114,11 +114,13 @@ export const ChatPlayback = ({
   const targetText = isAssistant ? assistantText : '';
   const typedText = useTypewriter(targetText, 24);
 
-  const typingDone = isAssistant
-    ? targetText.length > 0
-      ? typedText.length >= targetText.length
-      : true
-    : true;
+  const typingDone = skip
+    ? true
+    : isAssistant
+      ? targetText.length > 0
+        ? typedText.length >= targetText.length
+        : true
+      : true;
 
   // After current message finished typing, schedule reveal of next
   useEffect(() => {
@@ -158,7 +160,7 @@ export const ChatPlayback = ({
       <div className={`flex flex-col h-full ${className}`}>
         {headerContent}
 
-        <div className="flex-1 overflow-y-auto py-4 pb-32">
+        <div className="flex-1 overflow-y-auto p-4 pb-32">
           {showDocumentContext && documentTitle && (
             <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
               <div className="text-sm text-blue-600 font-medium">
@@ -171,7 +173,7 @@ export const ChatPlayback = ({
           <div className="max-w-[800px] mx-auto w-full flex flex-col [&>*:not(:first-child)]:mt-4">
             {messages.map((m, idx) => (
               <MessageRenderer
-                key={m.id ?? idx}
+                key={(m.id ?? idx) + (skip ? 'skip' : '')}
                 message={m}
                 isStreaming={false}
               />
@@ -190,7 +192,7 @@ export const ChatPlayback = ({
     <div className={containerClasses}>
       {headerContent}
 
-      <div ref={containerRef} className="flex-1 overflow-y-auto py-4 pb-32">
+      <div ref={containerRef} className="flex-1 overflow-y-auto p-4 pb-32">
         {showDocumentContext && documentTitle && (
           <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
             <div className="text-sm text-blue-600 font-medium">

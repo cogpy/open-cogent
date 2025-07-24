@@ -37,7 +37,7 @@ export const MessageRenderer = memo(function MessageRenderer({
       {message.streamObjects?.length ? (
         <ChatContentStreamObjects
           streamObjects={message.streamObjects}
-          isStreaming={isStreaming}
+          isStreaming={isStreaming && isAssistant}
           isAssistant={isAssistant}
         />
       ) : (

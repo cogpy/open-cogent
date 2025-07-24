@@ -2,6 +2,7 @@ import { type ReactNode, useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 
 import { ChatInterface } from '@/components/chat/chat-interface';
+import { DocPanelById } from '@/components/doc-panel/doc-panel';
 import { OpenDocProvider } from '@/contexts/doc-panel-context';
 import { useRefCounted } from '@/lib/hooks/use-ref-counted';
 import { copilotClient } from '@/store/copilot/client';
@@ -83,6 +84,17 @@ export const ChatPlaybackPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
+  /* ---------------- Document panel states ---------------- */
+  const [docId, setDocId] = useState<string>();
+
+  const openDoc = (docId: string) => {
+    setDocId(docId);
+  };
+
+  const closeDoc = () => {
+    setDocId(undefined);
+  };
+
   // Track playback status for bottom pane
   const [progress, setProgress] = useState<{
     current: number;
@@ -158,25 +170,36 @@ export const ChatPlaybackPage = () => {
   }, []);
 
   return (
-    <OpenDocProvider value={{ openDoc: () => {}, closeDoc: () => {} }}>
-      <div className="flex-1 bg-white border rounded-[8px] overflow-hidden relative h-full">
-        {id && sessionStore ? (
-          <ChatInterface
-            key={version}
-            store={sessionStore}
-            playback
-            className="flex-1"
-            headerContent={
-              <PlaybackHeader
-                title={sessionStore.getState().meta?.title ?? 'New Chat'}
-              />
-            }
-            onPlaybackStart={handleStart}
-            onPlaybackProgress={handleProgress}
-            onPlaybackFinish={handleFinish}
-            skipPlayback={skipped || showCountdown}
-          />
-        ) : null}
+    <OpenDocProvider value={{ openDoc, closeDoc }}>
+      <div className="overflow-hidden h-full flex gap-2">
+        <div className="flex-1 bg-white border rounded-[8px]  overflow-auto h-full">
+          {id && sessionStore ? (
+            <ChatInterface
+              key={version}
+              store={sessionStore}
+              playback
+              className="flex-1"
+              headerContent={
+                <PlaybackHeader
+                  title={sessionStore.getState().meta?.title ?? 'New Chat'}
+                />
+              }
+              onPlaybackStart={handleStart}
+              onPlaybackProgress={handleProgress}
+              onPlaybackFinish={handleFinish}
+              skipPlayback={skipped || showCountdown}
+            />
+          ) : null}
+        </div>
+        {docId && (
+          <div className="flex-1 bg-white border rounded-[8px] overflow-hidden h-full">
+            <DocPanelById
+              docId={docId}
+              onOpenChat={() => {}}
+              onClose={closeDoc}
+            />
+          </div>
+        )}
 
         {/* Countdown overlay */}
         {showCountdown && (
@@ -201,7 +224,7 @@ export const ChatPlaybackPage = () => {
           </Banner>
         )}
 
-        {finished && !showCountdown && (
+        {(finished || skipped) && !showCountdown && (
           <Banner position="bottom">
             <span className="font-medium flex items-center gap-2">
               <img src="/logo.svg" alt="OpenAgent" className="size-6" />

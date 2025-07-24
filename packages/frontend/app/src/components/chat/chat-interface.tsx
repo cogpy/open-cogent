@@ -216,7 +216,7 @@ const ChatSession = ({
                 <Loading size={24} />
               </div>
             ) : (
-              <div className="max-w-[832px] mx-auto px-4 w-full [&>*:not(:first-child)]:mt-4">
+              <div className="max-w-[832px] mx-auto px-4 w-full  flex flex-col  [&>*:not(:first-child)]:mt-4">
                 {messages.map((m, idx) => (
                   <MessageRenderer
                     key={m.id ?? idx}

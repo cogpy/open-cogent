@@ -1,4 +1,4 @@
-import { Button, IconButton } from '@afk/component';
+import { Button, IconButton, toast } from '@afk/component';
 import { CommentIcon } from '@blocksuite/icons/rc';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
@@ -12,6 +12,7 @@ import {
 import { DocPanelById } from '@/components/doc-panel/doc-panel';
 import { OpenDocProvider } from '@/contexts/doc-panel-context';
 import { useRefCounted } from '@/lib/hooks/use-ref-counted';
+import { copyToClipboard } from '@/lib/utils';
 import { copilotClient } from '@/store/copilot/client';
 import { chatSessionsStore } from '@/store/copilot/sessions-instance';
 import { useChatsMap, useLibraryStore } from '@/store/library';
@@ -149,7 +150,6 @@ export const ChatPageHeader = ({ sessionId }: { sessionId?: string }) => {
   const chat = sessionId ? chatsMap[sessionId] : undefined;
 
   const isFav = chat?.metadata?.collected;
-  const navigate = useNavigate();
 
   const toggle = useCallback(async () => {
     if (!sessionId) return;
@@ -169,8 +169,11 @@ export const ChatPageHeader = ({ sessionId }: { sessionId?: string }) => {
           <Button
             variant="secondary"
             size="default"
-            onClick={() => {
-              navigate(`/chats/${sessionId}/playback`);
+            onClick={async () => {
+              if (!sessionId) return;
+              const link = `${window.location.origin}/chats/${sessionId}/playback`;
+              await copyToClipboard(link);
+              toast('Link copied to clipboard');
             }}
           >
             Share

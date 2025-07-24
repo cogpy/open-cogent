@@ -77,7 +77,7 @@ export function AggregatedTodoList({ store }: AggregatedTodoListProps) {
     <motion.div
       layout
       transition={{ duration: 0.2 }}
-      className="border rounded-t-2xl border-b-0 bg-gray-50/50 mx-4 cursor-pointer select-none"
+      className="border border-b-0 rounded-t-2xl bg-gray-50/50 mx-4 cursor-pointer select-none"
       onClick={() => setExpanded(prev => !prev)}
     >
       {/* Header / Summary row */}

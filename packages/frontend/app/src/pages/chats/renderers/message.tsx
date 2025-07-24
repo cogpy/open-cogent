@@ -29,8 +29,9 @@ export const MessageRenderer = memo(function MessageRenderer({
     <div
       className={cn(
         'flex flex-col',
-        isAssistant ? 'items-start' : 'items-end',
-        !isAssistant && 'pl-10'
+        isAssistant
+          ? 'items-start'
+          : 'self-end p-3 inline-block ax-w-full prose rounded-lg mb-4 bg-[#f3f3f3]'
       )}
     >
       {message.streamObjects?.length ? (
@@ -41,11 +42,6 @@ export const MessageRenderer = memo(function MessageRenderer({
         />
       ) : (
         <MarkdownText
-          className={cn(
-            'inline-block p-3 ax-w-full prose rounded-lg mb-4',
-            styles.mdMsg
-          )}
-          style={{ backgroundColor: 'rgba(243, 243, 243, 1)' }}
           text={message.content}
           loading={isAssistant && isStreaming}
         />

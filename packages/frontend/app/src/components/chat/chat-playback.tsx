@@ -168,7 +168,7 @@ export const ChatPlayback = ({
             </div>
           )}
 
-          <div className="max-w-[800px] mx-auto w-full [&>*:not(:first-child)]:mt-4">
+          <div className="max-w-[800px] mx-auto w-full flex flex-col [&>*:not(:first-child)]:mt-4">
             {messages.map((m, idx) => (
               <MessageRenderer
                 key={m.id ?? idx}
@@ -200,7 +200,7 @@ export const ChatPlayback = ({
           </div>
         )}
 
-        <div className="max-w-[800px] mx-auto w-full [&>*:not(:first-child)]:mt-4">
+        <div className="max-w-[800px] mx-auto w-full flex flex-col [&>*:not(:first-child)]:mt-4">
           {messages.slice(0, visibleIdx + 1).map((m, idx) => {
             let msgOverride: ChatMessage = m;
             if (idx === visibleIdx && isAssistant && !typingDone) {

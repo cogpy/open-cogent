@@ -1,5 +1,9 @@
+// Replaced `marked` block-splitting with the incremental parser from `@lixpi/markdown-stream-parser`.
+// The parser allows us to detect "block defining" segments as the stream progresses. We feed the
+// entire markdown string in one go (since this util is synchronous) and collect a new block every
+// time the parser notifies us that the current segment starts a fresh block.
+import { MarkdownStreamParser } from '@lixpi/markdown-stream-parser';
 import type { Element, Root } from 'hast';
-import { marked } from 'marked';
 import { memo, useEffect, useMemo, useState } from 'react';
 import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -11,8 +15,47 @@ import { CodeBlock } from './code-block';
 import * as styles from './markdown.css';
 
 function parseMarkdownIntoBlocks(markdown: string): string[] {
-  const tokens = marked.lexer(markdown);
-  return tokens.map(token => token.raw);
+  // Early-out for empty strings – prevents the parser from creating an instance needlessly.
+  if (!markdown) return [''];
+
+  // The parser is implemented as a singleton per ID. We create a short-lived instance and dispose
+  // it afterwards to avoid leaking global state between React renders.
+  const instanceId = 'markdown-splitter-temp';
+  const parser = MarkdownStreamParser.getInstance(instanceId);
+
+  const blocks: string[] = [];
+  let current = '';
+
+  const unsubscribe = parser.subscribeToTokenParse(parsedSegment => {
+    // We only care about streaming tokens that carry a segment payload
+    if (parsedSegment.status !== 'STREAMING' || !parsedSegment.segment) {
+      return;
+    }
+
+    const { segment: segContent, isBlockDefining } = parsedSegment.segment;
+
+    if (isBlockDefining) {
+      // Push the buffered block (if any) and start a new one
+      if (current) {
+        blocks.push(current);
+        current = '';
+      }
+    }
+
+    current += segContent;
+  });
+
+  // Begin parsing → feed → end & flush
+  parser.startParsing();
+  parser.parseToken(markdown);
+  parser.stopParsing();
+
+  unsubscribe();
+  MarkdownStreamParser.removeInstance(instanceId);
+
+  if (current) blocks.push(current);
+
+  return blocks;
 }
 
 function remarkStripFootnoteRefs() {

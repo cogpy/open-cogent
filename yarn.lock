@@ -84,6 +84,7 @@ __metadata:
     "@afk/error": "workspace:*"
     "@afk/graphql": "workspace:*"
     "@blocksuite/icons": "npm:^2.2.15"
+    "@lixpi/markdown-stream-parser": "npm:0.0.3-33"
     "@rspack/cli": "npm:^1.4.8"
     "@rspack/core": "npm:^1.4.8"
     "@rspack/dev-client": "npm:^0.4.1"
@@ -6978,6 +6979,13 @@ __metadata:
   dependencies:
     "@lit-labs/ssr-dom-shim": "npm:^1.4.0"
   checksum: 10/5bd091d8149a8cb07e51ab58e218693204563ab87894528c7639e828aac9eb463b6d68048557c37a43f493cf310fff75ee337c3ced274903879c5e5e335df919
+  languageName: node
+  linkType: hard
+
+"@lixpi/markdown-stream-parser@npm:0.0.3-33":
+  version: 0.0.3-33
+  resolution: "@lixpi/markdown-stream-parser@npm:0.0.3-33"
+  checksum: 10/437344a6fe9b27404557c2c175abe463c26fa276d8facef56070a6dc9bbeee45237554c1d3d3be24424118bc3599adfcbf47b2d5224963b7fc479b311768dd76
   languageName: node
   linkType: hard
 

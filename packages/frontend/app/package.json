@@ -12,6 +12,7 @@
     "@afk/error": "workspace:*",
     "@afk/graphql": "workspace:*",
     "@blocksuite/icons": "^2.2.15",
+    "@lixpi/markdown-stream-parser": "0.0.3-33",
     "@tailwindcss/typography": "^0.5.16",
     "@toeverything/theme": "^1.1.16",
     "@types/lodash": "^4.17.20",

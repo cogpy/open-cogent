@@ -1,14 +1,32 @@
-import { ReactNode, useEffect, useState, useCallback } from 'react';
-import { useNavigate, useParams } from 'react-router';
+import { type ReactNode, useCallback, useEffect, useState } from 'react';
+import { Link, useNavigate, useParams } from 'react-router';
 
 import { ChatInterface } from '@/components/chat/chat-interface';
 import { OpenDocProvider } from '@/contexts/doc-panel-context';
 import { useRefCounted } from '@/lib/hooks/use-ref-counted';
 import { copilotClient } from '@/store/copilot/client';
 import { chatSessionsStore } from '@/store/copilot/sessions-instance';
-
-import { ChatPageHeader as BaseHeader } from './chat';
 import { useSidebarStore } from '@/store/sidebar';
+
+const PlaybackHeader = ({ title }: { title: string }) => {
+  return (
+    <div className="h-15 border-b-[0.5px] px-4 flex items-center justify-between gap-4">
+      <Link to="/">
+        <img src="/logo.svg" alt="OpenAgent" className="size-6" />
+      </Link>
+      <div className="text-sm font-medium text-text-primary truncate flex-1">
+        {title}
+      </div>
+      <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2">
+          <button className="bg-black text-white px-4 py-1 h-8 rounded-md text-sm font-medium cursor-pointer">
+            Sign In
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 /**
  * Playback page renders chat messages one-by-one in read-only mode.
@@ -97,7 +115,11 @@ export const ChatPlaybackPage = () => {
             store={sessionStore}
             playback
             className="flex-1"
-            headerContent={<BaseHeader sessionId={id} mode="playback" />}
+            headerContent={
+              <PlaybackHeader
+                title={sessionStore.getState().meta?.title ?? 'New Chat'}
+              />
+            }
             onPlaybackStart={handleStart}
             onPlaybackProgress={handleProgress}
             onPlaybackFinish={handleFinish}

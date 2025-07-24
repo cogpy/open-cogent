@@ -158,7 +158,7 @@ export const ChatPlayback = ({
       <div className={`flex flex-col h-full ${className}`}>
         {headerContent}
 
-        <div className="flex-1 overflow-y-auto py-4">
+        <div className="flex-1 overflow-y-auto py-4 pb-32">
           {showDocumentContext && documentTitle && (
             <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
               <div className="text-sm text-blue-600 font-medium">

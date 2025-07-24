@@ -1,4 +1,6 @@
+import { Button, IconButton } from '@afk/component';
 import { updateCopilotSessionMutation } from '@afk/graphql';
+import { CommentIcon } from '@blocksuite/icons/rc';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
 
@@ -18,8 +20,6 @@ import { useLibraryStore } from '@/store/library';
 
 import { AutoSidebarPadding } from '../layout/auto-sidebar-padding';
 import { FavoriteAction } from '../library-dashboard';
-import { Button, IconButton } from '@afk/component';
-import { CommentIcon } from '@blocksuite/icons/rc';
 
 export const ChatPage = () => {
   const { id } = useParams();
@@ -145,17 +145,12 @@ export const ChatPage = () => {
   );
 };
 
-export const ChatPageHeader = ({
-  sessionId,
-  mode = 'normal',
-}: {
-  sessionId?: string;
-  mode?: 'normal' | 'playback';
-}) => {
+export const ChatPageHeader = ({ sessionId }: { sessionId?: string }) => {
   const { chatsMap, refresh } = useLibraryStore();
   const chat = sessionId ? chatsMap[sessionId] : undefined;
 
   const isFav = chat?.metadata?.collected;
+  const navigate = useNavigate();
 
   const toggleCollect = useCallback(
     async (value: boolean) => {
@@ -183,23 +178,19 @@ export const ChatPageHeader = ({
         {chat?.title ?? 'New Chat'}
       </AutoSidebarPadding>
 
-      {chat && mode === 'normal' ? (
+      {chat ? (
         <div className="flex items-center gap-2">
           <FavoriteAction collected={!!isFav} setToggleAsync={toggleCollect} />
           <IconButton icon={<CommentIcon />} />
-          <Button variant="secondary" size="default">
+          <Button
+            variant="secondary"
+            size="default"
+            onClick={() => {
+              navigate(`/chats/${sessionId}/playback`);
+            }}
+          >
             Share
           </Button>
-        </div>
-      ) : null}
-
-      {chat && mode === 'playback' ? (
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2">
-            <button className="bg-black text-white px-4 py-1 h-8 rounded-md text-sm font-medium cursor-pointer">
-              Sign In
-            </button>
-          </div>
         </div>
       ) : null}
     </div>

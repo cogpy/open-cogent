@@ -34,23 +34,12 @@ export default {
       // not absolute paths
       !request.startsWith('/') &&
       // not workspace deps except native packages
-      (!request.startsWith('@afk/') || request.includes('native'))
+      (!request.startsWith('@afk/') || request.includes('native')) &&
+      // not problematic ESM modules
+      !['lru-cache', '@apollo/', 'semver'].some(
+        mod => request === mod || request.startsWith(mod + '/')
+      )
     ) {
-      // Bundle problematic ESM modules to avoid runtime issues
-      const bundledModules = [
-        'lru-cache',
-        '@apollo/utils.keyvaluecache',
-        'semver',
-      ];
-
-      if (
-        bundledModules.some(
-          mod => request === mod || request.startsWith(mod + '/')
-        )
-      ) {
-        return false; // Bundle these modules
-      }
-
       // Mark as external using ES module imports
       return `module ${request}`;
     }
@@ -68,7 +57,7 @@ export default {
     },
   },
   module: {
-    parser: { javascript: { url: false, importMeta: true } },
+    parser: { javascript: { url: false, importMeta: false } },
     rules: [
       {
         test: /\.js$/,

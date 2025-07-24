@@ -1,27 +1,39 @@
-FROM rust:1.88.0-bookworm AS builder
+FROM rust:1.88.0-bookworm AS rust-builder
 
-RUN apt-get update && \
-  apt-get install -y --no-install-recommends \
-  git curl ca-certificates gnupg
-RUN curl -fsSL https://deb.nodesource.com/setup_22.x | sh -
-RUN apt-get install -y nodejs
-
-WORKDIR /workspace
+WORKDIR /app
 COPY . .
 
-RUN corepack enable yarn
-RUN yarn config set --json supportedArchitectures.cpu '["x64", "arm64", "arm"]'
-RUN yarn config set --json supportedArchitectures.libc '["glibc"]'
-RUN yarn install --immutable
+# Build native modules for all target architectures
+# This will be replaced by pre-built artifacts in multi-arch builds
+ARG TARGETARCH
+ENV TARGETARCH=${TARGETARCH}
 
-# Build the native module for current platform only
-RUN yarn workspace @afk/server-native build
+# Map Docker TARGETARCH to our native module file naming
+RUN case "${TARGETARCH}" in \
+    amd64) NATIVE_FILE="server-native.x64.node" ;; \
+    arm64) NATIVE_FILE="server-native.arm64.node" ;; \
+    arm) NATIVE_FILE="server-native.armv7.node" ;; \
+    *) echo "Unsupported architecture: ${TARGETARCH}" && exit 1 ;; \
+    esac && \
+    if [ -f "./packages/backend/native/${NATIVE_FILE}" ]; then \
+    echo "Using pre-built native module: ${NATIVE_FILE}"; \
+    cp "./packages/backend/native/${NATIVE_FILE}" "./packages/backend/native/server-native.node"; \
+    else \
+    echo "Pre-built native module not found: ${NATIVE_FILE}"; \
+    echo "Building native module for current platform"; \
+    # configure build environment
+    curl -fsSL https://deb.nodesource.com/setup_22.x | sh -; \
+    apt-get install -y nodejs; \
+    corepack enable yarn; \
+    yarn config set --json supportedArchitectures.cpu '["x64", "arm64", "arm"]'; \
+    yarn config set --json supportedArchitectures.libc '["glibc"]'; \
+    # Install dependencies
+    yarn workspaces focus @afk/server-native; \
+    # Build native module
+    yarn workspace @afk/server-native build; \
+    fi
 
-RUN yarn workspace @afk/app build
-RUN yarn oa server prisma generate
-RUN yarn workspace @afk/server build
-
-FROM node:22-bookworm AS deps
+FROM node:22-bookworm AS builder
 
 WORKDIR /app
 COPY . .
@@ -29,23 +41,46 @@ COPY . .
 RUN corepack enable yarn
 RUN yarn config set --json supportedArchitectures.cpu '["x64", "arm64", "arm"]'
 RUN yarn config set --json supportedArchitectures.libc '["glibc"]'
-RUN yarn workspaces focus @afk/server --production
+COPY --from=rust-builder /app/packages/backend/native/server-native.node ./packages/backend/native/
+
+RUN if [ ! -d "/app/packages/backend/server/dist" ] || [ ! -d "/app/packages/frontend/app/dist" ]; then \
+        yarn install --immutable && \
+        yarn workspace @afk/app build && \
+        yarn workspace @afk/server prisma generate && \
+        yarn workspace @afk/server build && \
+        yarn workspaces focus @afk/server --production && \
+        rm -rf ./packages/backend/server/node_modules && \
+        rm -rf ./node_modules/@afk/server && \
+        cp -aL ./node_modules/@afk ./@afk && \
+        mv ./node_modules ./packages/backend/server && \
+        rm -rf ./packages/backend/server/node_modules/@afk && \
+        mv ./@afk ./packages/backend/server/node_modules; \
+    else \
+        echo "Build artifacts already exist, skipping build"; \
+        yarn workspaces focus @afk/server --production && \
+        rm -rf ./packages/backend/server/node_modules && \
+        rm -rf ./node_modules/@afk/server && \
+        cp -aL ./node_modules/@afk ./@afk && \
+        mv ./node_modules ./packages/backend/server && \
+        rm -rf ./packages/backend/server/node_modules/@afk && \
+        mv ./@afk ./packages/backend/server/node_modules; \
+    fi
 
 FROM node:22-bookworm-slim AS production
 
 RUN apt-get update && \
-  apt-get install -y --no-install-recommends \
-  openssl \
-  libjemalloc2 \
-  && rm -rf /var/lib/apt/lists/*
+    apt-get install -y --no-install-recommends \
+    openssl \
+    libjemalloc2 \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-COPY --from=builder /workspace/packages/backend/server/dist ./dist
-COPY --from=builder /workspace/packages/backend/server/package.json ./package.json
-COPY --from=builder /workspace/packages/frontend/app/dist ./static
-
-COPY --from=deps /workspace/node_modules ./node_modules
+# Copy built application
+COPY --from=builder /app/packages/backend/server/dist ./dist
+COPY --from=builder /app/packages/backend/server/package.json ./package.json
+COPY --from=builder /app/packages/backend/server/node_modules ./node_modules
+COPY --from=builder /app/packages/frontend/app/dist ./static
 
 ENV LD_PRELOAD=libjemalloc.so.2
 ENV NODE_ENV=production

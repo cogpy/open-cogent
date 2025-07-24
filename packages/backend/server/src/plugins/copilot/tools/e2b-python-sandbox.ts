@@ -39,7 +39,7 @@ export const createE2bPythonSandboxTool = (
 ) => {
   return tool({
     description:
-      'Execute a complete, standalone Python script in a secure E2B sandbox. The code should be self-contained and runnable as a single file. Each execution uses a fresh environment',
+      'Execute a complete, standalone Python script in a secure E2B sandbox. The code should be self-contained and runnable as a single file. Each execution uses a fresh environment. The output will be a JSON object with the following fields: "text", "html", "markdown", "svg", "png", "jpeg", "pdf", "latex", "json", "javascript", "data", "chart".',
     parameters: z.object({
       code: z.string().describe('The Python code to execute in the sandbox.'),
     }),

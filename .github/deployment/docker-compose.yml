@@ -35,7 +35,7 @@ services:
       - ./.env:/app/.env
       - ./config.json:/app/config.json
     command:
-      - node prisma migrate deploy
+      - node_modules/.bin/prisma migrate deploy
       - node dist/main.mjs run
     depends_on:
       postgres:

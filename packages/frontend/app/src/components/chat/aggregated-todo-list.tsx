@@ -4,7 +4,6 @@ import {
   SingleSelectCheckSolidIcon,
   SingleSelectUnIcon,
 } from '@blocksuite/icons/rc';
-import { cssVarV2 } from '@toeverything/theme/v2';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useMemo, useState } from 'react';
 import { type StoreApi, useStore } from 'zustand';

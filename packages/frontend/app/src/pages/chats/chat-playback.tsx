@@ -64,7 +64,7 @@ const CountdownOverlay = ({
           </span>
 
           <button
-            className="bg-black text-white px-4 rounded-md text-sm h-10 font-medium cursor-pointer hover:bg-gray-800 self-center"
+            className="bg-black text-white px-6 rounded-md text-sm h-10 font-medium cursor-pointer hover:bg-black self-center"
             onClick={onStart}
           >
             Start playback
@@ -75,7 +75,7 @@ const CountdownOverlay = ({
   );
 };
 
-const COUNT_DOWN_TIME = 5;
+const COUNT_DOWN_TIME = 5000;
 
 /**
  * Playback page renders chat messages one-by-one in read-only mode.

@@ -43,6 +43,7 @@ export interface ChatSessionState extends SessionFlags {
   // Data
   meta: SessionMeta | null;
   messages: ChatMessage[];
+  rawMessages: ChatMessage[]; // unmerged messages
   contextFiles: CopilotContextFile[];
   contextChats: CopilotContextChatOrDoc[];
   contextDocs: CopilotContextChatOrDoc[];

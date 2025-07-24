@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { type StoreApi, useStore } from 'zustand';
 
-import { useTypewriter } from '@/lib/hooks/use-typewriter';
+import { streamMessages } from '@/lib/stream/stream-messages';
 import { MessageRenderer } from '@/pages/chats/renderers/message';
 import type { ChatMessage, ChatSessionState } from '@/store/copilot/types';
 
@@ -35,8 +35,12 @@ export const ChatPlayback = ({
   onFinish,
   skip = false,
 }: ChatPlaybackProps) => {
+  const rawMessages = useStore(store, s => s.rawMessages);
   const messages = useStore(store, s => s.messages);
-  const [visibleIdx, setVisibleIdx] = useState(-1);
+
+  // Progressively streamed frames of messages
+  const [frames, setFrames] = useState<ChatMessage[]>([]);
+  const [streamDone, setStreamDone] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
 
@@ -57,102 +61,61 @@ export const ChatPlayback = ({
   /* ---------------------------------------------------
    * Skip mode handling (must run unconditionally)
    * --------------------------------------------------*/
-  const skipHandledRef = useRef(false);
   useEffect(() => {
-    if (skip && !skipHandledRef.current) {
-      skipHandledRef.current = true;
+    if (skip) {
+      setFrames(messages);
       onStart?.();
       onProgress?.(messages.length, messages.length);
       onFinish?.();
-      // Ensure visibleIdx shows all for consistency
-      setVisibleIdx(messages.length - 1);
+      setStreamDone(true);
+      return;
     }
-  }, [skip, messages.length, onStart, onProgress, onFinish]);
 
-  /* ---------------------------------------------------
-   * Progressive reveal logic (guarded by !skip)
-   * --------------------------------------------------*/
-  // Kick-off: show first message once messages arrive
-  useEffect(() => {
-    if (skip) return;
-    if (visibleIdx === -1 && messages.length) {
-      setVisibleIdx(0);
-    }
-  }, [messages.length, visibleIdx, skip]);
+    // ----------------------------------------------
+    // Streaming mode: consume generator frame-by-frame
+    // ----------------------------------------------
+    const generator = streamMessages(rawMessages);
 
-  // Emit onStart when first message becomes visible
-  const startedRef = useRef(false);
-  useEffect(() => {
-    if (skip) return;
-    if (!startedRef.current && visibleIdx === 0) {
-      startedRef.current = true;
-      onStart?.();
-    }
-  }, [visibleIdx, onStart, skip]);
+    let started = false;
+    let progressCount = 0;
 
-  // Emit progress on each visibleIdx change
-  useEffect(() => {
-    if (skip) return;
-    if (visibleIdx >= 0) {
-      onProgress?.(visibleIdx + 1, messages.length);
-    }
-  }, [visibleIdx, messages.length, onProgress, skip]);
+    const step = () => {
+      const { value, done } = generator.next();
+      if (done || !value) {
+        setStreamDone(true);
+        onFinish?.();
+        clearInterval(intervalId);
+        return;
+      }
 
-  // Determine if current message typing is complete
-  const currentMsg = messages[visibleIdx] as ChatMessage | undefined;
-  const isAssistant = currentMsg ? currentMsg.role !== 'user' : false;
+      setFrames(value);
 
-  // Derive display text: prefer content; fall back to concatenated text-deltas
-  let assistantText = currentMsg?.content ?? '';
-  if (isAssistant && (!assistantText || assistantText.trim() === '')) {
-    assistantText = (currentMsg?.streamObjects || [])
-      .filter(o => o.type === 'text-delta' && typeof o.textDelta === 'string')
-      .map(o => o.textDelta as string)
-      .join('');
-  }
+      if (!started) {
+        started = true;
+        onStart?.();
+      }
 
-  const targetText = isAssistant ? assistantText : '';
-  const typedText = useTypewriter(targetText, 24);
+      if (value.length !== progressCount) {
+        progressCount = value.length;
+        onProgress?.(progressCount, rawMessages.length);
+      }
+    };
 
-  const typingDone = skip
-    ? true
-    : isAssistant
-      ? targetText.length > 0
-        ? typedText.length >= targetText.length
-        : true
-      : true;
+    // Kick off immediately and then at fixed interval
+    step();
+    const intervalId = window.setInterval(step, 24);
+    return () => clearInterval(intervalId);
+  }, [skip, messages, rawMessages, onStart, onProgress, onFinish]);
 
-  // After current message finished typing, schedule reveal of next
-  useEffect(() => {
-    if (skip) return;
-    if (!typingDone) return;
-    if (visibleIdx >= messages.length - 1) return;
-
-    const id = window.setTimeout(() => setVisibleIdx(idx => idx + 1), 600);
-    return () => clearTimeout(id);
-  }, [typingDone, visibleIdx, messages.length, skip]);
-
-  // Emit finish when timeline completes
-  const finishedRef = useRef(false);
-  useEffect(() => {
-    if (
-      !finishedRef.current &&
-      visibleIdx >= messages.length - 1 &&
-      !skip &&
-      typingDone &&
-      messages.length > 0
-    ) {
-      finishedRef.current = true;
-      onFinish?.();
-    }
-  }, [visibleIdx, messages.length, typingDone, onFinish, skip]);
-
+  // ---------------------------------------------------
+  // Auto-scroll to bottom when new content arrives
+  // ---------------------------------------------------
   // Auto-scroll to newest visible message
   useEffect(() => {
     if (!shouldAutoScroll) return;
     if (!containerRef.current) return;
     containerRef.current.scrollTop = containerRef.current.scrollHeight;
-  }, [visibleIdx, typedText, shouldAutoScroll]);
+  }, [frames, shouldAutoScroll]);
 
   /* -- Skip mode: render everything instantly -------------------------- */
   if (skip) {
@@ -173,7 +136,7 @@ export const ChatPlayback = ({
           <div className="max-w-[800px] mx-auto w-full flex flex-col [&>*:not(:first-child)]:mt-4">
             {messages.map((m, idx) => (
               <MessageRenderer
-                key={(m.id ?? idx) + (skip ? 'skip' : '')}
+                key={(m.id ?? idx) + '-skip'}
                 message={m}
                 isStreaming={false}
               />
@@ -203,41 +166,15 @@ export const ChatPlayback = ({
         )}
 
         <div className="max-w-[800px] mx-auto w-full flex flex-col [&>*:not(:first-child)]:mt-4">
-          {messages.slice(0, visibleIdx + 1).map((m, idx) => {
-            let msgOverride: ChatMessage = m;
-            if (idx === visibleIdx && isAssistant && !typingDone) {
-              if (m.streamObjects && m.streamObjects.length) {
-                // Preserve non-text-delta objects (e.g., tool-call / tool-result) so they remain visible
-                const firstTextIdx = m.streamObjects.findIndex(
-                  o => o.type === 'text-delta'
-                );
-                const updatedStreamObjects = m.streamObjects
-                  .map((o, i) => {
-                    if (i === firstTextIdx && o.type === 'text-delta') {
-                      return { ...o, textDelta: typedText } as any;
-                    }
-                    // For subsequent text-deltas we hide them until typing completes
-                    if (o.type === 'text-delta' && i > firstTextIdx) {
-                      return null as any;
-                    }
-                    return o as any;
-                  })
-                  .filter(Boolean);
-
-                msgOverride = {
-                  ...m,
-                  streamObjects: updatedStreamObjects,
-                };
-              } else {
-                msgOverride = { ...m, content: typedText };
-              }
-            }
-
+          {frames.map((m, idx) => {
+            const isAssistant = m.role !== 'user';
+            const isStreaming =
+              !streamDone && idx === frames.length - 1 && isAssistant;
             return (
               <MessageRenderer
                 key={m.id ?? idx}
-                message={msgOverride}
-                isStreaming={idx === visibleIdx && isAssistant && !typingDone}
+                message={m}
+                isStreaming={isStreaming}
               />
             );
           })}

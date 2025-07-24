@@ -103,25 +103,41 @@ const DownArrow = forwardRef<
     <AnimatePresence>
       {show ? (
         <motion.div
-          animate={loading ? { y: [0, 10, 0] } : undefined}
-          transition={{ repeat: Infinity }}
+          initial={{ opacity: 0, y: 30, scale: 0.8 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 30, scale: 0.8 }}
+          transition={{ duration: 0.14 }}
+          onClick={onClick}
+          className={cn(
+            'absolute left-1/2 -translate-x-1/2 bottom-6 cursor-pointer'
+          )}
         >
           <motion.div
-            initial={{ opacity: 0, y: 30, scale: 0.8 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 30, scale: 0.8 }}
-            transition={{ duration: 0.14 }}
+            animate={
+              loading
+                ? {
+                    y: [0, 14, 0],
+                    boxShadow: [
+                      '0px 4px 15px rgba(0,0,0,0.05)',
+                      '0px 2px 6px rgba(0,0,0,0.2)',
+                      '0px 4px 15px rgba(0,0,0,0.05)',
+                    ],
+                  }
+                : undefined
+            }
+            transition={{
+              repeat: Infinity,
+              duration: 2,
+            }}
             className={cn(
-              'absolute left-1/2 -translate-x-1/2 bottom-10 cursor-pointer',
-              'bg-white border rounded-full size-9',
+              'size-9 rounded-full bg-white border',
               'flex items-center justify-center'
             )}
             style={{
-              boxShadow: '0 0 10px 0 rgba(0, 0, 0, 0.1)',
+              boxShadow: '0px 4px 15px rgba(0,0,0,0.05)',
             }}
-            onClick={onClick}
           >
-            <ArrowDownBigIcon className="text-2xl text-icon-primary" />
+            <ArrowDownBigIcon className="text-[22px] text-icon-primary" />
           </motion.div>
         </motion.div>
       ) : null}
@@ -170,11 +186,13 @@ const ChatSession = ({
     const scrollContainer = scrollContainerRef.current;
     if (!scrollContainer) return null;
 
+    const threshold = 50;
+
     const scrollTop = scrollContainer.scrollTop;
     const clientHeight = scrollContainer.clientHeight;
     const scrollHeight = scrollContainer.scrollHeight;
 
-    const isAtBottom = scrollTop + clientHeight >= scrollHeight;
+    const isAtBottom = scrollTop + clientHeight + threshold >= scrollHeight;
 
     // avoid re-rendering when scroll to bottom changes
     if (isAtBottom) {
@@ -186,16 +204,22 @@ const ChatSession = ({
   }, []);
 
   useEffect(() => {
+    isLoading;
     if (!messagesContainerRef.current) return;
     checkIsBottom();
     return observeResize(messagesContainerRef.current, checkIsBottom);
-  }, [checkIsBottom]);
+  }, [checkIsBottom, isLoading]);
 
   return (
     <div className={containerClasses}>
       {headerContent}
 
       <div className="flex-1 h-0 flex flex-col relative">
+        {messages.length === 0 && isLoading ? (
+          <div className="h-full flex items-center justify-center">
+            <Loading size={24} />
+          </div>
+        ) : null}
         <ChatScrollerProvider
           ref={scrollContainerRef}
           className="flex-1 overflow-y-auto py-4"
@@ -211,21 +235,15 @@ const ChatSession = ({
               </div>
             )}
 
-            {messages.length === 0 && isLoading ? (
-              <div className="h-full flex items-center justify-center">
-                <Loading size={24} />
-              </div>
-            ) : (
-              <div className="max-w-[832px] mx-auto px-4 w-full  flex flex-col  [&>*:not(:first-child)]:mt-4">
-                {messages.map((m, idx) => (
-                  <MessageRenderer
-                    key={m.id ?? idx}
-                    message={m}
-                    isStreaming={isStreaming && idx === messages.length - 1}
-                  />
-                ))}
-              </div>
-            )}
+            <div className="max-w-[832px] mx-auto px-4 w-full  flex flex-col  [&>*:not(:first-child)]:mt-4">
+              {messages.map((m, idx) => (
+                <MessageRenderer
+                  key={m.id ?? idx}
+                  message={m}
+                  isStreaming={isStreaming && idx === messages.length - 1}
+                />
+              ))}
+            </div>
           </div>
         </ChatScrollerProvider>
 

@@ -4,7 +4,14 @@
 // time the parser notifies us that the current segment starts a fresh block.
 import { MarkdownStreamParser } from '@lixpi/markdown-stream-parser';
 import type { Element, Root } from 'hast';
-import { memo, useEffect, useMemo, useState } from 'react';
+import {
+  createContext,
+  memo,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { visit } from 'unist-util-visit';
@@ -26,7 +33,7 @@ function parseMarkdownIntoBlocks(markdown: string): string[] {
   const blocks: string[] = [];
   let current = '';
 
-  const unsubscribe = parser.subscribeToTokenParse(parsedSegment => {
+  const unsubscribe = parser.subscribeToTokenParse((parsedSegment: any) => {
     // We only care about streaming tokens that carry a segment payload
     if (parsedSegment.status !== 'STREAMING' || !parsedSegment.segment) {
       return;
@@ -34,12 +41,10 @@ function parseMarkdownIntoBlocks(markdown: string): string[] {
 
     const { segment: segContent, isBlockDefining } = parsedSegment.segment;
 
-    if (isBlockDefining) {
+    if (isBlockDefining && current) {
       // Push the buffered block (if any) and start a new one
-      if (current) {
-        blocks.push(current);
-        current = '';
-      }
+      blocks.push(current);
+      current = '';
     }
 
     current += segContent;
@@ -104,6 +109,25 @@ function extractLinks(footnoteSection: Element) {
   return links;
 }
 
+const InPreContext = createContext<boolean>(false);
+
+const CustomCodeBlock = ({
+  className,
+  children,
+}: {
+  className?: string;
+  children: React.ReactNode;
+}) => {
+  const inPre = useContext(InPreContext);
+  // code block
+  if (inPre) {
+    const lang = className?.match(/language-(\w+)/)?.[1] ?? 'text';
+    return <CodeBlock language={lang}>{children}</CodeBlock>;
+  }
+
+  return <code>{children}</code>;
+};
+
 const footnoteComponents: Components = {
   /* colour the in-text superscript */
   sup({ node, children, ...rest }) {
@@ -139,12 +163,16 @@ const footnoteComponents: Components = {
     return <section {...rest} />;
   },
 
+  pre({ children }) {
+    return (
+      <InPreContext.Provider value={true}>
+        <pre>{children}</pre>
+      </InPreContext.Provider>
+    );
+  },
+
   code({ className, children }) {
-    if (!className) {
-      return <code>{children as string}</code>;
-    }
-    const lang = className?.match(/language-(\w+)/)?.[1] ?? 'text';
-    return <CodeBlock language={lang}>{children as string}</CodeBlock>;
+    return <CustomCodeBlock className={className}>{children}</CustomCodeBlock>;
   },
 };
 

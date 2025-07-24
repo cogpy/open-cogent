@@ -383,6 +383,9 @@ export const ContextSelectorMenu = ({
                 e.target.value = '';
                 setOpen(false);
               }}
+              onClick={e => {
+                e.stopPropagation();
+              }}
             />
             <MenuItem
               prefixIcon={<AttachmentIcon />}

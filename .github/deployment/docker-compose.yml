@@ -1,4 +1,13 @@
 services:
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARED_TOKEN}
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARED_TOKEN}
+    depends_on:
+      - app
+    restart: unless-stopped
+
   postgres:
     image: pgvector/pgvector:pg16
     environment:
@@ -34,9 +43,7 @@ services:
     volumes:
       - ./.env:/app/.env
       - ./config.json:/app/config.json
-    command:
-      - node_modules/.bin/prisma migrate deploy
-      - node dist/main.mjs run
+    command: yarn predeploy
     depends_on:
       postgres:
         condition: service_healthy

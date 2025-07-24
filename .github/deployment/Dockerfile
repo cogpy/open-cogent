@@ -57,6 +57,16 @@ RUN if [ ! -d "/app/packages/backend/server/dist" ] || [ ! -d "/app/packages/fro
         mv ./@afk ./packages/backend/server/node_modules; \
     fi
 
+FROM node:22-bookworm-slim AS merge
+
+WORKDIR /app
+COPY --from=builder /app/packages/backend/server/dist ./dist
+COPY --from=builder /app/packages/backend/server/package.json ./package.json
+COPY --from=builder /app/packages/backend/server/node_modules ./node_modules
+COPY --from=builder /app/packages/backend/server/schema.prisma ./schema.prisma
+COPY --from=builder /app/packages/backend/server/migrations ./migrations
+COPY --from=builder /app/packages/frontend/app/dist ./static
+
 FROM node:22-bookworm-slim AS production
 
 RUN apt-get update && \
@@ -66,12 +76,9 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
+COPY --from=merge /app .
 
 # Copy built application
-COPY --from=builder /app/packages/backend/server/dist ./dist
-COPY --from=builder /app/packages/backend/server/package.json ./package.json
-COPY --from=builder /app/packages/backend/server/node_modules ./node_modules
-COPY --from=builder /app/packages/frontend/app/dist ./static
 
 ENV LD_PRELOAD=libjemalloc.so.2
 ENV NODE_ENV=production

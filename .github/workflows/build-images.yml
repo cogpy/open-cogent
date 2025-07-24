@@ -181,5 +181,7 @@ jobs:
           pull: true
           platforms: linux/amd64,linux/arm64,linux/arm/v7
           provenance: true
-          file: .github/Dockerfile
-          tags: ghcr.io/afk-surf/open-agent:${{inputs.build-type}}-${{ inputs.git-short-hash }}
+          file: .github/deployment/Dockerfile
+          tags:
+            ghcr.io/afk-surf/open-agent:${{inputs.build-type}}-${{ inputs.git-short-hash }}
+            ghcr.io/afk-surf/open-agent:${{inputs.build-type}}

@@ -67,7 +67,6 @@ jobs:
       - name: Setup Node.js
         uses: ./.github/actions/setup-node
         with:
-          electron-install: false
           extra-flags: workspaces focus @afk/server-native
       - name: Build Rust
         uses: ./.github/actions/build-rust
@@ -98,7 +97,6 @@ jobs:
       - name: Setup Node.js
         uses: ./.github/actions/setup-node
         with:
-          electron-install: false
           extra-flags: workspaces focus @afk/server
       - name: Download server-native
         uses: actions/download-artifact@v4

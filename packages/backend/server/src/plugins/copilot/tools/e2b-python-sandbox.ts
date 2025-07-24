@@ -38,25 +38,45 @@ export const createE2bPythonSandboxTool = (
   userId: string
 ) => {
   return tool({
-    description:
-      'Execute a complete, standalone Python script in a secure E2B sandbox. The code should be self-contained and runnable as a single file. Each execution uses a fresh environment. The output will be a JSON object with the following fields: "text", "html", "markdown", "svg", "png", "jpeg", "pdf", "latex", "json", "javascript", "data", "chart".',
+    description: `
+Execute a complete, standalone Python script in a secure [E2B](https://e2b.dev/) sandbox with a fresh environment.
+
+**Note:** Each call to this tool runs in a completely fresh, stateless environment. No variables, files, or state are preserved between calls. If you need to use previous results, you must include all necessary code and context in a single script.
+
+The output is a JSON object with fields such as: "text", "html", "markdown", "svg", "png", "jpeg", "pdf", "latex", "json", "javascript", "data", "chart".
+
+For fields like "png", "jpeg", "pdf", and "svg", the value will be a direct URL to the generated file (not base64).
+You should use these URLs to display images or files to the user. For example, use markdown: ![](url) for images, or [PDF file](url) for PDFs.
+
+**Important:**
+- If you want the image to be returned as a URL, use only plt.savefig and do not call plt.show in the same script.
+- If you only want to display the image (not return a URL), you can use plt.show.
+- Do not call plt.show and plt.savefig for the same figure in the same script, as this will result in duplicate outputs.
+
+Example output:
+{
+  "text": "...",
+  "png": "https://example.com/file.png",
+  "pdf": "https://example.com/file.pdf"
+}
+`,
     parameters: z.object({
-      code: z.string().describe('The Python code to execute in the sandbox.'),
+      code: z
+        .string()
+        .describe(
+          'The Python code, it should be a complete, standalone Python script.'
+        ),
     }),
     execute: async ({ code }, { toolCallId, abortSignal }) => {
+      console.log('e2b-python-sandbox-tool');
+
+      const writer = toolStream.getWriter();
+      const { key } = config.copilot.e2b;
+
+      let error: any;
+      let processedResults: ProcessedResult[] = [];
+
       try {
-        const writer = toolStream.getWriter();
-        const { key } = config.copilot.e2b;
-        console.log('e2b-python-sandbox-tool', code);
-
-        if (!key) {
-          return toolError(
-            'E2B API Key Not Configured',
-            'Please configure the E2B API key in the copilot settings.'
-          );
-        }
-
-        // Create sandbox with API key
         const sbx = await Sandbox.create({
           apiKey: key,
         });
@@ -94,89 +114,78 @@ export const createE2bPythonSandboxTool = (
             });
           },
         });
+        error = execution.error;
+        // Process execution results to extract and save binary data
+        processedResults = await Promise.all<ProcessedResult>(
+          execution.results.map(async (result: Result) => {
+            // Convert Result to JSON format
+            const jsonResult = result.toJSON();
 
-        writer.releaseLock();
+            // Create a mutable copy with index signature
+            const processedResult: Record<string, any> = { ...jsonResult };
 
-        let processedResults: ProcessedResult[] = [];
+            // Define binary formats that need to be saved
+            const binaryFormats = ['png', 'jpeg', 'pdf', 'svg'] as const;
 
-        if (execution) {
-          // Process execution results to extract and save binary data
-          processedResults = await Promise.all(
-            execution.results.map(async (result: Result) => {
-              // Convert Result to JSON format
-              const jsonResult = result.toJSON();
+            // Process each binary format
+            for (const format of binaryFormats) {
+              const value = processedResult[format];
+              if (value && typeof value === 'string') {
+                try {
+                  // Generate a unique key for the file
+                  const fileHash = createHash('sha256')
+                    .update(value)
+                    .digest('hex');
+                  const fileKey = `e2b-${format}-${fileHash}.${format}`;
 
-              // Create a mutable copy with index signature
-              const processedResult: Record<string, any> = { ...jsonResult };
+                  // Convert base64 to buffer
+                  const fileBuffer = Buffer.from(value, 'base64');
 
-              // Define binary formats that need to be saved
-              const binaryFormats = ['png', 'jpeg', 'pdf', 'svg'] as const;
+                  // Save the file using CopilotStorage
+                  const fileUrl = await copilotStorage.put(
+                    userId,
+                    fileKey,
+                    fileBuffer,
+                    true
+                  );
 
-              // Process each binary format
-              for (const format of binaryFormats) {
-                const value = processedResult[format];
-                if (value && typeof value === 'string') {
-                  try {
-                    // Generate a unique key for the file
-                    const fileHash = createHash('sha256')
-                      .update(value)
-                      .digest('hex');
-                    const fileKey = `e2b-${format}-${fileHash}.${format}`;
+                  // Replace base64 data with URL
+                  processedResult[format] = fileUrl;
 
-                    // Convert base64 to buffer
-                    const fileBuffer = Buffer.from(value, 'base64');
-
-                    // Save the file using CopilotStorage
-                    const fileUrl = await copilotStorage.put(
-                      userId,
-                      fileKey,
-                      fileBuffer,
-                      true
-                    );
-
-                    // Replace base64 data with URL
-                    processedResult[format] = fileUrl;
-
-                    logger.log(`Saved ${format} file: ${fileKey}`);
-                  } catch (error) {
-                    logger.error(`Failed to save ${format} file:`, error);
-                    // Keep original data if saving fails
-                  }
+                  logger.log(`Saved ${format} file: ${fileKey}`);
+                } catch (error) {
+                  logger.error(`Failed to save ${format} file:`, error);
+                  // Keep original data if saving fails
                 }
               }
+            }
 
-              // Special handling for extra field if it contains binary data
-              if (
-                processedResult.extra &&
-                typeof processedResult.extra === 'object'
-              ) {
-                processedResult.extra = await processBinaryInExtra(
-                  processedResult.extra,
-                  userId,
-                  copilotStorage,
-                  logger
-                );
-              }
+            // Special handling for extra field if it contains binary data
+            if (
+              processedResult.extra &&
+              typeof processedResult.extra === 'object'
+            ) {
+              processedResult.extra = await processBinaryInExtra(
+                processedResult.extra,
+                userId,
+                copilotStorage,
+                logger
+              );
+            }
 
-              return processedResult;
-            })
-          );
-        }
-
-        // Close sandbox
-        if (sbx && typeof sbx.kill === 'function') {
-          await sbx.kill();
-        }
-
-        console.log('processedResults', processedResults);
-
-        return {
-          error: execution.error,
-          result: processedResults,
-        };
+            return processedResult;
+          })
+        );
+        await sbx.kill();
       } catch (e: any) {
         return toolError('E2B Python Sandbox Failed', e.message);
+      } finally {
+        writer.releaseLock();
       }
+      return {
+        error: error,
+        result: processedResults,
+      };
     },
   });
 };

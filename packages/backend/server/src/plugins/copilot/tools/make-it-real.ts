@@ -16,7 +16,7 @@ export const createMakeItRealTool = (
   saveDoc: SaveDocFunc
 ) => {
   return tool({
-    description: `This tool(make-it-real) is used to improve the document with more beautiful layout and professional appearance. Return a new document`,
+    description: `This tool(make-it-real) is used to improve the document with more beautiful layout or slide show.`,
     parameters: z.object({
       instructions: z
         .string()

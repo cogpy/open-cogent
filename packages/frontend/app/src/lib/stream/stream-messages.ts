@@ -44,9 +44,7 @@ export function* streamMessages(
   };
 
   for (const msg of finalMessages) {
-    // --------------------------------------------------
-    // 0) User messages are not streamed – add fully and continue
-    // --------------------------------------------------
+    // User messages are not streamed; add fully and yield once.
     if (msg.role === 'user') {
       pushFrame(draft => {
         draft.push({ ...msg });
@@ -55,7 +53,7 @@ export function* streamMessages(
       continue;
     }
 
-    // 1) Reveal the assistant message itself with empty/partial content.
+    // 1) Reveal the message itself with empty/partial content.
     pushFrame(draft => {
       const placeholder: ChatMessage = { ...msg } as ChatMessage;
       if (msg.streamObjects && msg.streamObjects.length > 0) {
@@ -104,7 +102,6 @@ export function* streamMessages(
             yield current;
           }
         } else {
-          console.log('non-text-delta', obj);
           // Non-text-delta: push entire object in one go
           pushFrame(draft => {
             const msgDraft = draft[idx];

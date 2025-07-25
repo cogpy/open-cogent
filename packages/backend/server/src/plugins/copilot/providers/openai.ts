@@ -639,7 +639,7 @@ export class OpenAIProvider extends CopilotProvider<OpenAIConfig> {
 
   private getOpenAIOptions(options: CopilotChatOptions, model: string) {
     const result: OpenAIResponsesProviderOptions = {};
-    if (options?.reasoning && this.isReasoningModel(model)) {
+    if (this.isReasoningModel(model)) {
       result.reasoningEffort = 'medium';
       result.reasoningSummary = 'detailed';
     }

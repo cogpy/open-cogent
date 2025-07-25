@@ -2,7 +2,11 @@ import { z } from 'zod';
 
 import { OneMB } from '../../base';
 import type { ChatPrompt } from './prompt';
-import { PromptMessageSchema, PureMessageSchema } from './providers/types';
+import {
+  PromptMessageSchema,
+  PromptTools,
+  PureMessageSchema,
+} from './providers/types';
 
 const takeFirst = (v: unknown) => (Array.isArray(v) ? v[0] : v);
 
@@ -21,20 +25,16 @@ export const ChatQuerySchema = z
     messageId: zMaybeString,
     modelId: zMaybeString,
     retry: zBool,
-    reasoning: zBool,
-    webSearch: zBool,
+    tools: PromptTools.optional(),
   })
   .catchall(z.string())
-  .transform(
-    ({ messageId, modelId, retry, reasoning, webSearch, ...params }) => ({
-      messageId,
-      modelId,
-      retry,
-      reasoning,
-      webSearch,
-      params,
-    })
-  );
+  .transform(({ messageId, modelId, retry, tools, ...params }) => ({
+    messageId,
+    modelId,
+    retry,
+    tools,
+    params,
+  }));
 
 // ======== ChatMessage ========
 

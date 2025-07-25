@@ -57,37 +57,37 @@ export const VertexSchema: JSONSchema = {
 
 // ========== prompt ==========
 
+export const PromptTools = z
+  .enum([
+    'browserUse',
+    'codeArtifact',
+    'conversationSummary',
+    // artifact tools
+    'docCompose',
+    // work with morph
+    'docEdit',
+    // work with indexer
+    'docRead',
+    'docKeywordSearch',
+    // work with embeddings
+    'docSemanticSearch',
+    'todoList',
+    'markTodo',
+    // work with exa/model internal tools
+    'webSearch',
+    // artifact tools
+    'docCompose',
+    // make it real
+    'makeItReal',
+    // python coding
+    'pythonCoding',
+    // e2b python sandbox
+    'pythonSandbox',
+  ])
+  .array();
+
 export const PromptConfigStrictSchema = z.object({
-  tools: z
-    .enum([
-      'browserUse',
-      'codeArtifact',
-      'conversationSummary',
-      // artifact tools
-      'docCompose',
-      // work with morph
-      'docEdit',
-      // work with indexer
-      'docRead',
-      'docKeywordSearch',
-      // work with embeddings
-      'docSemanticSearch',
-      'todoList',
-      'markTodo',
-      // work with exa/model internal tools
-      'webSearch',
-      // artifact tools
-      'docCompose',
-      // make it real
-      'makeItReal',
-      // python coding
-      'pythonCoding',
-      // e2b python sandbox
-      'pythonSandbox',
-    ])
-    .array()
-    .nullable()
-    .optional(),
+  tools: PromptTools.nullable().optional(),
   // params requirements
   requireContent: z.boolean().nullable().optional(),
   requireAttachment: z.boolean().nullable().optional(),
@@ -196,12 +196,7 @@ const CopilotProviderOptionsSchema = z.object({
 
 export const CopilotChatOptionsSchema = CopilotProviderOptionsSchema.merge(
   PromptConfigStrictSchema
-)
-  .extend({
-    reasoning: z.boolean().optional(),
-    webSearch: z.boolean().optional(),
-  })
-  .optional();
+).optional();
 
 export type CopilotChatOptions = z.infer<typeof CopilotChatOptionsSchema>;
 export type CopilotChatTools = NonNullable<

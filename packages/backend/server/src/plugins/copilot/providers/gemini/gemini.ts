@@ -91,7 +91,7 @@ export abstract class GeminiProvider<T> extends CopilotProvider<T> {
         messages: msgs,
         abortSignal: options.signal,
         providerOptions: {
-          google: this.getGeminiOptions(options, model.id),
+          google: this.getGeminiOptions(model.id),
         },
         tools,
         maxSteps: this.MAX_STEPS,
@@ -281,7 +281,7 @@ export abstract class GeminiProvider<T> extends CopilotProvider<T> {
       messages: msgs,
       abortSignal: options.signal,
       providerOptions: {
-        google: this.getGeminiOptions(options, model.id),
+        google: this.getGeminiOptions(model.id),
       },
       tools,
       maxSteps: this.MAX_STEPS,
@@ -290,9 +290,9 @@ export abstract class GeminiProvider<T> extends CopilotProvider<T> {
     return fullStream;
   }
 
-  private getGeminiOptions(options: CopilotChatOptions, model: string) {
+  private getGeminiOptions(model: string) {
     const result: GoogleGenerativeAIProviderOptions = {};
-    if (options?.reasoning && this.isReasoningModel(model)) {
+    if (this.isReasoningModel(model)) {
       result.thinkingConfig = {
         thinkingBudget: 12000,
         includeThoughts: true,

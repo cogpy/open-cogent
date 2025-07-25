@@ -74,7 +74,7 @@ export abstract class AnthropicProvider<T> extends CopilotProvider<T> {
         messages: msgs,
         abortSignal: options.signal,
         providerOptions: {
-          anthropic: this.getAnthropicOptions(options, model.id),
+          anthropic: this.getAnthropicOptions(model.id),
         },
         tools,
         maxSteps: this.MAX_STEPS,
@@ -167,7 +167,7 @@ export abstract class AnthropicProvider<T> extends CopilotProvider<T> {
       messages: msgs,
       abortSignal: options.signal,
       providerOptions: {
-        anthropic: this.getAnthropicOptions(options, model.id),
+        anthropic: this.getAnthropicOptions(model.id),
       },
       tools,
       maxSteps: this.MAX_STEPS,
@@ -176,9 +176,9 @@ export abstract class AnthropicProvider<T> extends CopilotProvider<T> {
     return mergeStreams(fullStream, toolOneTimeStream);
   }
 
-  private getAnthropicOptions(options: CopilotChatOptions, model: string) {
+  private getAnthropicOptions(model: string) {
     const result: AnthropicProviderOptions = {};
-    if (options?.reasoning && this.isReasoningModel(model)) {
+    if (this.isReasoningModel(model)) {
       result.thinking = {
         type: 'enabled',
         budgetTokens: 12000,

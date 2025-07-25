@@ -244,14 +244,13 @@ export class CopilotController implements BeforeApplicationShutdown {
       info.finalMessage = finalMessage.filter(m => m.role !== 'system');
       metrics.ai.counter('chat_calls').add(1, { model });
 
-      const { reasoning, webSearch } = ChatQuerySchema.parse(query);
+      const { tools } = ChatQuerySchema.parse(query);
       const content = await provider.text({ modelId: model }, finalMessage, {
         ...session.config.promptConfig,
         signal: getSignal(req).signal,
         user: user.id,
         session: session.config.sessionId,
-        reasoning,
-        webSearch,
+        tools: tools || session.config.promptConfig?.tools,
       });
 
       session.push({
@@ -305,7 +304,7 @@ export class CopilotController implements BeforeApplicationShutdown {
         }
       });
 
-      const { messageId, reasoning, webSearch } = ChatQuerySchema.parse(query);
+      const { messageId, tools } = ChatQuerySchema.parse(query);
 
       const source$ = from(
         provider.streamText({ modelId: model }, finalMessage, {
@@ -313,8 +312,7 @@ export class CopilotController implements BeforeApplicationShutdown {
           signal,
           user: user.id,
           session: session.config.sessionId,
-          reasoning,
-          webSearch,
+          tools: tools || session.config.promptConfig?.tools,
         })
       ).pipe(
         connect(shared$ =>
@@ -396,7 +394,7 @@ export class CopilotController implements BeforeApplicationShutdown {
         }
       });
 
-      const { messageId, reasoning, webSearch } = ChatQuerySchema.parse(query);
+      const { messageId, tools } = ChatQuerySchema.parse(query);
 
       const source$ = from(
         provider.streamObject({ modelId: model }, finalMessage, {
@@ -404,8 +402,7 @@ export class CopilotController implements BeforeApplicationShutdown {
           signal,
           user: user.id,
           session: session.config.sessionId,
-          reasoning,
-          webSearch,
+          tools: tools || session.config.promptConfig?.tools,
         })
       ).pipe(
         connect(shared$ =>

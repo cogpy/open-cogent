@@ -70,7 +70,7 @@ export const GenericToolResult = ({
             </span>
           ) : null}
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
           {actions}
           {children ? (
             <IconButton

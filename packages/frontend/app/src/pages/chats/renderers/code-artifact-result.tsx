@@ -1,12 +1,13 @@
-import { RadioGroup } from '@afk/component';
+import { IconButton, RadioGroup, toast } from '@afk/component';
 import type { StreamObject } from '@afk/graphql';
-import { FileIconHtmlIcon } from '@blocksuite/icons/rc';
+import { CopyIcon, DownloadIcon, FileIconHtmlIcon } from '@blocksuite/icons/rc';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 
 import HtmlPreviewer from '@/components/html-previewer';
 import { useHighlightedCode } from '@/lib/hooks/use-highlighted-code';
 import { cn } from '@/lib/utils';
+import { downloadRaw } from '@/utils/download-raw';
 
 import * as styles from './code-artifact-result.css';
 import { GenericToolResult } from './generic-tool-result';
@@ -39,13 +40,26 @@ export const CodeArtifactResult = ({
               transition={{ duration: 0.2 }}
             >
               <RadioGroup
-                className="mr-3"
+                className="mr-2"
                 items={['Code', 'Preview']}
                 value={view}
                 onChange={setView}
               />
             </motion.div>
           )}
+          <IconButton
+            icon={<DownloadIcon />}
+            onClick={() => {
+              downloadRaw(html, 'text/html', `${title}.html`);
+            }}
+          />
+          <IconButton
+            icon={<CopyIcon />}
+            onClick={() => {
+              navigator.clipboard.writeText(html);
+              toast('Copied to clipboard');
+            }}
+          />
         </AnimatePresence>
       }
       onCollapseChange={setCollapsed}

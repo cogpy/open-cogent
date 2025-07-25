@@ -56,7 +56,7 @@ export const CodeBlock = ({
       </header>
       <div
         ref={codeBlockRef}
-        className="p-4 text-[13px] overflow-auto"
+        className="p-4 text-[13px] overflow-auto bg-white"
         dangerouslySetInnerHTML={{ __html: html }}
         style={{
           maxHeight: expanded ? 'none' : '400px',

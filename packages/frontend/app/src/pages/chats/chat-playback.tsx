@@ -1,12 +1,14 @@
 import { type ReactNode, useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
+import { type StoreApi, useStore } from 'zustand';
 
-import { ChatInterface } from '@/components/chat/chat-interface';
+import { ChatPlayback } from '@/components/chat/chat-playback';
 import { DocPanelById } from '@/components/doc-panel/doc-panel';
 import { OpenDocProvider } from '@/contexts/doc-panel-context';
 import { useRefCounted } from '@/lib/hooks/use-ref-counted';
 import { copilotClient } from '@/store/copilot/client';
 import { chatSessionsStore } from '@/store/copilot/sessions-instance';
+import type { ChatSessionState } from '@/store/copilot/types';
 
 const PlaybackHeader = ({ title }: { title: string }) => {
   return (
@@ -77,6 +79,46 @@ const CountdownOverlay = ({
 
 const COUNT_DOWN_TIME = 5;
 
+const ChatPlaybackSession = ({
+  store,
+  className = '',
+  headerContent,
+  footerContent,
+  showDocumentContext = false,
+  onPlaybackStart,
+  onPlaybackProgress,
+  onPlaybackFinish,
+  skipPlayback,
+}: {
+  store: StoreApi<ChatSessionState>;
+  className?: string;
+  headerContent?: ReactNode;
+  footerContent?: ReactNode;
+  showDocumentContext?: boolean;
+  onPlaybackStart?: () => void;
+  onPlaybackProgress?: (current: number, total: number) => void;
+  onPlaybackFinish?: () => void;
+  skipPlayback?: boolean;
+}) => {
+  const rawMessages = useStore(store, s => s.rawMessages);
+  const mergedMessages = useStore(store, s => s.messages);
+
+  return (
+    <ChatPlayback
+      rawMessages={rawMessages}
+      messages={mergedMessages}
+      className={className}
+      headerContent={headerContent}
+      footerContent={footerContent}
+      showDocumentContext={showDocumentContext}
+      onStart={onPlaybackStart}
+      onProgress={onPlaybackProgress}
+      onFinish={onPlaybackFinish}
+      skip={skipPlayback}
+    />
+  );
+};
+
 /**
  * Playback page renders chat messages one-by-one in read-only mode.
  */
@@ -96,7 +138,7 @@ export const ChatPlaybackPage = () => {
   };
 
   // Track playback status for bottom pane
-  const [progress, setProgress] = useState<{
+  const [_progress, setProgress] = useState<{
     current: number;
     total: number;
   } | null>(null);
@@ -174,10 +216,9 @@ export const ChatPlaybackPage = () => {
       <div className="overflow-hidden h-full flex gap-2">
         <div className="flex-1 bg-white border rounded-[8px]  overflow-auto h-full">
           {id && sessionStore ? (
-            <ChatInterface
+            <ChatPlaybackSession
               key={version}
               store={sessionStore}
-              playback
               className="flex-1"
               headerContent={
                 <PlaybackHeader

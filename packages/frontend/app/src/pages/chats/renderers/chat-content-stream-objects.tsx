@@ -4,7 +4,7 @@ import type { StreamObject } from '@afk/graphql';
 import { CheckBoxCheckSolidIcon, EmbedWebIcon } from '@blocksuite/icons/rc';
 
 import { MessageCard } from '@/components/ui/card/message-card';
-import { MarkdownText, TypeMarkdownText } from '@/components/ui/markdown';
+import { TypeMarkdownText } from '@/components/ui/markdown';
 
 import { AIReasoningCard } from './ai-reasoning-card';
 import { BrowserUseResult, transformStep } from './browser-use-result';
@@ -250,8 +250,8 @@ export function ChatContentStreamObjects({
                   key={key}
                   reasoning={obj.result.reasoning}
                   suggestedApproach={obj.result.suggestedApproach}
-                  complexity={obj.result.complexity}
-                  estimatedSteps={obj.result.estimatedSteps}
+                  complexity={obj.result.complexity as any}
+                  estimatedSteps={obj.result.estimatedSteps as any}
                 />
               );
             }

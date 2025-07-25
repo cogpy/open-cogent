@@ -1,18 +1,31 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { type StoreApi, useStore } from 'zustand';
+import {
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 
+// Remove Zustand dependency
 import { streamMessages } from '@/lib/stream/stream-messages';
 import { MessageRenderer } from '@/pages/chats/renderers/message';
-import type { ChatMessage, ChatSessionState } from '@/store/copilot/types';
+import type { ChatMessage } from '@/store/copilot/types';
 
 import { DownArrow, type DownArrowRef } from './chat-arrow';
 import { ChatScrollerProvider } from './use-chat-scroller';
 
+/**
+ * Props for ChatPlayback.
+ * Provide EITHER `store` (legacy mode) OR `rawMessages` to run playback.
+ */
 export interface ChatPlaybackProps {
-  store: StoreApi<ChatSessionState>;
+  /** Raw chat history (unmerged) for streaming */
+  rawMessages: ChatMessage[];
+  /** Merged chat history used for skip / instant render. Defaults to rawMessages */
+  messages?: ChatMessage[];
   className?: string;
-  headerContent?: React.ReactNode;
-  footerContent?: React.ReactNode;
+  headerContent?: ReactNode;
+  footerContent?: ReactNode;
   showDocumentContext?: boolean;
   documentTitle?: string;
   onStart?: () => void;
@@ -26,20 +39,20 @@ export interface ChatPlaybackProps {
  * Displays messages one-by-one at a fixed interval, mimicking a live conversation.
  * No controls are rendered; playback stops automatically after the last message.
  */
-export const ChatPlayback = ({
-  store,
-  className = '',
-  headerContent,
-  footerContent,
-  showDocumentContext = false,
-  documentTitle,
-  onStart,
-  onProgress,
-  onFinish,
-  skip = false,
-}: ChatPlaybackProps) => {
-  const rawMessages = useStore(store, s => s.rawMessages);
-  const messages = useStore(store, s => s.messages);
+export const ChatPlayback = (props: ChatPlaybackProps) => {
+  const {
+    rawMessages,
+    messages = rawMessages,
+    className = '',
+    headerContent,
+    footerContent,
+    showDocumentContext = false,
+    documentTitle,
+    onStart,
+    onProgress,
+    onFinish,
+    skip = false,
+  } = props;
 
   // Progressively streamed frames of messages
   const [frames, setFrames] = useState<ChatMessage[]>([]);

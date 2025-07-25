@@ -6,13 +6,13 @@ import {
   useState,
 } from 'react';
 
-const ChatScrollerContext = createContext<HTMLDivElement>(null!);
+const ChatScrollerContext = createContext<HTMLDivElement | null>(null);
 
 export const ChatScrollerProvider = forwardRef(function ChatScrollerProvider(
   { children, ...attrs }: HTMLAttributes<HTMLDivElement>,
   ref: React.Ref<HTMLDivElement>
 ) {
-  const [el, setEl] = useState<HTMLDivElement>(null!);
+  const [el, setEl] = useState<HTMLDivElement | null>(null);
 
   const onRef = (el: HTMLDivElement) => {
     setEl(el);

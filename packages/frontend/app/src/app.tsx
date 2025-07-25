@@ -17,6 +17,7 @@ import { LibraryDashboard } from './pages/library-dashboard';
 import { MagicLinkPage } from './pages/magic-link';
 import { OAuthCallbackPage } from './pages/oauth-callback';
 import { oauthLoginLoader, OAuthLoginPage } from './pages/oauth-login';
+import { OnboardingPage } from './pages/onboarding';
 import { redirectProxyLoader, RedirectProxyPage } from './pages/redirect';
 import { SignInPage } from './pages/sign-in';
 import { useSidebarStore } from './store/sidebar';
@@ -81,6 +82,7 @@ function App() {
           }
         />
         <Route path="/doc-edit-test" element={<DocEditTest />} />
+        <Route path="/onboarding" element={<OnboardingPage />} />
         <Route
           path="/"
           element={

@@ -12,6 +12,7 @@ import { startTransition, useEffect, useMemo, useRef, useState } from 'react';
 import { create, type StoreApi, useStore } from 'zustand';
 
 import { ChatIcon } from '@/icons/chat';
+import { cn } from '@/lib/utils';
 import type { ChatSessionState } from '@/store/copilot/types';
 import { useChatsMap, useDocsMap, useLibraryStore } from '@/store/library';
 
@@ -251,8 +252,11 @@ export const ContextSelectorMenu = ({
         <div className="max-h-[400px] max-w-[280px] overflow-y-auto rounded-lg">
           {/* Search */}
           <div
-            className="px-1 py-2 pl-3 w-full min-w-[200px] gap-[6px] flex items-center border-b bg-white sticky top-0"
-            style={{ borderWidth: 0.5 }}
+            className={cn(
+              'px-1 py-2 pl-3 w-full min-w-[200px] sticky top-0',
+              'gap-[6px] flex items-center',
+              'border-b-[0.5px] bg-white'
+            )}
           >
             <SearchIcon
               className="text-xl w-5 h-5 shrink-0"
@@ -358,8 +362,11 @@ export const ContextSelectorMenu = ({
 
           {/* Upload */}
           <div
-            style={{ borderWidth: 0.5 }}
-            className="h-[46px] border-t sticky bottom-0 bg-white px-2 flex items-center mt-2"
+            className={cn(
+              'h-[46px] sticky bottom-0 px-2 mt-2',
+              'border-t-[0.5px] bg-white',
+              'flex items-center'
+            )}
           >
             <input
               type="file"

@@ -136,7 +136,7 @@ export const ChatPage = () => {
         />
       </div>
       {docId && (
-        <div className="flex-1 bg-white rounded-[8px] overflow-hidden">
+        <div className="flex-1 bg-white border rounded-lg overflow-hidden">
           <DocPanelById docId={docId} onClose={closeDoc} />
         </div>
       )}

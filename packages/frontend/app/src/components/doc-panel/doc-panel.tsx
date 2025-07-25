@@ -149,7 +149,7 @@ export function DocPanel({ doc, onOpenChat, onClose }: DocPanelProps) {
   return (
     <div className="h-full flex flex-col gap-4">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b-[0.5px]">
+      <div className="flex items-center justify-between px-4 py-3 border-b-[0.5px] h-15">
         <h2 className="text-xl font-semibold text-gray-900 truncate">
           {docTitle}
         </h2>

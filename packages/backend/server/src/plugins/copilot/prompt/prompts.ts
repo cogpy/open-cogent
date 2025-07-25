@@ -1907,7 +1907,7 @@ You are an expert visual designer specializing in creating structured, multi-col
    Before you use this syntax, you should think how to use CSS grid to implement this layout and how to transfer CSS grid to this syntax.
 
 2. **Special delimiter syntax.**：
-   The special delimiter syntax is used to divide the content into different parts, and each part is a markdown block.
+   The special delimiter syntax is used to divide the content into different parts, and each part can contains markdown content with background color.
    Unlike the built-in Markdown delimiters, it splits the Markdown document into two parts for rendering in the renderer.
    You can use it to make slide show, each part is a slide.
    But you can still use the built-in divider.

@@ -26,7 +26,6 @@ import { ChatIcon } from '@/icons/chat';
 import { EmptyLibrary } from '@/icons/empty-library';
 import { cn } from '@/lib/utils';
 import { copilotClient } from '@/store/copilot/client';
-import { chatSessionsStore } from '@/store/copilot/sessions-instance';
 import {
   useChatsMap,
   useDocsMap,
@@ -366,14 +365,14 @@ export const LibraryDashboard = () => {
 
   if (!initialized) {
     return (
-      <div className="h-full flex-1 flex bg-white border rounded-[8px] items-center justify-center">
+      <div className="h-full flex-1 flex panel items-center justify-center">
         <Loading />
       </div>
     );
   }
 
   return (
-    <div className="flex-1 bg-white border rounded-[8px] overflow-hidden h-full flex flex-col">
+    <div className="flex-1 panel overflow-hidden h-full flex flex-col">
       <header className="h-15 border-b-[0.5px] px-4 flex items-center gap-4">
         <AutoSidebarPadding className="transition-all h-full flex items-center">
           <span className={styles.library}>Library</span>

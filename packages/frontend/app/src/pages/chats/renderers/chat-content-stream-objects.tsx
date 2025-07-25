@@ -24,7 +24,7 @@ interface ChatContentStreamObjectsProps {
   isAssistant?: boolean;
 }
 
-const speed = [5, 14];
+const speed = [3, 8];
 /**
  * Basic renderer that converts server-side `streamObjects` into simple
  * React components, imitating the logic of the core Lit implementation.

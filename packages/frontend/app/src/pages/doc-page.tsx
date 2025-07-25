@@ -23,11 +23,11 @@ export function DocPage() {
 
   return (
     <>
-      <div className="flex-1 bg-white border rounded-[8px] overflow-hidden h-full">
+      <div className="flex-1 h-full panel">
         <DocPanelById docId={id} onOpenChat={handleOpenChat} />
       </div>
       {showChatPanel && (
-        <div className="flex-1 bg-white border rounded-[8px] overflow-hidden h-full">
+        <div className="flex-1 h-full panel">
           <ChatPanel docId={id} />
         </div>
       )}

@@ -34,7 +34,7 @@ export const SidebarLayout = ({
   return (
     <div className="relative flex size-full justify-end">
       {/* sidebar */}
-      <AppSidebar className="flex flex-col">
+      <AppSidebar id="app-sidebar" className="flex flex-col">
         {/* Head spacer */}
         <header className="w-full h-15 p-3 flex items-center">
           <img src="/logo.svg" alt="logo" className="w-6 h-6" />

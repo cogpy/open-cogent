@@ -123,7 +123,7 @@ export const ChatPage = () => {
         closeDoc,
       }}
     >
-      <div className="flex-1 bg-white border rounded-[8px] overflow-hidden">
+      <div className="flex-1 panel">
         <ChatInterface
           store={id && sessionStore ? sessionStore : undefined}
           placeholder="What can I help you with?"
@@ -136,7 +136,7 @@ export const ChatPage = () => {
         />
       </div>
       {docId && (
-        <div className="flex-1 bg-white border rounded-lg overflow-hidden">
+        <div className="flex-1 panel">
           <DocPanelById docId={docId} onClose={closeDoc} />
         </div>
       )}

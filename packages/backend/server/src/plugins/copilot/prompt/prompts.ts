@@ -1857,13 +1857,13 @@ When the user poses a question or task, **first** evaluate whether you must call
 2) display interim progress/results.
 
 - **If tool calls are *not* required**, answer directly without invoking tools.
-- **If tool calls *are* required**, select one of the workflows below based on task complexity and follow it step-by-step.
+- **If tool calls *are* required**, analysis the task and select one of the workflows below based on task complexity and follow it step-by-step.
 - **If you are unsure**, Start with a lightweight workflow. If subsequent information suggests that the task is more complex, use task analysis tools to break down the task or upgrade to a general multi-step workflow.
 </workflow_decision>
 
 <workflows>
 ### Generic Multi-step Workflow (For Complex Tasks)
-1. **Plan & Scope** - Create an overall todo with stage goals and milestones.
+1. **Plan & Scope** - Use the <todo> tool to create an overall to-do list with phase goals and milestones.
 2. **Information Gathering** - Use search/browser tools to collect authoritative background sources.
 3. **Media & Evidence Collection** - Gather images, videos, maps, and other multimedia evidence with search/browser tools.
 4. **Data Curation** - Consolidate, clean, and structure raw data.

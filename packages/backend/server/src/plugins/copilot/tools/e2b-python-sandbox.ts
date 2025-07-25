@@ -73,6 +73,7 @@ Example output:
       const writer = toolStream.getWriter();
       const { key } = config.copilot.e2b;
 
+      let logs: any;
       let error: any;
       let processedResults: ProcessedResult[] = [];
 
@@ -114,6 +115,7 @@ Example output:
             });
           },
         });
+        logs = execution.logs;
         error = execution.error;
         // Process execution results to extract and save binary data
         processedResults = await Promise.all<ProcessedResult>(
@@ -152,7 +154,7 @@ Example output:
                   // Replace base64 data with URL
                   processedResult[format] = fileUrl;
 
-                  logger.log(`Saved ${format} file: ${fileKey}`);
+                  logger.verbose(`Saved ${format} file: ${fileKey}`);
                 } catch (error) {
                   logger.error(`Failed to save ${format} file:`, error);
                   // Keep original data if saving fails
@@ -184,6 +186,7 @@ Example output:
       }
       return {
         error: error,
+        logs,
         result: processedResults,
       };
     },

@@ -29,6 +29,10 @@ type E2bPythonResultError = {
 };
 
 type E2bPythonResultType = {
+  logs: {
+    stdout?: string[];
+    stderr?: string[];
+  };
   error?: E2bPythonResultError;
   result: ProcessedResult[];
 };
@@ -38,15 +42,24 @@ export const E2bPythonResult = ({
 }: {
   result: E2bPythonResultType;
 }) => {
-  const { result: processedResultsRaw } = result;
+  const { result: processedResultsRaw, logs: { stdout } = {} } = result;
   let error = result.error;
   let processedResults: ProcessedResult[] = [];
 
   try {
-    processedResults =
-      typeof processedResultsRaw === 'string'
-        ? JSON.parse(processedResultsRaw)
-        : processedResultsRaw;
+    if (processedResultsRaw && processedResultsRaw.length) {
+      processedResults =
+        typeof processedResultsRaw === 'string'
+          ? JSON.parse(processedResultsRaw)
+          : processedResultsRaw;
+    } else if (stdout && stdout.length) {
+      processedResults = stdout
+        .map(item => item.trim())
+        .filter(Boolean)
+        .map(text => ({ text }));
+    } else {
+      throw new Error('No results found');
+    }
   } catch (e) {
     error = {
       name: 'Error',

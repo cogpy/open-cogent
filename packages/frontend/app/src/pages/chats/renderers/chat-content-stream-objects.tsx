@@ -15,6 +15,7 @@ import { GenericToolCalling } from './generic-tool-calling';
 import { GenericToolResult } from './generic-tool-result';
 import { MakeItRealResult } from './make-it-real-result';
 import { PythonCodeResult } from './python-code-result';
+import { TaskAnalysisCard } from './task-analysis-card';
 import { TodoListResult } from './todo-list-result';
 import { WebCrawlResult } from './web-crawl-result';
 import { WebSearchResult } from './web-search-result';
@@ -239,6 +240,18 @@ export function ChatContentStreamObjects({
                   status="loading"
                   className="my-5"
                   title="Browser task processing..."
+                />
+              );
+            }
+
+            if (obj.toolName === 'task_analysis' && obj.result) {
+              return (
+                <TaskAnalysisCard
+                  key={key}
+                  reasoning={obj.result.reasoning}
+                  suggestedApproach={obj.result.suggestedApproach}
+                  complexity={obj.result.complexity}
+                  estimatedSteps={obj.result.estimatedSteps}
                 />
               );
             }

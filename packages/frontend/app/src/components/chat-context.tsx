@@ -371,7 +371,7 @@ export const ContextSelectorMenu = ({
             <input
               type="file"
               multiple
-              className="opacity-0 absolute size-full cursor-pointer"
+              className="opacity-0 absolute left-0 size-full cursor-pointer"
               ref={fileInputRef}
               onChange={e => {
                 const files = e.target.files;

@@ -17,10 +17,10 @@ export const hoverableItem = style({
 });
 
 export const hoverableIcon = style({
-  width: 16,
-  height: 16,
+  width: 20,
+  height: 20,
+  fontSize: 20,
   flexShrink: 0,
-  fontSize: 16,
   color: cssVarV2('icon/primary'),
 });
 

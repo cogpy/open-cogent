@@ -8,5 +8,6 @@ export * from './error';
 export * from './exa-crawl';
 export * from './exa-search';
 export * from './make-it-real';
+export * from './task-analysis';
 export * from './todo';
 export * from './types';

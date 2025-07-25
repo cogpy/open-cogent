@@ -27,6 +27,7 @@ import {
   createExaSearchTool,
   createMakeItRealTool,
   createMarkTodoTool,
+  createTaskAnalysisTool,
   createTodoTool,
 } from '../tools';
 import { createPythonCodingTool } from '../tools/python-coding';
@@ -183,6 +184,14 @@ export abstract class CopilotProvider<C = any> {
           }
           case 'conversationSummary': {
             tools.conversation_summary = createConversationSummaryTool(
+              options.session,
+              prompt,
+              this.factory
+            );
+            break;
+          }
+          case 'taskAnalysis': {
+            tools.task_analysis = createTaskAnalysisTool(
               options.session,
               prompt,
               this.factory

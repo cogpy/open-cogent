@@ -344,6 +344,85 @@ Return only the summary text—no headings, labels, or commentary.`,
     },
   },
   {
+    name: 'Task Analysis',
+    action: 'Task Analysis',
+    model: 'gpt-4.1-2025-04-14',
+    messages: [
+      {
+        role: 'system',
+        content: `You are an expert task analyzer. Analyze the given user task and provide a structured breakdown to help determine if it needs multiple phases, estimate complexity, and suggest implementation steps.
+
+Your analysis should be thorough yet practical, focusing on actionable steps and realistic time estimates.
+
+Respond ONLY with a valid JSON object in this exact format:
+{
+  "needsPhases": boolean,
+  "complexity": "simple" | "moderate" | "complex",
+  "estimatedSteps": number,
+  "todoList": [
+    {
+      "step": number,
+      "title": "Step title",
+      "description": "Detailed description of what needs to be done",
+      "estimatedTime": "time estimate (e.g., '5-10 minutes')",
+      "requiredTools": ["tool1", "tool2"],
+      "dependencies": [step_numbers_this_depends_on]
+    }
+  ],
+  "reasoning": "Brief explanation of why this breakdown was chosen",
+  "suggestedApproach": "High-level strategy description"
+}
+
+## Analysis Guidelines:
+
+**Complexity Assessment:**
+- "simple": Single-step tasks that can be completed directly (1 step)
+- "moderate": Multi-step tasks requiring 2-5 distinct phases
+- "complex": Large tasks requiring 6+ steps with multiple dependencies
+
+**Phase Determination:**
+- Set needsPhases=true only if the task genuinely requires multiple distinct phases
+- Consider if steps can be parallelized vs. must be sequential
+- Factor in logical dependencies between steps
+
+**Tool Selection:**
+- Only suggest tools from the available tools list
+- Match tools to task requirements logically
+- Consider: web_search_exa, doc_semantic_search for research
+- Consider: code_artifact, python_coding for development
+- Consider: doc_compose for documentation
+- Consider: e2b_python_sandbox for testing/execution
+- Consider: browser_use, web_crawl_exa for web interaction
+- Consider: make_it_real for design/UI tasks
+- Consider: todo_list, mark_todo for task management
+- Consider: conversation_summary for context management
+
+**Time Estimation:**
+- Provide realistic time ranges based on task complexity
+- Consider research time, implementation time, testing time
+- Use formats like "5-10 minutes", "15-30 minutes", "1-2 hours"
+
+**Dependencies:**
+- Dependencies array should contain step numbers (not step IDs)
+- Only include direct dependencies, not transitive ones
+- Step 1 should typically have no dependencies (empty array)
+
+Be practical and actionable in your recommendations.`,
+      },
+      {
+        role: 'user',
+        content: `Analyze this task and provide a structured breakdown:
+
+Task: {{task}}
+Context: {{context}}
+Available Tools: {{availableTools}}
+Current Date: {{currentDate}}
+
+Provide the analysis as a JSON object following the specified format.`,
+      },
+    ],
+  },
+  {
     name: 'Summary',
     action: 'Summary',
     model: 'gpt-4.1-2025-04-14',
@@ -1779,7 +1858,7 @@ When the user poses a question or task, **first** evaluate whether you must call
 
 - **If tool calls are *not* required**, answer directly without invoking tools.
 - **If tool calls *are* required**, select one of the workflows below based on task complexity and follow it step-by-step.
-- **If you are unsure**, start with the lightweight workflow and escalate to the generic multi-step workflow if needed.
+- **If you are unsure**, Start with a lightweight workflow. If subsequent information suggests that the task is more complex, use task analysis tools to break down the task or upgrade to a general multi-step workflow.
 </workflow_decision>
 
 <workflows>
@@ -1857,6 +1936,8 @@ Below is the user's query. Please respond in the user's preferred language witho
     tools: [
       'browserUse',
       'codeArtifact',
+      'conversationSummary',
+      'taskAnalysis',
       'docCompose',
       'docRead',
       'docEdit',

@@ -10,6 +10,7 @@ import type { createExaCrawlTool } from './exa-crawl';
 import type { createExaSearchTool } from './exa-search';
 import type { createMakeItRealTool } from './make-it-real';
 import type { createPythonCodingTool } from './python-coding';
+import type { createTaskAnalysisTool } from './task-analysis';
 import type { createMarkTodoTool, createTodoTool } from './todo';
 
 export interface CustomAITools extends ToolSet {
@@ -26,4 +27,21 @@ export interface CustomAITools extends ToolSet {
   make_it_real: ReturnType<typeof createMakeItRealTool>;
   python_coding: ReturnType<typeof createPythonCodingTool>;
   python_sandbox: ReturnType<typeof createE2bPythonSandboxTool>;
+  task_analysis: ReturnType<typeof createTaskAnalysisTool>;
 }
+
+export const Tools = [
+  'browser_use',
+  'code_artifact',
+  'doc_compose',
+  'doc_semantic_search',
+  'web_search_exa',
+  'web_crawl_exa',
+  'python_coding',
+  'e2b_python_sandbox',
+  'make_it_real',
+  'conversation_summary',
+  'todo_list',
+  'mark_todo',
+  'task_analysis',
+];

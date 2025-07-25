@@ -62,6 +62,7 @@ export const PromptTools = z
     'browserUse',
     'codeArtifact',
     'conversationSummary',
+    'taskAnalysis',
     // artifact tools
     'docCompose',
     // work with morph

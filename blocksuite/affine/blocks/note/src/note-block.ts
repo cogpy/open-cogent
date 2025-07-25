@@ -1,6 +1,7 @@
-import type { NoteBlockModel } from '@blocksuite/affine-model';
+import { type NoteBlockModel } from '@blocksuite/affine-model';
 import { BlockComponent } from '@blocksuite/std';
 import { css, html } from 'lit';
+import { styleMap } from 'lit/directives/style-map.js';
 
 export class NoteBlockComponent extends BlockComponent<NoteBlockModel> {
   static override styles = css`
@@ -18,7 +19,15 @@ export class NoteBlockComponent extends BlockComponent<NoteBlockModel> {
 
   override renderBlock() {
     return html`
-      <div class="affine-note-block-container">
+      <div
+        style=${styleMap({
+          background:
+            typeof this.model.props.background$.value === 'string'
+              ? this.model.props.background$.value
+              : 'unset',
+        })}
+        class="affine-note-block-container"
+      >
         <div class="affine-block-children-container">
           ${this.renderChildren(this.model)}
         </div>

@@ -1,22 +1,13 @@
 import { Loading, observeResize } from '@afk/component';
-import { ArrowDownBigIcon } from '@blocksuite/icons/rc';
-import { AnimatePresence, motion } from 'framer-motion';
-import {
-  forwardRef,
-  useCallback,
-  useEffect,
-  useImperativeHandle,
-  useRef,
-  useState,
-} from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { type StoreApi, useStore } from 'zustand';
 
 import { ChatInput } from '@/components/chat-input';
-import { cn } from '@/lib/utils';
 import { MessageRenderer } from '@/pages/chats/renderers/message';
 import type { ChatSessionState } from '@/store/copilot/types';
 
 import { AggregatedTodoList } from './aggregated-todo-list';
+import { DownArrow, type DownArrowRef } from './chat-arrow';
 import { ChatPlayback } from './chat-playback';
 import { ChatScrollerProvider } from './use-chat-scroller';
 
@@ -72,74 +63,6 @@ interface ChatSessionProps {
   headerContent?: React.ReactNode;
   footerContent?: React.ReactNode;
 }
-
-interface DownArrowRef {
-  hide: () => void;
-  show: () => void;
-}
-
-const DownArrow = forwardRef<
-  DownArrowRef,
-  { onClick: () => void; loading: boolean }
->(({ onClick, loading }, ref) => {
-  const [show, setShow] = useState(false);
-
-  // impl ref
-  useImperativeHandle(ref, () => ({
-    hide: () => {
-      setShow(false);
-    },
-    show: () => {
-      setShow(true);
-    },
-  }));
-
-  return (
-    <AnimatePresence>
-      {show ? (
-        <motion.div
-          initial={{ opacity: 0, y: 30, scale: 0.8 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 30, scale: 0.8 }}
-          transition={{ duration: 0.14 }}
-          onClick={onClick}
-          className={cn(
-            'absolute left-1/2 -translate-x-1/2 bottom-6 cursor-pointer'
-          )}
-        >
-          <motion.div
-            animate={
-              loading
-                ? {
-                    y: [0, 14, 0],
-                    boxShadow: [
-                      '0px 4px 15px rgba(0,0,0,0.05)',
-                      '0px 2px 6px rgba(0,0,0,0.2)',
-                      '0px 4px 15px rgba(0,0,0,0.05)',
-                    ],
-                  }
-                : undefined
-            }
-            transition={{
-              repeat: Infinity,
-              duration: 2,
-            }}
-            className={cn(
-              'size-9 rounded-full bg-white border',
-              'flex items-center justify-center'
-            )}
-            style={{
-              boxShadow: '0px 4px 15px rgba(0,0,0,0.05)',
-            }}
-          >
-            <ArrowDownBigIcon className="text-[22px] text-icon-primary" />
-          </motion.div>
-        </motion.div>
-      ) : null}
-    </AnimatePresence>
-  );
-});
-DownArrow.displayName = 'DownArrow';
 
 const ChatSession = ({
   store,

@@ -1,9 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { type StoreApi, useStore } from 'zustand';
 
 import { streamMessages } from '@/lib/stream/stream-messages';
 import { MessageRenderer } from '@/pages/chats/renderers/message';
 import type { ChatMessage, ChatSessionState } from '@/store/copilot/types';
+
+import { DownArrow, type DownArrowRef } from './chat-arrow';
+import { ChatScrollerProvider } from './use-chat-scroller';
 
 export interface ChatPlaybackProps {
   store: StoreApi<ChatSessionState>;
@@ -43,19 +46,27 @@ export const ChatPlayback = ({
   const [streamDone, setStreamDone] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
-
+  const downArrowRef = useRef<DownArrowRef>(null);
   // Track whether user is at bottom
-  useEffect(() => {
+  const handleScroll = useCallback(() => {
     const el = containerRef.current;
     if (!el) return;
+    const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 4;
+    setShouldAutoScroll(atBottom);
 
-    const handleScroll = () => {
-      const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 4;
-      setShouldAutoScroll(atBottom);
-    };
+    // avoid re-rendering when scroll to bottom changes
+    if (atBottom) {
+      downArrowRef.current?.hide();
+    } else {
+      downArrowRef.current?.show();
+    }
+  }, []);
 
-    el.addEventListener('scroll', handleScroll);
-    return () => el.removeEventListener('scroll', handleScroll);
+  const scrollToBottom = useCallback(() => {
+    containerRef.current?.scrollTo({
+      top: containerRef.current?.scrollHeight,
+      behavior: 'smooth',
+    });
   }, []);
 
   /* ---------------------------------------------------
@@ -78,13 +89,16 @@ export const ChatPlayback = ({
 
     let started = false;
     let progressCount = 0;
+    let cancel = false;
 
-    const step = () => {
-      const { value, done } = generator.next();
+    const step = async () => {
+      if (cancel) return;
+
+      const { value, done } = await generator.next();
       if (done || !value) {
         setStreamDone(true);
         onFinish?.();
-        clearInterval(intervalId);
+        cancel = true;
         return;
       }
 
@@ -99,12 +113,16 @@ export const ChatPlayback = ({
         progressCount = value.length;
         onProgress?.(progressCount, rawMessages.length);
       }
+
+      await new Promise(resolve => setTimeout(resolve, 24));
+      await step();
     };
 
-    // Kick off immediately and then at fixed interval
     step();
-    const intervalId = window.setInterval(step, 24);
-    return () => clearInterval(intervalId);
+
+    return () => {
+      cancel = true;
+    };
   }, [skip, messages, rawMessages, onStart, onProgress, onFinish]);
 
   // ---------------------------------------------------
@@ -149,13 +167,17 @@ export const ChatPlayback = ({
     );
   }
 
-  const containerClasses = `flex flex-col h-full ${className}`;
+  const containerClasses = `flex flex-col h-full relative ${className}`;
 
   return (
     <div className={containerClasses}>
       {headerContent}
 
-      <div ref={containerRef} className="flex-1 overflow-y-auto p-4 pb-32">
+      <ChatScrollerProvider
+        ref={containerRef}
+        className="flex-1 overflow-y-auto p-4 pb-32 relative"
+        onScroll={handleScroll}
+      >
         {showDocumentContext && documentTitle && (
           <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
             <div className="text-sm text-blue-600 font-medium">
@@ -179,8 +201,15 @@ export const ChatPlayback = ({
             );
           })}
         </div>
-      </div>
-
+      </ChatScrollerProvider>
+      <DownArrow
+        ref={downArrowRef}
+        offset={80}
+        loading={!streamDone}
+        onClick={() => {
+          scrollToBottom();
+        }}
+      />
       {footerContent}
     </div>
   );

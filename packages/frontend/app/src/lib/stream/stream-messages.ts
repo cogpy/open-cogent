@@ -10,6 +10,10 @@ export interface StreamOptions {
   charChunk?: number;
 }
 
+const randomDelay = async (min: number, max: number) => {
+  return new Promise(resolve => setTimeout(resolve, Math.floor(Math.random() * (max - min + 1)) + min));
+};
+
 /**
  * Generate progressively updated copies of a final ChatMessage array, emulating
  * how messages arrive from the backend streaming API.
@@ -26,11 +30,10 @@ export interface StreamOptions {
  * 3. If a message has no `streamObjects`, its `content` is revealed
  *    progressively by `charChunk` characters.
  */
-export function* streamMessages(
+export async function* streamMessages(
   finalMessages: ChatMessage[],
   opts: StreamOptions = {}
-): Generator<ChatMessage[], void, unknown> {
-  console.log('streamMessages', finalMessages);
+): AsyncGenerator<ChatMessage[], void, unknown> {
   const chunk = Math.max(1, opts.charChunk ?? 1);
 
   // The evolving timeline we will clone & yield.
@@ -63,6 +66,7 @@ export function* streamMessages(
       }
       draft.push(placeholder);
     });
+    await randomDelay(500, 1000);
     yield current;
 
     const idx = current.length - 1; // index of the message we are working on
@@ -109,7 +113,9 @@ export function* streamMessages(
             msgDraft.streamObjects!.push({ ...obj } as any);
             msgDraft.streamObjects = mergeStreamObjects(msgDraft.streamObjects as any);
           });
+          await randomDelay(500, 1000);
           yield current;
+          await randomDelay(500, 1000);
         }
       }
     } else {
@@ -124,6 +130,7 @@ export function* streamMessages(
         pushFrame(draft => {
           draft[idx].content = partial;
         });
+        await randomDelay(500, 1000);
         yield current;
       }
     }

@@ -53,7 +53,7 @@ export function useHighlightedCode(
     const timer = window.setTimeout(async () => {
       const highlighter = await getHighlighter(theme, language);
 
-      if (cancelled) return;
+      if (cancelled || !code) return;
 
       const htmlResult = highlighter.codeToHtml(code, {
         theme,
@@ -72,4 +72,4 @@ export function useHighlightedCode(
   }, [code, language, theme]);
 
   return html;
-} 
+}

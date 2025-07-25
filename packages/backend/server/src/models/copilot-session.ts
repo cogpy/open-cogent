@@ -30,7 +30,8 @@ type ChatStreamObject = {
     | 'reasoning'
     | 'tool-call'
     | 'tool-result'
-    | 'tool-incomplete-result';
+    | 'tool-incomplete-result'
+    | 'status';
   textDelta?: string;
   toolCallId?: string;
   toolName?: string;

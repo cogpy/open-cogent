@@ -135,6 +135,44 @@ export const ChatMessageAttachment = z.union([
   }),
 ]);
 
+export const TokenUsageSchema = z.object({
+  inputTokens: z.number(),
+  outputTokens: z.number(),
+  reasoningTokens: z.number().optional(),
+  totalTokens: z.number(),
+  totalWithReasoning: z.number().optional(),
+});
+
+export const TokenUsageTotalSchema = TokenUsageSchema.extend({
+  timing: z.object({
+    duration: z.number(),
+    reasoningDuration: z.number(),
+    averageCallDuration: z.number(),
+    callCount: z.number(),
+  }),
+});
+
+export const TokenUsageDetailSchema = z.object({
+  step: z.string(), // 'main_request' | 'tool_call:xxx' | 'sub_tool_call:xxx'
+  model: z.string(),
+  usage: TokenUsageSchema.optional(),
+  duration: z.number(),
+  reasoningDuration: z.number().optional(),
+});
+
+export const TokenTrackingContextSchema = z.object({
+  requestId: z.string(),
+  sessionId: z.string().optional(),
+  userId: z.string().optional(),
+  toolChain: z.array(z.string()),
+  usageRecords: z.array(TokenUsageDetailSchema),
+});
+
+export type TokenUsage = z.infer<typeof TokenUsageSchema>;
+export type TokenUsageTotal = z.infer<typeof TokenUsageTotalSchema>;
+export type TokenUsageDetail = z.infer<typeof TokenUsageDetailSchema>;
+export type TokenTrackingContext = z.infer<typeof TokenTrackingContextSchema>;
+
 const StreamObjectPureSchema = [
   z.object({
     type: z.literal('text-delta'),
@@ -156,6 +194,14 @@ const StreamObjectPureSchema = [
     toolName: z.string(),
     args: z.record(z.any()),
     result: z.any(),
+  }),
+  z.object({
+    type: z.literal('status'),
+    result: z.object({
+      completed: z.boolean(),
+      tokenUsage: TokenUsageTotalSchema.optional(),
+      records: TokenUsageDetailSchema.array().optional(),
+    }),
   }),
 ] as const;
 const StreamObjectToolResultSchema = z.object({

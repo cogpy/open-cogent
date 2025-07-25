@@ -1,10 +1,16 @@
 import { Logger } from '@nestjs/common';
+import { tool, ToolExecutionOptions } from 'ai';
+import z from 'zod';
 
 import {
   StreamObject,
   StreamObjectPure,
   StreamObjectToolResult,
 } from '../providers';
+import {
+  TokenTracker,
+  type TokenUsageTracker,
+} from '../providers/token-tracker';
 
 const logger = new Logger('CopilotToolsUtils');
 
@@ -110,4 +116,53 @@ export async function duplicateStreamObjectStream(
   await Promise.all([readBranchB, pipelineDone]);
 
   return content;
+}
+
+export interface ToolWrapperOptions {
+  toolName: string;
+  tracker?: TokenUsageTracker;
+}
+
+export function createTool<TParameters extends z.ZodTypeAny, TResult>(
+  options: ToolWrapperOptions,
+  toolDefinition: {
+    description: string;
+    parameters: TParameters;
+    execute: (
+      args: z.infer<TParameters>,
+      context: ToolExecutionOptions
+    ) => Promise<TResult> | TResult;
+  }
+) {
+  const { toolName, tracker = TokenTracker.getCurrentTracker() } = options;
+
+  return tool({
+    description: toolDefinition.description,
+    parameters: toolDefinition.parameters,
+    execute: async (args, context) => {
+      const startTime = Date.now();
+      if (tracker) {
+        tracker.pushTool(toolName);
+      }
+
+      try {
+        const result = tracker
+          ? await TokenTracker.runWith(tracker, async () => {
+              return await toolDefinition.execute(args, context);
+            })
+          : await toolDefinition.execute(args, context);
+        if (tracker) {
+          const step = tracker.getStepName();
+          tracker.recordUsage(step, toolName, Date.now() - startTime);
+        }
+        return result;
+      } catch (error) {
+        throw error;
+      } finally {
+        if (tracker) {
+          tracker.popTool();
+        }
+      }
+    },
+  });
 }

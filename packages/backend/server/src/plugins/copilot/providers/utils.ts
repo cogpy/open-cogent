@@ -4,12 +4,14 @@ import {
   CoreUserMessage,
   FilePart,
   ImagePart,
+  LanguageModelUsage,
   TextPart,
   TextStreamPart,
 } from 'ai';
 import { ZodType } from 'zod';
 
 import { CustomAITools } from '../tools';
+import { TokenTracker } from './token-tracker';
 import { PromptMessage, StreamObject, StreamObjectToolResult } from './types';
 
 type ChatMessage = CoreUserMessage | CoreAssistantMessage;
@@ -375,6 +377,72 @@ export class CitationParser {
   }
 }
 
+export abstract class BaseStreamParser<T> {
+  protected readonly startTime: number;
+  protected isFinished = false;
+
+  constructor(protected readonly modelId: string) {
+    this.startTime = Date.now();
+  }
+
+  async handleFinish(usage?: Promise<LanguageModelUsage>): Promise<void> {
+    if (this.isFinished) return;
+    this.isFinished = true;
+    const tracker = TokenTracker.getCurrentTracker();
+    if (!tracker) return;
+
+    const endTime = Date.now();
+    const duration = endTime - this.startTime;
+    const step = tracker.getStepName();
+
+    if (usage) {
+      try {
+        const resolvedUsage = await usage;
+        if (resolvedUsage) {
+          const tokenUsage = {
+            inputTokens: resolvedUsage.promptTokens || 0,
+            outputTokens: resolvedUsage.completionTokens || 0,
+            reasoningTokens:
+              (resolvedUsage as any).reasoningTokens || undefined,
+            totalTokens:
+              (resolvedUsage.promptTokens || 0) +
+              (resolvedUsage.completionTokens || 0),
+            totalWithReasoning: resolvedUsage.totalTokens || undefined,
+          };
+
+          tracker.recordUsage(step, this.modelId, duration, tokenUsage);
+        }
+      } catch {
+        // Fallback to duration-only tracking if usage fails
+        this.recordFallbackUsage(step, duration);
+      }
+    } else {
+      this.recordFallbackUsage(step, duration);
+    }
+  }
+
+  handleError(): void {
+    if (this.isFinished) return;
+    this.isFinished = true;
+    const tracker = TokenTracker.getCurrentTracker();
+    if (!tracker) return;
+
+    const endTime = Date.now();
+    const duration = endTime - this.startTime;
+    const step = tracker.getStepName();
+
+    this.recordFallbackUsage(step, duration);
+  }
+
+  private recordFallbackUsage(step: string, duration: number): void {
+    const tracker = TokenTracker.getCurrentTracker();
+    if (!tracker) return;
+    tracker.recordUsage(step, this.modelId, duration);
+  }
+
+  abstract parse(chunk: any): T | null;
+}
+
 type ChunkType = TextStreamPart<CustomAITools>['type'];
 
 export function toError(error: unknown): Error {
@@ -397,7 +465,7 @@ type DocEditFootnote = {
   intent: string;
   result: string;
 };
-export class TextStreamParser {
+export class TextStreamParser extends BaseStreamParser<string> {
   private readonly logger = new Logger(TextStreamParser.name);
   private readonly CALLOUT_PREFIX = '\n[!]\n';
 
@@ -544,7 +612,7 @@ export class TextStreamParser {
     return result;
   }
 
-  public end() {
+  public end(): string {
     const footnotes = this.docEditFootnotes.map((footnote, index) => {
       return `[^edit${index + 1}]: ${JSON.stringify({ type: 'doc-edit', ...footnote })}`;
     });
@@ -588,7 +656,7 @@ export class TextStreamParser {
   }
 }
 
-export class StreamObjectParser {
+export class StreamObjectParser extends BaseStreamParser<StreamObject> {
   public parse(
     chunk: TextStreamPart<CustomAITools> | StreamObjectToolResult
   ): StreamObject | null {
@@ -610,7 +678,7 @@ export class StreamObjectParser {
   }
 
   public mergeTextDelta(chunks: StreamObject[]): StreamObject[] {
-    return chunks.reduce((acc, curr) => {
+    const objects = chunks.reduce((acc, curr) => {
       const prev = acc.at(-1);
       switch (curr.type) {
         case 'reasoning':
@@ -643,6 +711,8 @@ export class StreamObjectParser {
       }
       return acc;
     }, [] as StreamObject[]);
+    objects.push(this.statusStreamObject());
+    return objects;
   }
 
   public mergeContent(chunks: StreamObject[]): string {
@@ -652,5 +722,15 @@ export class StreamObjectParser {
       }
       return acc;
     }, '');
+  }
+
+  public statusStreamObject(): StreamObject {
+    const tracker = TokenTracker.getCurrentTracker();
+    const tokenUsage = tracker?.getTotalUsage();
+    const records = tracker?.getCurrentUsages();
+    return {
+      type: 'status' as const,
+      result: { completed: !!tokenUsage && !!records, tokenUsage, records },
+    };
   }
 }

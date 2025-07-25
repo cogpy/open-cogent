@@ -1,5 +1,4 @@
 import { Logger } from '@nestjs/common';
-import { tool } from 'ai';
 import { z } from 'zod';
 
 import { Models } from '../../../models';
@@ -10,7 +9,7 @@ import type {
   StreamObjectToolResult,
 } from '../providers';
 import { toolError } from './error';
-import { duplicateStreamObjectStream } from './utils';
+import { createTool, duplicateStreamObjectStream } from './utils';
 
 const logger = new Logger('DocComposeTool');
 
@@ -73,55 +72,58 @@ export const createDocComposeTool = (
   factory: CopilotProviderFactory,
   saveDoc: SaveDocFunc
 ) => {
-  return tool({
-    description:
-      'Write a new document with markdown content. This tool creates structured markdown content for documents including titles, sections, and formatting.',
-    parameters: z.object({
-      title: z.string().describe('The title of the document'),
-      userPrompt: z
-        .string()
-        .describe(
-          'The user description of the document, will be used to generate the document'
-        ),
-    }),
-    execute: async (args, { toolCallId, abortSignal }) => {
-      const { title, userPrompt } = args;
-      try {
-        const prompt = await promptService.get('Write an article about this');
-        if (!prompt) {
-          throw new Error('Prompt not found');
+  return createTool(
+    { toolName: 'doc_compose' },
+    {
+      description:
+        'Write a new document with markdown content. This tool creates structured markdown content for documents including titles, sections, and formatting.',
+      parameters: z.object({
+        title: z.string().describe('The title of the document'),
+        userPrompt: z
+          .string()
+          .describe(
+            'The user description of the document, will be used to generate the document'
+          ),
+      }),
+      execute: async (args, { toolCallId, abortSignal }) => {
+        const { title, userPrompt } = args;
+        try {
+          const prompt = await promptService.get('Write an article about this');
+          if (!prompt) {
+            throw new Error('Prompt not found');
+          }
+
+          const provider = await factory.getProviderByModel(prompt.model);
+
+          if (!provider) {
+            throw new Error('Provider not found');
+          }
+          const originalStream = provider.streamObject(
+            { modelId: prompt.model },
+            [...prompt.finish({}), { role: 'user', content: userPrompt }]
+          );
+
+          const content = await duplicateStreamObjectStream(
+            toolCallId,
+            originalStream,
+            toolStream,
+            abortSignal
+          );
+
+          const ret = await saveDoc(content);
+          if (typeof ret === 'string') return ret;
+
+          return {
+            docId: ret.docId,
+            title: ret.title,
+            markdown: content,
+            wordCount: content.split(/\s+/).length,
+          };
+        } catch (err: any) {
+          logger.error(`Failed to write document: ${title}`, err);
+          return toolError('Doc Write Failed', err.message);
         }
-
-        const provider = await factory.getProviderByModel(prompt.model);
-
-        if (!provider) {
-          throw new Error('Provider not found');
-        }
-        const originalStream = provider.streamObject(
-          { modelId: prompt.model },
-          [...prompt.finish({}), { role: 'user', content: userPrompt }]
-        );
-
-        const content = await duplicateStreamObjectStream(
-          toolCallId,
-          originalStream,
-          toolStream,
-          abortSignal
-        );
-
-        const ret = await saveDoc(content);
-        if (typeof ret === 'string') return ret;
-
-        return {
-          docId: ret.docId,
-          title: ret.title,
-          markdown: content,
-          wordCount: content.split(/\s+/).length,
-        };
-      } catch (err: any) {
-        logger.error(`Failed to write document: ${title}`, err);
-        return toolError('Doc Write Failed', err.message);
-      }
-    },
-  });
+      },
+    }
+  );
 };

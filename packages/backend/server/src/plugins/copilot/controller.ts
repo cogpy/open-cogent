@@ -52,6 +52,7 @@ import {
   ModelOutputType,
   StreamObject,
 } from './providers';
+import { TokenTracker } from './providers/token-tracker';
 import { StreamObjectParser } from './providers/utils';
 import { ChatSession, ChatSessionService } from './session';
 import { CopilotStorage } from './storage';
@@ -305,15 +306,22 @@ export class CopilotController implements BeforeApplicationShutdown {
       });
 
       const { messageId, tools } = ChatQuerySchema.parse(query);
+      const ctx = TokenTracker.getOrCreateTracker({
+        sessionId: session.config.sessionId,
+        userId: user.id,
+        toolChain: ['streamObject'],
+      });
 
       const source$ = from(
-        provider.streamText({ modelId: model }, finalMessage, {
-          ...session.config.promptConfig,
-          signal,
-          user: user.id,
-          session: session.config.sessionId,
-          tools: tools || session.config.promptConfig?.tools,
-        })
+        TokenTracker.runWith(ctx, async () =>
+          provider.streamText({ modelId: model }, finalMessage, {
+            ...session.config.promptConfig,
+            signal,
+            user: user.id,
+            session: session.config.sessionId,
+            tools: tools || session.config.promptConfig?.tools,
+          })
+        )
       ).pipe(
         connect(shared$ =>
           merge(
@@ -395,16 +403,25 @@ export class CopilotController implements BeforeApplicationShutdown {
       });
 
       const { messageId, tools } = ChatQuerySchema.parse(query);
+      const parser = new StreamObjectParser(model);
+      const ctx = TokenTracker.getOrCreateTracker({
+        sessionId: session.config.sessionId,
+        userId: user.id,
+        toolChain: ['streamObject'],
+      });
 
       const source$ = from(
-        provider.streamObject({ modelId: model }, finalMessage, {
-          ...session.config.promptConfig,
-          signal,
-          user: user.id,
-          session: session.config.sessionId,
-          tools: tools || session.config.promptConfig?.tools,
-        })
+        TokenTracker.runWith(ctx, async () =>
+          provider.streamObject({ modelId: model }, finalMessage, {
+            ...session.config.promptConfig,
+            signal,
+            user: user.id,
+            session: session.config.sessionId,
+            tools: tools || session.config.promptConfig?.tools,
+          })
+        )
       ).pipe(
+        mergeMap(stream => stream), // flatten the async iterator
         connect(shared$ =>
           merge(
             // actual chat event stream
@@ -415,27 +432,35 @@ export class CopilotController implements BeforeApplicationShutdown {
             shared$.pipe(
               reduce((acc, chunk) => acc.concat([chunk]), [] as StreamObject[]),
               tap(result => {
-                const parser = new StreamObjectParser();
-                const streamObjects = parser.mergeTextDelta(result);
-                const content = parser.mergeContent(streamObjects);
-                session.push({
-                  role: 'assistant',
-                  content: endBeforePromiseResolve
-                    ? '> Request aborted'
-                    : content,
-                  streamObjects: endBeforePromiseResolve ? null : streamObjects,
-                  createdAt: new Date(),
+                void TokenTracker.runWith(ctx, async () => {
+                  const streamObjects = parser.mergeTextDelta(result);
+                  const content = parser.mergeContent(streamObjects);
+
+                  session.push({
+                    role: 'assistant',
+                    content: endBeforePromiseResolve
+                      ? '> Request aborted'
+                      : content,
+                    streamObjects: endBeforePromiseResolve
+                      ? null
+                      : streamObjects,
+                    createdAt: new Date(),
+                  });
+                  await session.save();
                 });
-                void session
-                  .save()
-                  .catch(err =>
-                    this.logger.error(
-                      'Failed to save session in sse stream',
-                      err
-                    )
-                  );
               }),
               ignoreElements()
+            ),
+            // emit status information at the end
+            shared$.pipe(
+              reduce((acc, chunk) => acc.concat([chunk]), [] as StreamObject[]),
+              mergeMap(() =>
+                TokenTracker.runWith(ctx, async () => ({
+                  type: 'message' as const,
+                  id: messageId,
+                  data: parser.statusStreamObject(),
+                }))
+              )
             )
           )
         ),
@@ -485,6 +510,13 @@ export class CopilotController implements BeforeApplicationShutdown {
       this.ongoingStreamCount$.next(this.ongoingStreamCount$.value + 1);
 
       const { signal, onConnectionClosed } = getSignal(req);
+
+      const ctx = TokenTracker.getOrCreateTracker({
+        sessionId: session.config.sessionId,
+        userId: user.id,
+        toolChain: ['streamObject'],
+      });
+
       let endBeforePromiseResolve = false;
       onConnectionClosed(isAborted => {
         if (isAborted) {
@@ -493,13 +525,16 @@ export class CopilotController implements BeforeApplicationShutdown {
       });
 
       const source$ = from(
-        this.workflow.runGraph(params, session.model, {
-          ...session.config.promptConfig,
-          signal,
-          user: user.id,
-          session: session.config.sessionId,
-        })
+        TokenTracker.runWith(ctx, async () =>
+          this.workflow.runGraph(params, session.model, {
+            ...session.config.promptConfig,
+            signal,
+            user: user.id,
+            session: session.config.sessionId,
+          })
+        )
       ).pipe(
+        mergeMap(stream => stream), // flatten the async iterator
         connect(shared$ =>
           merge(
             // actual chat event stream
@@ -618,6 +653,12 @@ export class CopilotController implements BeforeApplicationShutdown {
       this.ongoingStreamCount$.next(this.ongoingStreamCount$.value + 1);
 
       const { signal, onConnectionClosed } = getSignal(req);
+      const ctx = TokenTracker.getOrCreateTracker({
+        sessionId: session.config.sessionId,
+        userId: user.id,
+        toolChain: ['streamObject'],
+      });
+
       let endBeforePromiseResolve = false;
       onConnectionClosed(isAborted => {
         if (isAborted) {
@@ -626,22 +667,24 @@ export class CopilotController implements BeforeApplicationShutdown {
       });
 
       const source$ = from(
-        provider.streamImages(
-          {
-            modelId: model,
-            inputTypes: hasAttachment
-              ? [ModelInputType.Image]
-              : [ModelInputType.Text],
-          },
-          session.finish(params),
-          {
-            ...session.config.promptConfig,
-            quality: params.quality || undefined,
-            seed: this.parseNumber(params.seed),
-            signal,
-            user: user.id,
-            session: session.config.sessionId,
-          }
+        TokenTracker.runWith(ctx, async () =>
+          provider.streamImages(
+            {
+              modelId: model,
+              inputTypes: hasAttachment
+                ? [ModelInputType.Image]
+                : [ModelInputType.Text],
+            },
+            session.finish(params),
+            {
+              ...session.config.promptConfig,
+              quality: params.quality || undefined,
+              seed: this.parseNumber(params.seed),
+              signal,
+              user: user.id,
+              session: session.config.sessionId,
+            }
+          )
         )
       ).pipe(
         mergeMap(handleRemoteLink),

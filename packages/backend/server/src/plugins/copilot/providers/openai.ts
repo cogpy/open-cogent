@@ -22,6 +22,7 @@ import {
   UserFriendlyError,
 } from '../../../base';
 import { CopilotProvider } from './provider';
+import { TokenTracker } from './token-tracker';
 import type {
   CopilotChatOptions,
   CopilotChatTools,
@@ -260,23 +261,25 @@ export class OpenAIProvider extends CopilotProvider<OpenAIConfig> {
     try {
       metrics.ai.counter('chat_text_calls').add(1, { model: model.id });
 
-      const [system, msgs] = await chatToGPTMessage(messages);
+      const { text } = await TokenTracker.trackAICall(model.id, async () => {
+        const [system, msgs] = await chatToGPTMessage(messages);
 
-      const modelInstance = this.#instance.responses(model.id);
+        const modelInstance = this.#instance.responses(model.id);
 
-      const { tools } = await this.getTools(options, model.id);
-      const { text } = await generateText({
-        model: modelInstance,
-        system,
-        messages: msgs,
-        temperature: options.temperature ?? 0,
-        maxTokens: options.maxTokens ?? 4096,
-        providerOptions: {
-          openai: this.getOpenAIOptions(options, model.id),
-        },
-        tools,
-        maxSteps: this.MAX_STEPS,
-        abortSignal: options.signal,
+        const { tools } = await this.getTools(options, model.id);
+        return await generateText({
+          model: modelInstance,
+          system,
+          messages: msgs,
+          temperature: options.temperature ?? 0,
+          maxTokens: options.maxTokens ?? 4096,
+          providerOptions: {
+            openai: this.getOpenAIOptions(options, model.id),
+          },
+          tools,
+          maxSteps: this.MAX_STEPS,
+          abortSignal: options.signal,
+        });
       });
 
       return text.trim();
@@ -297,12 +300,16 @@ export class OpenAIProvider extends CopilotProvider<OpenAIConfig> {
     };
     await this.checkParams({ messages, cond: fullCond, options });
     const model = this.selectModel(fullCond);
+    const textParser = new TextStreamParser(model.id);
 
     try {
       metrics.ai.counter('chat_text_stream_calls').add(1, { model: model.id });
-      const fullStream = await this.getFullStream(model, messages, options);
+      const { fullStream, usage } = await this.getFullStream(
+        model,
+        messages,
+        options
+      );
       const citationParser = new CitationParser();
-      const textParser = new TextStreamParser();
       for await (const chunk of fullStream) {
         switch (chunk.type) {
           case 'text-delta': {
@@ -328,8 +335,11 @@ export class OpenAIProvider extends CopilotProvider<OpenAIConfig> {
           break;
         }
       }
+
+      await textParser.handleFinish(usage);
     } catch (e: any) {
       metrics.ai.counter('chat_text_stream_errors').add(1, { model: model.id });
+      textParser.handleError();
       throw this.handleError(e, model.id, options);
     }
   }
@@ -342,27 +352,36 @@ export class OpenAIProvider extends CopilotProvider<OpenAIConfig> {
     const fullCond = { ...cond, outputType: ModelOutputType.Object };
     await this.checkParams({ cond: fullCond, messages, options });
     const model = this.selectModel(fullCond);
+    const parser = new StreamObjectParser(model.id);
 
     try {
       metrics.ai
         .counter('chat_object_stream_calls')
         .add(1, { model: model.id });
-      const fullStream = await this.getFullStream(model, messages, options);
-      const parser = new StreamObjectParser();
+      const { fullStream, usage } = await this.getFullStream(
+        model,
+        messages,
+        options
+      );
+
       for await (const chunk of fullStream) {
         const result = parser.parse(chunk);
         if (result) {
           yield result;
         }
+
         if (options.signal?.aborted) {
+          parser.handleError();
           await fullStream.cancel();
           break;
         }
       }
+      await parser.handleFinish(usage);
     } catch (e: any) {
       metrics.ai
         .counter('chat_object_stream_errors')
         .add(1, { model: model.id });
+      parser.handleError();
       throw this.handleError(e, model.id, options);
     }
   }
@@ -379,25 +398,27 @@ export class OpenAIProvider extends CopilotProvider<OpenAIConfig> {
     try {
       metrics.ai.counter('chat_text_calls').add(1, { model: model.id });
 
-      const [system, msgs, schema] = await chatToGPTMessage(messages);
-      if (!schema) {
-        throw new CopilotPromptInvalid('Schema is required');
-      }
+      const { object } = await TokenTracker.trackAICall(model.id, async () => {
+        const [system, msgs, schema] = await chatToGPTMessage(messages);
+        if (!schema) {
+          throw new CopilotPromptInvalid('Schema is required');
+        }
 
-      const modelInstance = this.#instance.responses(model.id);
+        const modelInstance = this.#instance.responses(model.id);
 
-      const { object } = await generateObject({
-        model: modelInstance,
-        system,
-        messages: msgs,
-        temperature: options.temperature ?? 0,
-        maxTokens: options.maxTokens ?? 4096,
-        maxRetries: options.maxRetries ?? 3,
-        schema,
-        providerOptions: {
-          openai: options.user ? { user: options.user } : {},
-        },
-        abortSignal: options.signal,
+        return await generateObject({
+          model: modelInstance,
+          system,
+          messages: msgs,
+          temperature: options.temperature ?? 0,
+          maxTokens: options.maxTokens ?? 4096,
+          maxRetries: options.maxRetries ?? 3,
+          schema,
+          providerOptions: {
+            openai: options.user ? { user: options.user } : {},
+          },
+          abortSignal: options.signal,
+        });
       });
 
       return JSON.stringify(object);
@@ -419,22 +440,29 @@ export class OpenAIProvider extends CopilotProvider<OpenAIConfig> {
     const instance = this.#instance(model.id, { logprobs: 16 });
 
     const scores = await Promise.all(
-      chunkMessages.map(async messages => {
-        const [system, msgs] = await chatToGPTMessage(messages);
-
-        const { logprobs } = await generateText({
-          model: instance,
-          system,
-          messages: msgs,
-          temperature: 0,
-          maxTokens: 16,
-          providerOptions: {
-            openai: {
-              ...this.getOpenAIOptions(options, model.id),
-            },
+      chunkMessages.map(async (messages, index) => {
+        const result = await TokenTracker.trackAICall(
+          model.id,
+          async () => {
+            const [system, msgs] = await chatToGPTMessage(messages);
+            return await generateText({
+              model: instance,
+              system,
+              messages: msgs,
+              temperature: 0,
+              maxTokens: 16,
+              providerOptions: {
+                openai: {
+                  ...this.getOpenAIOptions(options, model.id),
+                },
+              },
+              abortSignal: options.signal,
+            });
           },
-          abortSignal: options.signal,
-        });
+          { step: `rerank_chunk_${index}` }
+        );
+
+        const { logprobs } = result;
 
         const topMap: Record<string, number> = (
           logprobs?.[0]?.topLogprobs ?? []
@@ -479,7 +507,7 @@ export class OpenAIProvider extends CopilotProvider<OpenAIConfig> {
     const modelInstance = this.#instance.responses(model.id);
 
     const { tools } = await this.getTools(options, model.id);
-    const { fullStream } = streamText({
+    const { fullStream, usage } = streamText({
       model: modelInstance,
       system,
       messages: msgs,
@@ -494,7 +522,7 @@ export class OpenAIProvider extends CopilotProvider<OpenAIConfig> {
       maxSteps: this.MAX_STEPS,
       abortSignal: options.signal,
     });
-    return fullStream;
+    return { fullStream, usage };
   }
 
   // ====== text to image ======
@@ -618,17 +646,29 @@ export class OpenAIProvider extends CopilotProvider<OpenAIConfig> {
         .counter('generate_embedding_calls')
         .add(1, { model: model.id });
 
+      const startTime = Date.now();
       const modelInstance = this.#instance.embedding(model.id, {
         dimensions: options.dimensions || DEFAULT_DIMENSIONS,
         user: options.user,
       });
 
-      const { embeddings } = await embedMany({
+      const { embeddings, usage } = await embedMany({
         model: modelInstance,
         values: messages,
       });
 
-      return embeddings.filter(v => v && Array.isArray(v));
+      TokenTracker.getCurrentTracker()?.recordUsage(
+        'embedding',
+        model.id,
+        Date.now() - startTime,
+        {
+          inputTokens: usage.tokens || 0,
+          outputTokens: 0,
+          totalTokens: usage.tokens || 0,
+        }
+      );
+
+      return embeddings.filter((v: any) => v && Array.isArray(v));
     } catch (e: any) {
       metrics.ai
         .counter('generate_embedding_errors')

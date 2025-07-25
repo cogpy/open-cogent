@@ -1,4 +1,3 @@
-import { tool } from 'ai';
 import { z } from 'zod';
 
 import type { ChunkSimilarity } from '../../../models';
@@ -6,6 +5,7 @@ import type { CopilotContextService } from '../context';
 import type { ContextSession } from '../context/session';
 import type { CopilotChatOptions } from '../providers';
 import { toolError } from './error';
+import { createTool } from './utils';
 
 const FILTER_PREFIX = [
   'Title: ',
@@ -68,22 +68,25 @@ export const createDocSemanticSearchTool = (
     abortSignal?: AbortSignal
   ) => Promise<ChunkSimilarity[] | string | undefined>
 ) => {
-  return tool({
-    description:
-      'Retrieve conceptually related passages by performing vector-based semantic similarity search across embedded documents; use this tool only when exact keyword search fails or the user explicitly needs meaning-level matches (e.g., paraphrases, synonyms, broader concepts, recent documents).',
-    parameters: z.object({
-      query: z
-        .string()
-        .describe(
-          'The query statement to search for, e.g. "What is the capital of France?"\nWhen querying specific terms or IDs, you should provide the complete string instead of separating it with delimiters.\nFor example, if a user wants to look up the ID "sicDoe1is", use "What is sicDoe1is" instead of "si code 1is".'
-        ),
-    }),
-    execute: async ({ query }, options) => {
-      try {
-        return await searchDocs(query, options.abortSignal);
-      } catch (e: any) {
-        return toolError('Doc Semantic Search Failed', e.message);
-      }
-    },
-  });
+  return createTool(
+    { toolName: 'doc_semantic_search' },
+    {
+      description:
+        'Retrieve conceptually related passages by performing vector-based semantic similarity search across embedded documents; use this tool only when exact keyword search fails or the user explicitly needs meaning-level matches (e.g., paraphrases, synonyms, broader concepts, recent documents).',
+      parameters: z.object({
+        query: z
+          .string()
+          .describe(
+            'The query statement to search for, e.g. "What is the capital of France?"\nWhen querying specific terms or IDs, you should provide the complete string instead of separating it with delimiters.\nFor example, if a user wants to look up the ID "sicDoe1is", use "What is sicDoe1is" instead of "si code 1is".'
+          ),
+      }),
+      execute: async ({ query }, options) => {
+        try {
+          return await searchDocs(query, options.abortSignal);
+        } catch (e: any) {
+          return toolError('Doc Semantic Search Failed', e.message);
+        }
+      },
+    }
+  );
 };

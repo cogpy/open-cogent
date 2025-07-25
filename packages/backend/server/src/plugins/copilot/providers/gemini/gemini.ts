@@ -18,6 +18,7 @@ import {
   metrics,
   UserFriendlyError,
 } from '../../../../base';
+import { mergeStreams } from '../../utils';
 import { CopilotProvider } from '../provider';
 import type {
   CopilotChatOptions,
@@ -172,16 +173,19 @@ export abstract class GeminiProvider<T> extends CopilotProvider<T> {
     const fullCond = { ...cond, outputType: ModelOutputType.Text };
     await this.checkParams({ cond: fullCond, messages, options });
     const model = this.selectModel(fullCond);
+    const parser = new TextStreamParser(model.id);
 
     try {
       metrics.ai.counter('chat_text_stream_calls').add(1, { model: model.id });
-      const fullStream = await this.getFullStream(model, messages, options);
-      const parser = new TextStreamParser();
+      const { fullStream, usage } = await this.getFullStream(
+        model,
+        messages,
+        options
+      );
       for await (const chunk of fullStream) {
         const result = parser.parse(chunk);
         yield result;
         if (options.signal?.aborted) {
-          await fullStream.cancel();
           break;
         }
       }
@@ -191,8 +195,10 @@ export abstract class GeminiProvider<T> extends CopilotProvider<T> {
           yield `\n\n${footnotes}`;
         }
       }
+      await parser.handleFinish(usage);
     } catch (e: any) {
       metrics.ai.counter('chat_text_stream_errors').add(1, { model: model.id });
+      parser.handleError();
       throw this.handleError(e);
     }
   }
@@ -205,27 +211,32 @@ export abstract class GeminiProvider<T> extends CopilotProvider<T> {
     const fullCond = { ...cond, outputType: ModelOutputType.Object };
     await this.checkParams({ cond: fullCond, messages, options });
     const model = this.selectModel(fullCond);
+    const parser = new StreamObjectParser(model.id);
 
     try {
       metrics.ai
         .counter('chat_object_stream_calls')
         .add(1, { model: model.id });
-      const fullStream = await this.getFullStream(model, messages, options);
-      const parser = new StreamObjectParser();
+      const { fullStream, usage } = await this.getFullStream(
+        model,
+        messages,
+        options
+      );
       for await (const chunk of fullStream) {
         const result = parser.parse(chunk);
         if (result) {
           yield result;
         }
         if (options.signal?.aborted) {
-          await fullStream.cancel();
           break;
         }
       }
+      await parser.handleFinish(usage);
     } catch (e: any) {
       metrics.ai
         .counter('chat_object_stream_errors')
         .add(1, { model: model.id });
+      parser.handleError();
       throw this.handleError(e);
     }
   }
@@ -274,8 +285,8 @@ export abstract class GeminiProvider<T> extends CopilotProvider<T> {
     options: CopilotChatOptions = {}
   ) {
     const [system, msgs] = await chatToGPTMessage(messages);
-    const { tools } = await this.getTools(options, model.id);
-    const { fullStream } = streamText({
+    const { tools, toolOneTimeStream } = await this.getTools(options, model.id);
+    const { fullStream, usage } = streamText({
       model: this.instance(model.id),
       system,
       messages: msgs,
@@ -287,7 +298,7 @@ export abstract class GeminiProvider<T> extends CopilotProvider<T> {
       maxSteps: this.MAX_STEPS,
       experimental_continueSteps: true,
     });
-    return fullStream;
+    return { fullStream: mergeStreams(fullStream, toolOneTimeStream), usage };
   }
 
   private getGeminiOptions(model: string) {

@@ -12,6 +12,7 @@ import {
 } from '../../../../base';
 import { mergeStreams } from '../../utils';
 import { CopilotProvider } from '../provider';
+import { TokenTracker } from '../token-tracker';
 import type {
   CopilotChatOptions,
   CopilotProviderModel,
@@ -64,22 +65,27 @@ export abstract class AnthropicProvider<T> extends CopilotProvider<T> {
     try {
       metrics.ai.counter('chat_text_calls').add(1, { model: model.id });
 
-      const [system, msgs] = await chatToGPTMessage(messages, true, true);
+      const { text, reasoning } = await TokenTracker.trackAICall(
+        model.id,
+        async () => {
+          const [system, msgs] = await chatToGPTMessage(messages, true, true);
 
-      const modelInstance = this.instance(model.id);
-      const { tools } = await this.getTools(options, model.id);
-      const { text, reasoning } = await generateText({
-        model: modelInstance,
-        system,
-        messages: msgs,
-        abortSignal: options.signal,
-        providerOptions: {
-          anthropic: this.getAnthropicOptions(model.id),
-        },
-        tools,
-        maxSteps: this.MAX_STEPS,
-        experimental_continueSteps: true,
-      });
+          const modelInstance = this.instance(model.id);
+          const { tools } = await this.getTools(options, model.id);
+          return await generateText({
+            model: modelInstance,
+            system,
+            messages: msgs,
+            abortSignal: options.signal,
+            providerOptions: {
+              anthropic: this.getAnthropicOptions(model.id),
+            },
+            tools,
+            maxSteps: this.MAX_STEPS,
+            experimental_continueSteps: true,
+          });
+        }
+      );
 
       if (!text) throw new Error('Failed to generate text');
 
@@ -98,11 +104,15 @@ export abstract class AnthropicProvider<T> extends CopilotProvider<T> {
     const fullCond = { ...cond, outputType: ModelOutputType.Text };
     await this.checkParams({ cond: fullCond, messages, options });
     const model = this.selectModel(fullCond);
+    const parser = new TextStreamParser(model.id);
 
     try {
       metrics.ai.counter('chat_text_stream_calls').add(1, { model: model.id });
-      const fullStream = await this.getFullStream(model, messages, options);
-      const parser = new TextStreamParser();
+      const { fullStream, usage } = await this.getFullStream(
+        model,
+        messages,
+        options
+      );
       for await (const chunk of fullStream) {
         const result = parser.parse(chunk);
         yield result;
@@ -116,8 +126,10 @@ export abstract class AnthropicProvider<T> extends CopilotProvider<T> {
           yield `\n\n${footnotes}`;
         }
       }
+      await parser.handleFinish(usage);
     } catch (e: any) {
       metrics.ai.counter('chat_text_stream_errors').add(1, { model: model.id });
+      parser.handleError();
       throw this.handleError(e);
     }
   }
@@ -130,13 +142,17 @@ export abstract class AnthropicProvider<T> extends CopilotProvider<T> {
     const fullCond = { ...cond, outputType: ModelOutputType.Object };
     await this.checkParams({ cond: fullCond, messages, options });
     const model = this.selectModel(fullCond);
+    const parser = new StreamObjectParser(model.id);
 
     try {
       metrics.ai
         .counter('chat_object_stream_calls')
         .add(1, { model: model.id });
-      const fullStream = await this.getFullStream(model, messages, options);
-      const parser = new StreamObjectParser();
+      const { fullStream, usage } = await this.getFullStream(
+        model,
+        messages,
+        options
+      );
       for await (const chunk of fullStream) {
         const result = parser.parse(chunk);
         if (result) {
@@ -146,10 +162,12 @@ export abstract class AnthropicProvider<T> extends CopilotProvider<T> {
           break;
         }
       }
+      await parser.handleFinish(usage);
     } catch (e: any) {
       metrics.ai
         .counter('chat_object_stream_errors')
         .add(1, { model: model.id });
+      parser.handleError();
       throw this.handleError(e);
     }
   }
@@ -161,7 +179,7 @@ export abstract class AnthropicProvider<T> extends CopilotProvider<T> {
   ) {
     const [system, msgs] = await chatToGPTMessage(messages, true, true);
     const { tools, toolOneTimeStream } = await this.getTools(options, model.id);
-    const { fullStream } = streamText({
+    const { fullStream, usage } = streamText({
       model: this.instance(model.id),
       system,
       messages: msgs,
@@ -173,7 +191,7 @@ export abstract class AnthropicProvider<T> extends CopilotProvider<T> {
       maxSteps: this.MAX_STEPS,
       experimental_continueSteps: true,
     });
-    return mergeStreams(fullStream, toolOneTimeStream);
+    return { fullStream: mergeStreams(fullStream, toolOneTimeStream), usage };
   }
 
   private getAnthropicOptions(model: string) {

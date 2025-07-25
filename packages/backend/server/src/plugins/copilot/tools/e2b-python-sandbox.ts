@@ -2,13 +2,13 @@ import { createHash } from 'node:crypto';
 
 import { Result, Sandbox } from '@e2b/code-interpreter';
 import { Logger } from '@nestjs/common';
-import { tool } from 'ai';
 import { z } from 'zod';
 
 import { Config } from '../../../base';
 import { StreamObjectToolResult } from '../providers';
 import { CopilotStorage } from '../storage';
 import { toolError } from './error';
+import { createTool } from './utils';
 
 // Type definition for processed result
 type ProcessedResult = {
@@ -37,8 +37,10 @@ export const createE2bPythonSandboxTool = (
   copilotStorage: CopilotStorage,
   userId: string
 ) => {
-  return tool({
-    description: `
+  return createTool(
+    { toolName: 'e2b_python_sandbox' },
+    {
+      description: `
 Execute a complete, standalone Python script in a secure [E2B](https://e2b.dev/) sandbox with a fresh environment.
 
 **Note:** Each call to this tool runs in a completely fresh, stateless environment. No variables, files, or state are preserved between calls. If you need to use previous results, you must include all necessary code and context in a single script.
@@ -60,137 +62,136 @@ Example output:
   "pdf": "https://example.com/file.pdf"
 }
 `,
-    parameters: z.object({
-      code: z
-        .string()
-        .describe(
-          'The Python code, it should be a complete, standalone Python script.'
-        ),
-    }),
-    execute: async ({ code }, { toolCallId, abortSignal }) => {
-      console.log('e2b-python-sandbox-tool');
+      parameters: z.object({
+        code: z
+          .string()
+          .describe(
+            'The Python code, it should be a complete, standalone Python script.'
+          ),
+      }),
+      execute: async ({ code }, { toolCallId }) => {
+        const writer = toolStream.getWriter();
+        const { key } = config.copilot.e2b;
 
-      const writer = toolStream.getWriter();
-      const { key } = config.copilot.e2b;
+        let logs: any;
+        let error: any;
+        let processedResults: ProcessedResult[] = [];
 
-      let logs: any;
-      let error: any;
-      let processedResults: ProcessedResult[] = [];
+        try {
+          const sbx = await Sandbox.create({
+            apiKey: key,
+          });
 
-      try {
-        const sbx = await Sandbox.create({
-          apiKey: key,
-        });
+          // Execute the Python code
+          const execution = await sbx.runCode(code, {
+            onError: async error => {
+              await writer.write({
+                type: 'tool-incomplete-result',
+                toolCallId,
+                data: {
+                  type: 'text-delta',
+                  textDelta: `${error.name} ${error.value}`,
+                },
+              });
+            },
+            onStdout: async data => {
+              await writer.write({
+                type: 'tool-incomplete-result',
+                toolCallId,
+                data: {
+                  type: 'text-delta',
+                  textDelta: data.line,
+                },
+              });
+            },
+            onStderr: async data => {
+              await writer.write({
+                type: 'tool-incomplete-result',
+                toolCallId,
+                data: {
+                  type: 'text-delta',
+                  textDelta: data.line,
+                },
+              });
+            },
+          });
+          logs = execution.logs;
+          error = execution.error;
+          // Process execution results to extract and save binary data
+          processedResults = await Promise.all<ProcessedResult>(
+            execution.results.map(async (result: Result) => {
+              // Convert Result to JSON format
+              const jsonResult = result.toJSON();
 
-        // Execute the Python code
-        const execution = await sbx.runCode(code, {
-          onError: async error => {
-            await writer.write({
-              type: 'tool-incomplete-result',
-              toolCallId,
-              data: {
-                type: 'text-delta',
-                textDelta: `${error.name} ${error.value}`,
-              },
-            });
-          },
-          onStdout: async data => {
-            await writer.write({
-              type: 'tool-incomplete-result',
-              toolCallId,
-              data: {
-                type: 'text-delta',
-                textDelta: data.line,
-              },
-            });
-          },
-          onStderr: async data => {
-            await writer.write({
-              type: 'tool-incomplete-result',
-              toolCallId,
-              data: {
-                type: 'text-delta',
-                textDelta: data.line,
-              },
-            });
-          },
-        });
-        logs = execution.logs;
-        error = execution.error;
-        // Process execution results to extract and save binary data
-        processedResults = await Promise.all<ProcessedResult>(
-          execution.results.map(async (result: Result) => {
-            // Convert Result to JSON format
-            const jsonResult = result.toJSON();
+              // Create a mutable copy with index signature
+              const processedResult: Record<string, any> = { ...jsonResult };
 
-            // Create a mutable copy with index signature
-            const processedResult: Record<string, any> = { ...jsonResult };
+              // Define binary formats that need to be saved
+              const binaryFormats = ['png', 'jpeg', 'pdf', 'svg'] as const;
 
-            // Define binary formats that need to be saved
-            const binaryFormats = ['png', 'jpeg', 'pdf', 'svg'] as const;
+              // Process each binary format
+              for (const format of binaryFormats) {
+                const value = processedResult[format];
+                if (value && typeof value === 'string') {
+                  try {
+                    // Generate a unique key for the file
+                    const fileHash = createHash('sha256')
+                      .update(value)
+                      .digest('hex');
+                    const fileKey = `e2b-${format}-${fileHash}.${format}`;
 
-            // Process each binary format
-            for (const format of binaryFormats) {
-              const value = processedResult[format];
-              if (value && typeof value === 'string') {
-                try {
-                  // Generate a unique key for the file
-                  const fileHash = createHash('sha256')
-                    .update(value)
-                    .digest('hex');
-                  const fileKey = `e2b-${format}-${fileHash}.${format}`;
+                    // Convert base64 to buffer
+                    const fileBuffer = Buffer.from(value, 'base64');
 
-                  // Convert base64 to buffer
-                  const fileBuffer = Buffer.from(value, 'base64');
+                    // Save the file using CopilotStorage
+                    const fileUrl = await copilotStorage.put(
+                      userId,
+                      fileKey,
+                      fileBuffer,
+                      true
+                    );
 
-                  // Save the file using CopilotStorage
-                  const fileUrl = await copilotStorage.put(
-                    userId,
-                    fileKey,
-                    fileBuffer,
-                    true
-                  );
+                    // Replace base64 data with URL
+                    processedResult[format] = fileUrl;
 
-                  // Replace base64 data with URL
-                  processedResult[format] = fileUrl;
-
-                  logger.verbose(`Saved ${format} file: ${fileKey}`);
-                } catch (error) {
-                  logger.error(`Failed to save ${format} file:`, error);
-                  // Keep original data if saving fails
+                    logger.verbose(`Saved ${format} file: ${fileKey}`);
+                  } catch (error) {
+                    logger.error(`Failed to save ${format} file:`, error);
+                    // Keep original data if saving fails
+                  }
                 }
               }
-            }
 
-            // Special handling for extra field if it contains binary data
-            if (
-              processedResult.extra &&
-              typeof processedResult.extra === 'object'
-            ) {
-              processedResult.extra = await processBinaryInExtra(
-                processedResult.extra,
-                userId,
-                copilotStorage,
-                logger
-              );
-            }
+              // Special handling for extra field if it contains binary data
+              if (
+                processedResult.extra &&
+                typeof processedResult.extra === 'object'
+              ) {
+                processedResult.extra = await processBinaryInExtra(
+                  processedResult.extra,
+                  userId,
+                  copilotStorage,
+                  logger
+                );
+              }
 
-            return processedResult;
-          })
-        );
-        await sbx.kill();
-      } catch (e: any) {
-        return toolError('E2B Python Sandbox Failed', e.message);
-      } finally {
-        writer.releaseLock();
-      }
-      return {
-        error: error,
-        logs,
-        result: processedResults,
-      };
-    },
-  });
+              return processedResult;
+            })
+          );
+          await sbx.kill();
+        } catch (e: any) {
+          return toolError('E2B Python Sandbox Failed', e.message);
+        } finally {
+          writer.releaseLock();
+        }
+        return {
+          error: error,
+          logs,
+          result: processedResults,
+        };
+      },
+    }
+  );
 };
 
 // Helper function to process binary data in extra field

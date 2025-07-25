@@ -330,7 +330,6 @@ type DeleteAccount {
 }
 
 input DeleteSessionInput {
-  docId: String!
   sessionIds: [String!]!
 }
 
@@ -555,6 +554,9 @@ type Mutation {
   """Remove user avatar"""
   removeAvatar: RemoveAvatar!
 
+  """Delete a chat session"""
+  removeCopilotSession(options: RemoveSessionInput!): Boolean!
+
   """Remove user embedding doc"""
   removeUserDocs(docId: String!): Boolean!
 
@@ -714,6 +716,10 @@ type QueryTooLongDataType {
 
 type RemoveAvatar {
   success: Boolean!
+}
+
+input RemoveSessionInput {
+  sessionId: String!
 }
 
 type RuntimeConfigNotFoundDataType {

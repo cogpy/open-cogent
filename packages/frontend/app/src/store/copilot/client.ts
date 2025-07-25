@@ -22,6 +22,7 @@ import {
   removeContextChatQuery,
   removeContextDocQuery,
   removeContextFileQuery,
+  removeCopilotSessionMutation,
   type RequestOptions,
   updateCopilotSessionMutation,
 } from '@afk/graphql';
@@ -219,7 +220,7 @@ export class CopilotClient {
     }
   }
 
-  async cleanupSessions(input: { docId: string; sessionIds: string[] }) {
+  async cleanupSessions(input: { sessionIds: string[] }) {
     try {
       const res = await this.gql({
         query: cleanupCopilotSessionMutation,
@@ -228,6 +229,22 @@ export class CopilotClient {
         },
       });
       return res.cleanupCopilotSession;
+    } catch (err) {
+      throw resolveError(err);
+    }
+  }
+
+  async removeSession(input: { sessionId: string }) {
+    try {
+      const res = await this.gql({
+        query: removeCopilotSessionMutation,
+        variables: {
+          options: {
+            sessionId: input.sessionId,
+          },
+        },
+      });
+      return res.removeCopilotSession;
     } catch (err) {
       throw resolveError(err);
     }

@@ -97,11 +97,14 @@ class UpdateChatSessionInput
 
 @InputType()
 class DeleteSessionInput {
-  @Field(() => String)
-  docId!: string;
-
   @Field(() => [String])
   sessionIds!: string[];
+}
+
+@InputType()
+class RemoveSessionInput {
+  @Field(() => String)
+  sessionId!: string;
 }
 
 @InputType()
@@ -490,6 +493,18 @@ export class CopilotResolver {
       ...options,
       userId: user.id,
     });
+  }
+
+  @Mutation(() => Boolean, {
+    description: 'Delete a chat session',
+  })
+  @CallMetric('ai', 'chat_session_remove')
+  async removeCopilotSession(
+    @CurrentUser() user: CurrentUser,
+    @Args({ name: 'options', type: () => RemoveSessionInput })
+    options: RemoveSessionInput
+  ): Promise<boolean> {
+    return await this.chatSession.delete(options.sessionId, user.id);
   }
 
   @Mutation(() => String, {

@@ -385,6 +385,15 @@ export class CopilotSessionModel extends BaseModel {
   }
 
   @Transactional()
+  async delete(sessionId: string, userId: string) {
+    await this.db.aiSession.update({
+      where: { id: sessionId, userId },
+      data: { deletedAt: new Date() },
+    });
+    return true;
+  }
+
+  @Transactional()
   async getMessages(
     sessionId: string,
     select?: Prisma.AiSessionMessageSelect,

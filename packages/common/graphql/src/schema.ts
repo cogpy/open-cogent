@@ -421,7 +421,6 @@ export interface DeleteAccount {
 }
 
 export interface DeleteSessionInput {
-  docId: Scalars['String']['input'];
   sessionIds: Array<Scalars['String']['input']>;
 }
 
@@ -660,6 +659,8 @@ export interface Mutation {
   importUsers: Array<UserImportResultType>;
   /** Remove user avatar */
   removeAvatar: RemoveAvatar;
+  /** Delete a chat session */
+  removeCopilotSession: Scalars['Boolean']['output'];
   /** Remove user embedding doc */
   removeUserDocs: Scalars['Boolean']['output'];
   /** Remove user embedding files */
@@ -779,6 +780,10 @@ export interface MutationEnableUserArgs {
 
 export interface MutationImportUsersArgs {
   input: ImportUsersInput;
+}
+
+export interface MutationRemoveCopilotSessionArgs {
+  options: RemoveSessionInput;
 }
 
 export interface MutationRemoveUserDocsArgs {
@@ -1012,6 +1017,10 @@ export interface QueryTooLongDataType {
 export interface RemoveAvatar {
   __typename?: 'RemoveAvatar';
   success: Scalars['Boolean']['output'];
+}
+
+export interface RemoveSessionInput {
+  sessionId: Scalars['String']['input'];
 }
 
 export interface RuntimeConfigNotFoundDataType {
@@ -2199,6 +2208,15 @@ export type GetCopilotRecentSessionsQuery = {
   } | null;
 };
 
+export type RemoveCopilotSessionMutationVariables = Exact<{
+  options: RemoveSessionInput;
+}>;
+
+export type RemoveCopilotSessionMutation = {
+  __typename?: 'Mutation';
+  removeCopilotSession: boolean;
+};
+
 export type UpdateCopilotSessionMutationVariables = Exact<{
   options: UpdateChatSessionInput;
 }>;
@@ -3074,6 +3092,11 @@ export type Mutations =
       name: 'createCopilotSessionMutation';
       variables: CreateCopilotSessionMutationVariables;
       response: CreateCopilotSessionMutation;
+    }
+  | {
+      name: 'removeCopilotSessionMutation';
+      variables: RemoveCopilotSessionMutationVariables;
+      response: RemoveCopilotSessionMutation;
     }
   | {
       name: 'updateCopilotSessionMutation';

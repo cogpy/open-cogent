@@ -744,6 +744,14 @@ ${copilotChatHistoryFragment}
 ${paginatedCopilotChatsFragment}`,
 };
 
+export const removeCopilotSessionMutation = {
+  id: 'removeCopilotSessionMutation' as const,
+  op: 'removeCopilotSession',
+  query: `mutation removeCopilotSession($options: RemoveSessionInput!) {
+  removeCopilotSession(options: $options)
+}`,
+};
+
 export const updateCopilotSessionMutation = {
   id: 'updateCopilotSessionMutation' as const,
   op: 'updateCopilotSession',

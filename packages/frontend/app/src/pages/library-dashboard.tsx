@@ -5,8 +5,17 @@ import {
   Masonry,
   type MasonryGroup,
   type MasonryItem,
+  Menu,
+  MenuItem,
+  toast,
 } from '@afk/component';
-import { FavoritedIcon, FavoriteIcon, PageIcon } from '@blocksuite/icons/rc';
+import {
+  DeleteIcon,
+  FavoritedIcon,
+  FavoriteIcon,
+  MoreVerticalIcon,
+  PageIcon,
+} from '@blocksuite/icons/rc';
 import { cssVarV2 } from '@toeverything/theme/v2';
 import dayjs from 'dayjs';
 import { useCallback, useMemo, useState } from 'react';
@@ -16,6 +25,8 @@ import { FileIconRenderer } from '@/components/file-icon-renderer';
 import { ChatIcon } from '@/icons/chat';
 import { EmptyLibrary } from '@/icons/empty-library';
 import { cn } from '@/lib/utils';
+import { copilotClient } from '@/store/copilot/client';
+import { chatSessionsStore } from '@/store/copilot/sessions-instance';
 import {
   useChatsMap,
   useDocsMap,
@@ -106,7 +117,9 @@ const DateGroupHeader: MasonryGroup['Component'] = ({ groupId, itemCount }) => {
 export const FavoriteAction = ({
   collected,
   setToggleAsync,
+  disabled,
 }: {
+  disabled?: boolean;
   collected: boolean;
   setToggleAsync: (toggle: boolean) => Promise<void>;
 }) => {
@@ -126,7 +139,7 @@ export const FavoriteAction = ({
         e.stopPropagation();
         toggleCollect();
       }}
-      disabled={toggling}
+      disabled={toggling || disabled}
     >
       {collected ? (
         <FavoritedIcon style={{ color: cssVarV2('button/primary') }} />
@@ -138,24 +151,71 @@ export const FavoriteAction = ({
 };
 
 const ChatListItem: MasonryItem['Component'] = ({ itemId }) => {
-  const { toggleCollect } = useLibraryStore();
+  const { toggleCollect, refresh } = useLibraryStore();
   const chatsMap = useChatsMap();
   const chat = chatsMap[itemId];
   const collected = chat?.metadata?.collected;
+  const [deleting, setDeleting] = useState(false);
 
   const toggle = useCallback(async () => {
     await toggleCollect('chat', itemId);
   }, [itemId, toggleCollect]);
 
+  const deleteSession = useCallback(async () => {
+    if (deleting) return;
+    setDeleting(true);
+    try {
+      await copilotClient.removeSession({
+        sessionId: itemId,
+      });
+      toast(`${chat?.title ?? 'New Chat'} deleted`);
+      refresh();
+    } finally {
+      setDeleting(false);
+    }
+  }, [chat?.title, deleting, itemId, refresh]);
+
   return (
-    <Link to={`/chats/${itemId}`}>
+    <Link to={`/chats/${itemId}`} className={deleting ? 'opacity-50' : ''}>
       <div className={styles.listItem}>
         <div className={styles.listItemIcon}>
           <ChatIcon />
         </div>
         <div className={styles.listItemTitle}>{chat?.title ?? 'New Chat'}</div>
-        <div>
-          <FavoriteAction collected={collected} setToggleAsync={toggle} />
+        <div
+          className="flex items-center gap-2"
+          onClick={e => {
+            e.stopPropagation();
+            e.preventDefault();
+          }}
+        >
+          <FavoriteAction
+            collected={collected}
+            setToggleAsync={toggle}
+            disabled={deleting}
+          />
+          <Menu
+            contentOptions={{
+              align: 'end',
+            }}
+            items={
+              <>
+                <MenuItem
+                  prefixIcon={<DeleteIcon />}
+                  type="danger"
+                  onClick={deleteSession}
+                >
+                  Delete Chat
+                </MenuItem>
+              </>
+            }
+          >
+            <IconButton
+              disabled={deleting}
+              icon={<MoreVerticalIcon />}
+              loading={deleting}
+            />
+          </Menu>
         </div>
       </div>
     </Link>

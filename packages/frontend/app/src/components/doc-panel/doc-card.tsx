@@ -1,4 +1,3 @@
-import type { Store } from '@blocksuite/affine/store';
 import { FileIcon } from '@blocksuite/icons/rc';
 import { useEffect, useState } from 'react';
 

@@ -24,6 +24,10 @@
   --shadow-view: 0px 1px 5px rgba(0, 0, 0, 0.05);
 }
 
+.panel-container {
+  @apply border rounded-lg overflow-hidden shadow-view;
+}
+
 html,
 body,
 #root {

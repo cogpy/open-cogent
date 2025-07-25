@@ -6,6 +6,7 @@ import { CheckBoxCheckSolidIcon, EmbedWebIcon } from '@blocksuite/icons/rc';
 import { MessageCard } from '@/components/ui/card/message-card';
 import { MarkdownText, TypeMarkdownText } from '@/components/ui/markdown';
 
+import { AIReasoningCard } from './ai-reasoning-card';
 import { BrowserUseResult, transformStep } from './browser-use-result';
 import { CodeArtifactResult } from './code-artifact-result';
 import { E2bPythonResult } from './e2b-python-result';
@@ -60,13 +61,12 @@ export function ChatContentStreamObjects({
 
           case 'reasoning':
             return (
-              <div key={key} className="rounded-md bg-black/[0.05] p-4">
-                <MarkdownText
-                  className={isAssistant ? 'min-w-full' : undefined}
-                  text={obj.textDelta ?? ''}
-                  loading={loading}
-                />
-              </div>
+              <AIReasoningCard
+                key={key}
+                text={obj.textDelta ?? ''}
+                loading={loading}
+                className={isAssistant ? 'min-w-full' : undefined}
+              />
             );
 
           case 'tool-call':

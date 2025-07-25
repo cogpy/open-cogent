@@ -20,7 +20,7 @@ export const GenericToolResult = ({
   style,
   ...props
 }: {
-  icon: React.ReactNode;
+  icon?: React.ReactNode;
   title: React.ReactNode;
   count?: number;
   actions?: React.ReactNode;
@@ -54,9 +54,11 @@ export const GenericToolResult = ({
           'flex items-center gap-2 h-14 px-4 border-b'
         )}
       >
-        <div className="size-5 shrink-0 text-xl flex items-center justify-center text-icon-primary">
-          {icon}
-        </div>
+        {icon ? (
+          <div className="size-5 shrink-0 text-xl flex items-center justify-center text-icon-primary">
+            {icon}
+          </div>
+        ) : null}
         <div className="w-0 flex-1 text-sm font-medium text-text-primary truncate">
           {title}
           {count ? (

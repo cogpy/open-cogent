@@ -668,14 +668,6 @@ export const copilotQuotaQuery = {
 }`,
 };
 
-export const cleanupCopilotSessionMutation = {
-  id: 'cleanupCopilotSessionMutation' as const,
-  op: 'cleanupCopilotSession',
-  query: `mutation cleanupCopilotSession($input: DeleteSessionInput!) {
-  cleanupCopilotSession(options: $input)
-}`,
-};
-
 export const createCopilotSessionMutation = {
   id: 'createCopilotSessionMutation' as const,
   op: 'createCopilotSession',

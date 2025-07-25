@@ -96,12 +96,6 @@ class UpdateChatSessionInput
 }
 
 @InputType()
-class DeleteSessionInput {
-  @Field(() => [String])
-  sessionIds!: string[];
-}
-
-@InputType()
 class RemoveSessionInput {
   @Field(() => String)
   sessionId!: string;
@@ -475,36 +469,21 @@ export class CopilotResolver {
     description: 'Cleanup sessions',
   })
   @CallMetric('ai', 'chat_session_cleanup')
-  async cleanupCopilotSession(
+  async removeCopilotSession(
     @CurrentUser() user: CurrentUser,
-    @Args({ name: 'options', type: () => DeleteSessionInput })
-    options: DeleteSessionInput
+    @Args({ name: 'options', type: () => RemoveSessionInput })
+    options: RemoveSessionInput
   ): Promise<string[]> {
-    if (!options.sessionIds.length) {
-      throw new NotFoundException('Session not found');
-    }
-    const lockFlag = `${COPILOT_LOCKER}:session:${user.id}`;
+    const lockFlag = `${COPILOT_LOCKER}:session:${user.id}:${options.sessionId}`;
     await using lock = await this.mutex.acquire(lockFlag);
     if (!lock) {
       throw new TooManyRequest('Server is busy');
     }
 
     return await this.chatSession.cleanup({
-      ...options,
+      sessionIds: [options.sessionId],
       userId: user.id,
     });
-  }
-
-  @Mutation(() => Boolean, {
-    description: 'Delete a chat session',
-  })
-  @CallMetric('ai', 'chat_session_remove')
-  async removeCopilotSession(
-    @CurrentUser() user: CurrentUser,
-    @Args({ name: 'options', type: () => RemoveSessionInput })
-    options: RemoveSessionInput
-  ): Promise<boolean> {
-    return await this.chatSession.delete(options.sessionId, user.id);
   }
 
   @Mutation(() => String, {

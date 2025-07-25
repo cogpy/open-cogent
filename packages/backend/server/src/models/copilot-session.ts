@@ -367,30 +367,12 @@ export class CopilotSessionModel extends BaseModel {
       where: { sessionId: { in: sessionIds } },
     });
 
-    // only mark action session as deleted
-    // chat session always can be reuse
-    const actionIds = sessions
-      .filter(({ prompt }) => !!prompt.action)
-      .map(({ id }) => id);
-
-    // Mark action session as deleted
-    if (actionIds.length > 0) {
-      await this.db.aiSession.updateMany({
-        where: { id: { in: actionIds } },
-        data: { pinned: false, deletedAt: new Date() },
-      });
-    }
+    await this.db.aiSession.updateMany({
+      where: { id: { in: sessionIds } },
+      data: { pinned: false, deletedAt: new Date() },
+    });
 
     return sessionIds;
-  }
-
-  @Transactional()
-  async delete(sessionId: string, userId: string) {
-    await this.db.aiSession.update({
-      where: { id: sessionId, userId },
-      data: { deletedAt: new Date() },
-    });
-    return true;
   }
 
   @Transactional()

@@ -4,7 +4,6 @@ import {
   addContextDocMutation,
   addContextFileExistsMutation,
   addContextFileMutation,
-  cleanupCopilotSessionMutation,
   createCopilotContextMutation,
   createCopilotMessageMutation,
   createCopilotSessionMutation,
@@ -215,20 +214,6 @@ export class CopilotClient {
       });
 
       return res.currentUser?.copilot?.chats.edges.map(e => e.node);
-    } catch (err) {
-      throw resolveError(err);
-    }
-  }
-
-  async cleanupSessions(input: { sessionIds: string[] }) {
-    try {
-      const res = await this.gql({
-        query: cleanupCopilotSessionMutation,
-        variables: {
-          input,
-        },
-      });
-      return res.cleanupCopilotSession;
     } catch (err) {
       throw resolveError(err);
     }

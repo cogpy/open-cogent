@@ -420,10 +420,6 @@ export interface DeleteAccount {
   success: Scalars['Boolean']['output'];
 }
 
-export interface DeleteSessionInput {
-  sessionIds: Array<Scalars['String']['input']>;
-}
-
 export type ErrorDataUnion =
   | BlobNotFoundDataType
   | CopilotContextFileNotSupportedDataType
@@ -636,8 +632,6 @@ export interface Mutation {
   changeEmail: UserType;
   changePassword: Scalars['Boolean']['output'];
   claimAudioTranscription: Maybe<TranscriptionResultType>;
-  /** Cleanup sessions */
-  cleanupCopilotSession: Array<Scalars['String']['output']>;
   /** Create change password url */
   createChangePasswordUrl: Scalars['String']['output'];
   /** Create a context session */
@@ -659,8 +653,8 @@ export interface Mutation {
   importUsers: Array<UserImportResultType>;
   /** Remove user avatar */
   removeAvatar: RemoveAvatar;
-  /** Delete a chat session */
-  removeCopilotSession: Scalars['Boolean']['output'];
+  /** Cleanup sessions */
+  removeCopilotSession: Array<Scalars['String']['output']>;
   /** Remove user embedding doc */
   removeUserDocs: Scalars['Boolean']['output'];
   /** Remove user embedding files */
@@ -739,10 +733,6 @@ export interface MutationChangePasswordArgs {
 
 export interface MutationClaimAudioTranscriptionArgs {
   jobId: Scalars['String']['input'];
-}
-
-export interface MutationCleanupCopilotSessionArgs {
-  options: DeleteSessionInput;
 }
 
 export interface MutationCreateChangePasswordUrlArgs {
@@ -2011,15 +2001,6 @@ export type CopilotQuotaQuery = {
   } | null;
 };
 
-export type CleanupCopilotSessionMutationVariables = Exact<{
-  input: DeleteSessionInput;
-}>;
-
-export type CleanupCopilotSessionMutation = {
-  __typename?: 'Mutation';
-  cleanupCopilotSession: Array<string>;
-};
-
 export type CreateCopilotSessionMutationVariables = Exact<{
   options: CreateChatSessionInput;
 }>;
@@ -2214,7 +2195,7 @@ export type RemoveCopilotSessionMutationVariables = Exact<{
 
 export type RemoveCopilotSessionMutation = {
   __typename?: 'Mutation';
-  removeCopilotSession: boolean;
+  removeCopilotSession: Array<string>;
 };
 
 export type UpdateCopilotSessionMutationVariables = Exact<{
@@ -3082,11 +3063,6 @@ export type Mutations =
       name: 'createCopilotMessageMutation';
       variables: CreateCopilotMessageMutationVariables;
       response: CreateCopilotMessageMutation;
-    }
-  | {
-      name: 'cleanupCopilotSessionMutation';
-      variables: CleanupCopilotSessionMutationVariables;
-      response: CleanupCopilotSessionMutation;
     }
   | {
       name: 'createCopilotSessionMutation';

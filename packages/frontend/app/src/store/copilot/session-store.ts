@@ -327,7 +327,6 @@ export function createChatSessionStore(params: {
       cleanup: async (sessionIds: string[]) => {
         await withFlag(store, 'isSubmitting', async () => {
           await client.cleanupSessions({
-            docId: '', // docId placeholder; client API still expects
             sessionIds,
           });
         });

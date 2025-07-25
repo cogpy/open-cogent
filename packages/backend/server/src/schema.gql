@@ -329,10 +329,6 @@ type DeleteAccount {
   success: Boolean!
 }
 
-input DeleteSessionInput {
-  sessionIds: [String!]!
-}
-
 union ErrorDataUnion = BlobNotFoundDataType | CopilotContextFileNotSupportedDataType | CopilotDocNotFoundDataType | CopilotFailedToAddUserArtifactDataType | CopilotFailedToGenerateEmbeddingDataType | CopilotFailedToMatchContextDataType | CopilotFailedToMatchGlobalContextDataType | CopilotFailedToModifyContextDataType | CopilotInvalidContextDataType | CopilotMessageNotFoundDataType | CopilotPromptNotFoundDataType | CopilotProviderNotSupportedDataType | CopilotProviderSideErrorDataType | GraphqlBadRequestDataType | HttpRequestErrorDataType | InvalidAppConfigDataType | InvalidAppConfigInputDataType | InvalidEmailDataType | InvalidOauthCallbackCodeDataType | InvalidOauthResponseDataType | InvalidPasswordLengthDataType | InvalidRuntimeConfigTypeDataType | MissingOauthQueryParameterDataType | NoCopilotProviderAvailableDataType | QueryTooLongDataType | RuntimeConfigNotFoundDataType | UnknownOauthProviderDataType | UnsupportedClientVersionDataType | ValidationErrorDataType | WrongSignInCredentialsDataType
 
 enum ErrorNames {
@@ -520,9 +516,6 @@ type Mutation {
   changePassword(newPassword: String!, token: String!, userId: String): Boolean!
   claimAudioTranscription(jobId: String!): TranscriptionResultType
 
-  """Cleanup sessions"""
-  cleanupCopilotSession(options: DeleteSessionInput!): [String!]!
-
   """Create change password url"""
   createChangePasswordUrl(callbackUrl: String!, userId: String!): String!
 
@@ -554,8 +547,8 @@ type Mutation {
   """Remove user avatar"""
   removeAvatar: RemoveAvatar!
 
-  """Delete a chat session"""
-  removeCopilotSession(options: RemoveSessionInput!): Boolean!
+  """Cleanup sessions"""
+  removeCopilotSession(options: RemoveSessionInput!): [String!]!
 
   """Remove user embedding doc"""
   removeUserDocs(docId: String!): Boolean!

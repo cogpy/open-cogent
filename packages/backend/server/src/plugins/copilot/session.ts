@@ -463,10 +463,6 @@ export class ChatSessionService {
     return await this.models.copilotSession.cleanup(options);
   }
 
-  async delete(sessionId: string, userId: string) {
-    return await this.models.copilotSession.delete(sessionId, userId);
-  }
-
   async createMessage(message: SubmittedMessage): Promise<string> {
     return await this.messageCache.set(message);
   }

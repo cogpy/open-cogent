@@ -250,7 +250,9 @@ const ChatSession = ({
         <AggregatedTodoList store={store} />
         <ChatInput
           onSend={onSend}
-          sending={isSubmitting || isStreaming}
+          sending={isSubmitting}
+          streaming={isStreaming}
+          onAbort={store.getState().abortSend}
           store={store}
           placeholder={placeholder}
         />

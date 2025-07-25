@@ -23,6 +23,13 @@ export const send = style({
     },
   },
 });
+export const abort = style({
+  backgroundColor: 'black',
+  borderRadius: '50%',
+  width: 28,
+  height: 28,
+  cursor: 'pointer',
+});
 
 export const groupLabel = style({
   ...text(12, 20, 500),

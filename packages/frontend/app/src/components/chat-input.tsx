@@ -1,5 +1,5 @@
 import { IconButton, Menu, MenuItem } from '@afk/component';
-import { ArrowUpBigIcon, PlusIcon } from '@blocksuite/icons/rc';
+import { ArrowUpBigIcon, PlusIcon, StopIcon } from '@blocksuite/icons/rc';
 import { cssVarV2 } from '@toeverything/theme/v2';
 import { motion } from 'framer-motion';
 import { useCallback, useRef, useState } from 'react';
@@ -49,6 +49,7 @@ export const ChatInput = ({
   onSend: propsOnSend,
   placeholder = 'What are your thoughts?',
   sending,
+  streaming,
   onAbort,
   store,
   isCreating,
@@ -58,6 +59,7 @@ export const ChatInput = ({
   onAbort?: () => void;
   placeholder?: string;
   sending?: boolean;
+  streaming?: boolean;
   store?: StoreApi<ChatSessionState>;
   isCreating?: boolean;
   initialInput?: string;
@@ -173,17 +175,29 @@ export const ChatInput = ({
               </div>
             </Button>
           </ModelSelectorMenu> */}
-          <IconButton
-            disabled={!input.trim()}
-            className={styles.send}
-            icon={<ArrowUpBigIcon className="text-white" />}
-            onClick={e => {
-              e.preventDefault();
-              e.stopPropagation();
-              onSend();
-            }}
-            loading={isCreating || sending}
-          />
+          {streaming ? (
+            <IconButton
+              icon={
+                <div className="size-full flex items-center justify-center">
+                  <div className="size-2 bg-white" />
+                </div>
+              }
+              className={styles.abort}
+              onClick={onAbort}
+            />
+          ) : (
+            <IconButton
+              disabled={!input.trim()}
+              className={styles.send}
+              icon={<ArrowUpBigIcon className="text-white" />}
+              onClick={e => {
+                e.preventDefault();
+                e.stopPropagation();
+                onSend();
+              }}
+              loading={isCreating || sending}
+            />
+          )}
         </div>
       </footer>
     </div>

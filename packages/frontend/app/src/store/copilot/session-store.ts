@@ -97,6 +97,7 @@ export function createChatSessionStore(params: {
       contextFiles: [],
       contextChats: [],
       contextDocs: [],
+      abortController: null,
 
       /* ---------- Flags ---------- */
       isInitializing: true,
@@ -178,12 +179,30 @@ export function createChatSessionStore(params: {
         await init();
       },
 
+      abortSend() {
+        const controller = get().abortController;
+        if (controller) {
+          controller.abort();
+          set(state => {
+            state.abortController = null;
+            state.isStreaming = false;
+            state.isSubmitting = false;
+          });
+        }
+      },
+
       sendMessage: async (options: SendMessageOptions) => {
         if (!options.content || !options.content.trim()) {
           return;
         }
 
         const content = options.content.trim();
+
+        // Create AbortController for this message
+        const abortController = new AbortController();
+        set(state => {
+          state.abortController = abortController;
+        });
 
         await withFlag(store, 'isSubmitting', async () => {
           // Create user message on backend
@@ -224,9 +243,12 @@ export function createChatSessionStore(params: {
               const es = client.chatTextStream({
                 sessionId,
                 messageId: messageId ?? undefined,
+                signal: abortController.signal,
               });
 
-              for await (const ev of toTextStream(es)) {
+              for await (const ev of toTextStream(es, {
+                signal: abortController.signal,
+              })) {
                 if (ev.type === 'message') {
                   const chunk = ev.data;
                   store.setState(
@@ -262,12 +284,14 @@ export function createChatSessionStore(params: {
               store.setState(
                 produce((draft: ChatSessionState) => {
                   draft.error = (err as Error) ?? new Error('Stream error');
+                  draft.abortController = null;
                 })
               );
             } finally {
               store.setState(
                 produce((draft: ChatSessionState) => {
                   draft.isStreaming = false;
+                  draft.abortController = null;
                   useLibraryStore.getState().refresh();
                 })
               );
@@ -275,6 +299,11 @@ export function createChatSessionStore(params: {
           };
 
           void stream();
+        }).catch(() => {
+          // Clean up AbortController if withFlag fails
+          set(state => {
+            state.abortController = null;
+          });
         });
       },
 

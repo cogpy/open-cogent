@@ -335,12 +335,14 @@ export class CopilotClient {
       reasoning,
       webSearch,
       modelId,
+      signal,
     }: {
       sessionId: string;
       messageId?: string;
       reasoning?: boolean;
       webSearch?: boolean;
       modelId?: string;
+      signal?: AbortSignal;
     },
     endpoint = Endpoint.StreamObject
   ) {

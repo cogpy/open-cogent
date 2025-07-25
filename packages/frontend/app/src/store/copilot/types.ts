@@ -48,13 +48,16 @@ export interface ChatSessionState extends SessionFlags {
   contextChats: CopilotContextChatOrDoc[];
   contextDocs: CopilotContextChatOrDoc[];
 
+  // Abort controller for canceling ongoing requests
+  abortController: AbortController | null;
+
   /* ---------------- Actions -------------- */
   init(): Promise<void>;
   reload(): Promise<void>;
+  abortSend(): void;
   sendMessage(options: Omit<SendMessageOptions, 'sessionId'>): Promise<void>;
   cleanup(sessionIds: string[]): Promise<void>;
   clearError(): void;
-
   // contexts
   loadContextId(): Promise<void>;
   loadContexts(): Promise<void>;

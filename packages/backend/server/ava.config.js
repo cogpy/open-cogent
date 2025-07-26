@@ -24,8 +24,8 @@ export default {
     DEPLOYMENT_TYPE: 'agent',
     MAILER_HOST: '0.0.0.0',
     MAILER_PORT: '1025',
-    MAILER_USER: 'noreply@toeverything.info',
+    MAILER_USER: 'noreply@open-agent.io',
     MAILER_PASSWORD: 'open-agent',
-    MAILER_SENDER: 'noreply@toeverything.info',
+    MAILER_SENDER: 'noreply@open-agent.io',
   },
 };

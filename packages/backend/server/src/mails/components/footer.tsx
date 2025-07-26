@@ -55,7 +55,7 @@ export const Footer = () => {
               style={{ verticalAlign: 'middle', margin: '0 4px' }}
             />
           </td>
-          <td>2025-{new Date().getUTCFullYear()} AFK.surf</td>
+          <td>2025-{new Date().getUTCFullYear()} Open-Agent</td>
         </Row>
       </Section>
     </Container>

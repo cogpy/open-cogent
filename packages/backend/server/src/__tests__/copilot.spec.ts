@@ -260,7 +260,7 @@ test('should be able to render listed prompt', async t => {
     content: 'links:\n{{#links}}- {{.}}\n{{/links}}',
   };
   const params = {
-    links: ['https://open-agent.io', 'https://github.com/toeverything/affine'],
+    links: ['https://open-agent.io', 'https://github.com/AFK-surf/open-agent'],
   };
 
   await prompt.set(promptName, 'test', [msg]);
@@ -268,7 +268,7 @@ test('should be able to render listed prompt', async t => {
 
   t.is(
     testPrompt?.finish(params).pop()?.content,
-    'links:\n- https://open-agent.io\n- https://github.com/toeverything/affine\n',
+    'links:\n- https://open-agent.io\n- https://github.com/AFK-surf/open-agent\n',
     'should render the prompt'
   );
 });

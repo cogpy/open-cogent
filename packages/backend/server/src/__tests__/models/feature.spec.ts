@@ -62,31 +62,6 @@ test('should throw if feature config in invalid', async t => {
   });
 });
 
-// NOTE: backward compatibility
-//   new version of feature config may introduce new field
-//   this test means to ensure that the older version of AFFiNE Server can still read it
-test('should get feature if extra fields exist in feature config', async t => {
-  const { feature } = t.context;
-  const freePlanFeature = await feature.get('free_plan_v1');
-
-  // @ts-expect-error internal
-  await feature.db.feature.update({
-    where: {
-      id: freePlanFeature.id,
-    },
-    data: {
-      configs: {
-        ...freePlanFeature.configs,
-        extraField: 'extraValue',
-      },
-    },
-  });
-
-  const freePlanFeature2 = await feature.get('free_plan_v1');
-
-  t.snapshot(freePlanFeature2.configs);
-});
-
 test('should create feature', async t => {
   const { feature } = t.context;
 

@@ -34,10 +34,10 @@ export abstract class OAuthProvider {
 
   protected readonly logger = new Logger(this.constructor.name);
   @Inject() private readonly factory!: OAuthProviderFactory;
-  @Inject() private readonly AFFiNEConfig!: Config;
+  @Inject() private readonly OpenAgentConfig!: Config;
 
   get config() {
-    return this.AFFiNEConfig.oauth.providers[this.provider];
+    return this.OpenAgentConfig.oauth.providers[this.provider];
   }
 
   get configured() {

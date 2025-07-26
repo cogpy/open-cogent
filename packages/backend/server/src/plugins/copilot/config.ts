@@ -124,7 +124,7 @@ defineModuleConfig('copilot', {
       provider: 'fs',
       bucket: 'copilot',
       config: {
-        path: '~/.affine/storage',
+        path: '~/.open-agent/storage',
       },
     },
     schema: StorageJSONSchema,

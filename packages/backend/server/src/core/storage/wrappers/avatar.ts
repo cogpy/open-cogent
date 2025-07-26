@@ -17,11 +17,11 @@ export class AvatarStorage {
   private provider!: StorageProvider;
 
   get config() {
-    return this.AFFiNEConfig.storages.avatar;
+    return this.OpenAgentConfig.storages.avatar;
   }
 
   constructor(
-    private readonly AFFiNEConfig: Config,
+    private readonly OpenAgentConfig: Config,
     private readonly url: URLHelper,
     private readonly storageFactory: StorageProviderFactory
   ) {}

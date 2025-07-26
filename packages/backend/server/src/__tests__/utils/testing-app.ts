@@ -10,7 +10,7 @@ import graphqlUploadExpress from 'graphql-upload/graphqlUploadExpress.mjs';
 import supertest from 'supertest';
 
 import {
-  AFFiNELogger,
+  OpenAgentLogger,
   ApplyType,
   GlobalExceptionFilter,
   JobQueue,
@@ -42,7 +42,7 @@ export async function createTestingApp(
   moduleDef: TestingAppMetadata = {}
 ): Promise<TestingApp> {
   const module = await createTestingModule(moduleDef, false);
-  const logger = new AFFiNELogger();
+  const logger = new OpenAgentLogger();
   logger.setLogLevels([TEST_LOG_LEVEL]);
 
   const app = module.createNestApplication<NestExpressApplication>({

@@ -2,33 +2,25 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Launch AFFiNE Cloud",
+      "name": "Launch Open-Agent Cloud",
       "type": "node",
       "request": "launch",
       "runtimeExecutable": "yarn",
       "cwd": "${workspaceFolder}",
-      "runtimeArgs": [
-        "affine",
-        "@affine/server",
-        "dev"
-      ]
+      "runtimeArgs": ["oa", "@afk/server", "dev"]
     },
     {
-      "name": "Lanuch AFFiNE Web",
+      "name": "Lanuch Open-Agent Web",
       "type": "node",
       "request": "launch",
       "runtimeExecutable": "yarn",
       "cwd": "${workspaceFolder}",
-      "runtimeArgs": [
-        "affine",
-        "@affine/web",
-        "dev"
-      ]
+      "runtimeArgs": ["oa", "@afk/web", "dev"]
     },
     {
       "type": "chrome",
       "request": "launch",
-      "name": "Debug AFFiNE Web",
+      "name": "Debug Open-Agent Web",
       "url": "http://localhost:8080"
     }
   ]

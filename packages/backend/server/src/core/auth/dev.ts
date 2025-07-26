@@ -8,13 +8,13 @@ export async function createDevUsers(models: Models) {
     features: UserFeatureName[];
   }[] = [
     {
-      email: 'dev@affine.pro',
+      email: 'dev@open-agent.io',
       name: 'Dev User',
       password: 'dev',
       features: ['free_plan_v1', 'unlimited_copilot'],
     },
     {
-      email: 'pro@affine.pro',
+      email: 'pro@open-agent.io',
       name: 'Pro User',
       password: 'pro',
       features: ['pro_plan_v1', 'unlimited_copilot'],

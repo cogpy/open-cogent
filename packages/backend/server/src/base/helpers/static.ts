@@ -21,7 +21,7 @@ export class StaticFilesResolver implements OnModuleInit {
     }
 
     const app = this.adapterHost.httpAdapter.getInstance<Application>();
-    // for example, '/affine' in host [//host.com/affine]
+    // for example, '/open-agent' in host [//host.com/open-agent]
     const basePath = this.config.server.path;
     const staticPath = join(env.projectRoot, 'static');
 

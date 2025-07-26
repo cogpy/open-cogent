@@ -8,6 +8,7 @@ export {
   type VerifyChangeEmailProps,
 } from './email-change-verify';
 export { default as VerifyEmail, type VerifyEmailProps } from './email-verify';
+export { default as Mention, type MentionProps } from './mention';
 export {
   default as ChangePassword,
   type ChangePasswordProps,

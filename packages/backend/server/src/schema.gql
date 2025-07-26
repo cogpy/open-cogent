@@ -410,6 +410,7 @@ enum ErrorNames {
 }
 
 enum FeatureType {
+  Administrator
   FreePlan
   ProPlan
   UnlimitedCopilot

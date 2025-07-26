@@ -2,6 +2,7 @@ import { Workspace } from '@afk-tools/utils/workspace';
 import { Cli } from 'clipanion';
 
 import { BuildCommand } from './build';
+import { CertCommand } from './cert';
 import { CleanCommand } from './clean';
 import type { CliContext } from './context';
 import { DevCommand } from './dev';
@@ -21,6 +22,7 @@ cli.register(InitCommand);
 cli.register(CleanCommand);
 cli.register(BuildCommand);
 cli.register(DevCommand);
+cli.register(CertCommand);
 
 await cli.runExit(process.argv.slice(2), {
   workspace: new Workspace(),

@@ -19,7 +19,7 @@ export class JobModule {
       imports: [
         BullModule.forRootAsync({
           useFactory: (config: Config, redis: QueueRedis): QueueOptions => {
-            let prefix = 'affine_job';
+            let prefix = 'open_agent_job';
             if (env.testing) {
               prefix += '_test';
             } else if (!env.namespaces.production) {

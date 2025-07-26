@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "AFFiNE Application Configuration",
+  "title": "Open-Agent Application Configuration",
   "type": "object",
   "properties": {
     "metrics": {
@@ -20,7 +20,7 @@
       "properties": {
         "privateKey": {
           "type": "string",
-          "description": "The private key for used by the crypto module to create signed tokens or encrypt data.\n@default \"\"\n@environment `AFFINE_PRIVATE_KEY`",
+          "description": "The private key for used by the crypto module to create signed tokens or encrypt data.\n@default \"\"\n@environment `OPEN_AGENT_PRIVATE_KEY`",
           "default": ""
         }
       }
@@ -212,29 +212,13 @@
         },
         "SMTP.sender": {
           "type": "string",
-          "description": "Sender of all the emails (e.g. \"AFFiNE Team <noreply@affine.pro>\")\n@default \"\"\n@environment `MAILER_SENDER`",
+          "description": "Sender of all the emails (e.g. \"Open-Agent Team <noreply@open-agent.io>\")\n@default \"\"\n@environment `MAILER_SENDER`",
           "default": ""
         },
         "SMTP.ignoreTLS": {
           "type": "boolean",
           "description": "Whether ignore email server's TSL certification verification. Enable it for self-signed certificates.\n@default false\n@environment `MAILER_IGNORE_TLS`",
           "default": false
-        }
-      }
-    },
-    "doc": {
-      "type": "object",
-      "description": "Configuration for doc module",
-      "properties": {
-        "experimental.yocto": {
-          "type": "boolean",
-          "description": "Use `y-octo` to merge updates at the same time when merging using Yjs.\n@default false",
-          "default": false
-        },
-        "history.interval": {
-          "type": "number",
-          "description": "The minimum time interval in milliseconds of creating a new history snapshot when doc get updated.\n@default 600000",
-          "default": 600000
         }
       }
     },
@@ -249,7 +233,7 @@
         },
         "avatar.storage": {
           "type": "object",
-          "description": "The config of storage for user avatars.\n@default {\"provider\":\"fs\",\"bucket\":\"avatars\",\"config\":{\"path\":\"~/.affine/storage\"}}",
+          "description": "The config of storage for user avatars.\n@default {\"provider\":\"fs\",\"bucket\":\"avatars\",\"config\":{\"path\":\"~/.open-agent/storage\"}}",
           "oneOf": [
             {
               "type": "object",
@@ -364,13 +348,13 @@
             "provider": "fs",
             "bucket": "avatars",
             "config": {
-              "path": "~/.affine/storage"
+              "path": "~/.open-agent/storage"
             }
           }
         },
         "blob.storage": {
           "type": "object",
-          "description": "The config of storage for all uploaded blobs(images, videos, etc.).\n@default {\"provider\":\"fs\",\"bucket\":\"blobs\",\"config\":{\"path\":\"~/.affine/storage\"}}",
+          "description": "The config of storage for all uploaded blobs(images, videos, etc.).\n@default {\"provider\":\"fs\",\"bucket\":\"blobs\",\"config\":{\"path\":\"~/.open-agent/storage\"}}",
           "oneOf": [
             {
               "type": "object",
@@ -485,7 +469,7 @@
             "provider": "fs",
             "bucket": "blobs",
             "config": {
-              "path": "~/.affine/storage"
+              "path": "~/.open-agent/storage"
             }
           }
         }
@@ -523,21 +507,21 @@
       "properties": {
         "name": {
           "type": "string",
-          "description": "A recognizable name for the server. Will be shown when connected with AFFiNE Desktop.\n@default undefined"
+          "description": "A recognizable name for the server. Will be shown when connected with client.\n@default undefined"
         },
         "externalUrl": {
           "type": "string",
-          "description": "Base url of AFFiNE server, used for generating external urls.\nDefault to be `[server.protocol]://[server.host][:server.port]` if not specified.\n    \n@default \"\"\n@environment `AFFINE_SERVER_EXTERNAL_URL`",
+          "description": "Base url of Open-Agent server, used for generating external urls.\nDefault to be `[server.protocol]://[server.host][:server.port]` if not specified.\n    \n@default \"\"\n@environment `OPEN_AGENT_SERVER_EXTERNAL_URL`",
           "default": ""
         },
         "https": {
           "type": "boolean",
-          "description": "Whether the server is hosted on a ssl enabled domain (https://).\n@default false\n@environment `AFFINE_SERVER_HTTPS`",
+          "description": "Whether the server is hosted on a ssl enabled domain (https://).\n@default false\n@environment `OPEN_AGENT_SERVER_HTTPS`",
           "default": false
         },
         "host": {
           "type": "string",
-          "description": "Where the server get deployed(FQDN).\n@default \"localhost\"\n@environment `AFFINE_SERVER_HOST`",
+          "description": "Where the server get deployed(FQDN).\n@default \"localhost\"\n@environment `OPEN_AGENT_SERVER_HOST`",
           "default": "localhost"
         },
         "hosts": {
@@ -547,12 +531,12 @@
         },
         "port": {
           "type": "number",
-          "description": "Which port the server will listen on.\n@default 3010\n@environment `AFFINE_SERVER_PORT`",
+          "description": "Which port the server will listen on.\n@default 3010\n@environment `OPEN_AGENT_SERVER_PORT`",
           "default": 3010
         },
         "path": {
           "type": "string",
-          "description": "Subpath where the server get deployed if there is one.(e.g. /affine)\n@default \"\"\n@environment `AFFINE_SERVER_SUB_PATH`",
+          "description": "Subpath where the server get deployed if there is one.(e.g. /open-agent)\n@default \"\"\n@environment `OPEN_AGENT_SERVER_SUB_PATH`",
           "default": ""
         }
       }
@@ -565,22 +549,6 @@
           "type": "boolean",
           "description": "Only allow users with early access features to access the app\n@default false",
           "default": false
-        },
-        "allowGuestDemoWorkspace": {
-          "type": "boolean",
-          "description": "Whether allow guest users to create demo workspaces.\n@default true",
-          "default": true
-        }
-      }
-    },
-    "docService": {
-      "type": "object",
-      "description": "Configuration for docService module",
-      "properties": {
-        "endpoint": {
-          "type": "string",
-          "description": "The endpoint of the doc service.\n@default \"\"\n@environment `DOC_SERVICE_ENDPOINT`",
-          "default": ""
         }
       }
     },
@@ -756,23 +724,23 @@
             "key": ""
           }
         },
-        "browserUse":{
+        "browserUse": {
           "type": "object",
-          "description": "The config for the browser use key.\n@default {\"key\":\"\"}",
+          "description": "The config for the browser use key\n@default {\"key\":\"\"}",
           "default": {
             "key": ""
           }
         },
-        "e2b":{
+        "e2b": {
           "type": "object",
-          "description": "The config for the e2b key.\n@default {\"key\":\"\"}",
+          "description": "The config for the e2b key\n@default {\"key\":\"\"}",
           "default": {
             "key": ""
           }
         },
         "storage": {
           "type": "object",
-          "description": "The config for the storage provider.\n@default {\"provider\":\"fs\",\"bucket\":\"copilot\",\"config\":{\"path\":\"~/.affine/storage\"}}",
+          "description": "The config for the storage provider.\n@default {\"provider\":\"fs\",\"bucket\":\"copilot\",\"config\":{\"path\":\"~/.open-agent/storage\"}}",
           "oneOf": [
             {
               "type": "object",
@@ -887,25 +855,9 @@
             "provider": "fs",
             "bucket": "copilot",
             "config": {
-              "path": "~/.affine/storage"
+              "path": "~/.open-agent/storage"
             }
           }
-        }
-      }
-    },
-    "customerIo": {
-      "type": "object",
-      "description": "Configuration for customerIo module",
-      "properties": {
-        "enabled": {
-          "type": "boolean",
-          "description": "Enable customer.io integration\n@default false",
-          "default": false
-        },
-        "token": {
-          "type": "string",
-          "description": "Customer.io token\n@default \"\"",
-          "default": ""
         }
       }
     },
@@ -990,51 +942,6 @@
             "clientId": "",
             "clientSecret": ""
           }
-        }
-      }
-    },
-    "payment": {
-      "type": "object",
-      "description": "Configuration for payment module",
-      "properties": {
-        "enabled": {
-          "type": "boolean",
-          "description": "Whether enable payment plugin\n@default false",
-          "default": false
-        },
-        "showLifetimePrice": {
-          "type": "boolean",
-          "description": "Whether enable lifetime price and allow user to pay for it.\n@default true",
-          "default": true
-        },
-        "apiKey": {
-          "type": "string",
-          "description": "Stripe API key to enable payment service.\n@default \"\"\n@environment `STRIPE_API_KEY`",
-          "default": ""
-        },
-        "webhookKey": {
-          "type": "string",
-          "description": "Stripe webhook key to enable payment service.\n@default \"\"\n@environment `STRIPE_WEBHOOK_KEY`",
-          "default": ""
-        },
-        "stripe": {
-          "type": "object",
-          "description": "Stripe sdk options\n@default {}\n@link https://docs.stripe.com/api",
-          "default": {}
-        }
-      }
-    },
-    "worker": {
-      "type": "object",
-      "description": "Configuration for worker module",
-      "properties": {
-        "allowedOrigin": {
-          "type": "array",
-          "description": "Allowed origin\n@default [\"localhost\",\"127.0.0.1\"]",
-          "default": [
-            "localhost",
-            "127.0.0.1"
-          ]
         }
       }
     }

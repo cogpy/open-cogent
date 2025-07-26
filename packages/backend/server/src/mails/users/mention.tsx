@@ -16,7 +16,7 @@ export type MentionProps = {
   doc: DocProps;
 };
 
-export function Mention(props: MentionProps) {
+export default function Mention(props: MentionProps) {
   const { user, doc } = props;
   return (
     <Template>

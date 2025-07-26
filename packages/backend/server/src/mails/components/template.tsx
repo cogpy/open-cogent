@@ -214,10 +214,10 @@ export function Template(props: PropsWithChildren) {
           }}
         >
           <Section>
-            <Link href="https://affine.pro">
+            <Link href="https://open-agent.io">
               <Img
-                src="https://cdn.affine.pro/mail/2023-8-9/affine-logo.png"
-                alt="AFFiNE logo"
+                src="https://open-agent.io/assets/icons/logo.svg"
+                alt="Open-Agent logo"
                 height="32px"
               />
             </Link>

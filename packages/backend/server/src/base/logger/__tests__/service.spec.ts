@@ -4,18 +4,18 @@ import { TestingModule } from '@nestjs/testing';
 import ava, { TestFn } from 'ava';
 
 import { createTestingModule } from '../../../__tests__/utils';
-import { AFFiNELogger } from '../service';
+import { OpenAgentLogger } from '../service';
 
 export const test = ava as TestFn<{
   module: TestingModule;
-  logger: AFFiNELogger;
+  logger: OpenAgentLogger;
 }>;
 
 test.before(async t => {
   const m = await createTestingModule({
-    providers: [AFFiNELogger],
+    providers: [OpenAgentLogger],
   });
-  const logger = m.get(AFFiNELogger);
+  const logger = m.get(OpenAgentLogger);
   t.context.module = m;
   t.context.logger = logger;
 });

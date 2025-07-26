@@ -33,8 +33,8 @@ function extractTokenFromHeader(authorization: string) {
 @Injectable()
 export class AuthService implements OnApplicationBootstrap {
   readonly cookieOptions: CookieOptions;
-  static readonly sessionCookieName = 'affine_session';
-  static readonly userCookieName = 'affine_user_id';
+  static readonly sessionCookieName = 'open_agent_session';
+  static readonly userCookieName = 'open_agent_user_id';
 
   constructor(
     private readonly config: Config,

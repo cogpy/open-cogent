@@ -2,7 +2,9 @@ import { z } from 'zod';
 
 import { defineModuleConfig } from '../../base';
 
-export interface ServerFlags {}
+export interface ServerFlags {
+  earlyAccessControl: boolean;
+}
 
 declare global {
   interface AppConfigSchema {
@@ -21,7 +23,7 @@ declare global {
 
 defineModuleConfig('server', {
   name: {
-    desc: 'A recognizable name for the server. Will be shown when connected with AFFiNE Desktop.',
+    desc: 'A recognizable name for the server. Will be shown when connected with client.',
     default: undefined,
     shape: z.string().optional(),
   },
@@ -62,10 +64,15 @@ Default to be \`[server.protocol]://[server.host][:server.port]\` if not specifi
     env: ['OPEN_AGENT_SERVER_PORT', 'integer'],
   },
   path: {
-    desc: 'Subpath where the server get deployed if there is one.(e.g. /affine)',
+    desc: 'Subpath where the server get deployed if there is one.(e.g. /open-agent)',
     default: '',
     env: 'OPEN_AGENT_SERVER_SUB_PATH',
   },
 });
 
-defineModuleConfig('flags', {});
+defineModuleConfig('flags', {
+  earlyAccessControl: {
+    desc: 'Only allow users with early access features to access the app',
+    default: false,
+  },
+});

@@ -29,8 +29,5 @@
   "[typescriptreact]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "vitest.include": ["packages/**/*.spec.ts", "packages/**/*.spec.tsx"],
-  "rust-analyzer.check.extraEnv": {
-    "DATABASE_URL": "sqlite:affine.db"
-  }
+  "vitest.include": ["packages/**/*.spec.ts", "packages/**/*.spec.tsx"]
 }

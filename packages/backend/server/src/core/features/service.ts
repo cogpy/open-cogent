@@ -3,12 +3,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Config } from '../../base';
 import { Models } from '../../models';
 
-const STAFF = ['@toeverything.info', '@affine.pro'];
-
-export enum EarlyAccessType {
-  App = 'app',
-  AI = 'ai',
-}
+const STAFF = ['@toeverything.info', '@open-agent.io'];
 
 @Injectable()
 export class FeatureService {
@@ -38,41 +33,23 @@ export class FeatureService {
   }
 
   // ======== Early Access ========
-  async addEarlyAccess(
-    userId: string,
-    type: EarlyAccessType = EarlyAccessType.App
-  ) {
+  async addEarlyAccess(userId: string) {
     return this.models.userFeature.add(
       userId,
-      type === EarlyAccessType.App ? 'early_access' : 'ai_early_access',
+      'early_access',
       'Early access user'
     );
   }
 
-  async removeEarlyAccess(
-    userId: string,
-    type: EarlyAccessType = EarlyAccessType.App
-  ) {
-    return this.models.userFeature.remove(
-      userId,
-      type === EarlyAccessType.App ? 'early_access' : 'ai_early_access'
-    );
+  async removeEarlyAccess(userId: string) {
+    return this.models.userFeature.remove(userId, 'early_access');
   }
 
-  async isEarlyAccessUser(
-    userId: string,
-    type: EarlyAccessType = EarlyAccessType.App
-  ) {
-    return await this.models.userFeature.has(
-      userId,
-      type === EarlyAccessType.App ? 'early_access' : 'ai_early_access'
-    );
+  async isEarlyAccessUser(userId: string) {
+    return await this.models.userFeature.has(userId, 'early_access');
   }
 
-  async canEarlyAccess(
-    email: string,
-    type: EarlyAccessType = EarlyAccessType.App
-  ) {
+  async canEarlyAccess(email: string) {
     const earlyAccessControlEnabled = this.config.flags.earlyAccessControl;
 
     if (earlyAccessControlEnabled && !this.isStaff(email)) {
@@ -80,7 +57,7 @@ export class FeatureService {
       if (!user) {
         return false;
       }
-      return this.isEarlyAccessUser(user.id, type);
+      return this.isEarlyAccessUser(user.id);
     } else {
       return true;
     }

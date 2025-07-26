@@ -4,7 +4,7 @@ import {
   AdminFeatureManagementResolver,
   UserFeatureResolver,
 } from './resolver';
-import { EarlyAccessType, FeatureService } from './service';
+import { FeatureService } from './service';
 
 @Module({
   providers: [
@@ -16,5 +16,5 @@ import { EarlyAccessType, FeatureService } from './service';
 })
 export class FeatureModule {}
 
-export { EarlyAccessType, FeatureService };
+export { FeatureService };
 export { AvailableUserFeatureConfig } from './types';

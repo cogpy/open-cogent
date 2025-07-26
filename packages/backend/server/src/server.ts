@@ -4,7 +4,7 @@ import cookieParser from 'cookie-parser';
 import graphqlUploadExpress from 'graphql-upload/graphqlUploadExpress.mjs';
 
 import {
-  AFFiNELogger,
+  OpenAgentLogger,
   CacheInterceptor,
   CloudThrottlerGuard,
   Config,
@@ -29,7 +29,7 @@ export async function run() {
 
   app.useBodyParser('raw', { limit: 100 * OneMB });
 
-  const logger = app.get(AFFiNELogger);
+  const logger = app.get(OpenAgentLogger);
   app.useLogger(logger);
   const config = app.get(Config);
 

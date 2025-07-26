@@ -23,12 +23,16 @@ export enum FeatureType {
 }
 
 export enum Feature {
+  Administrator = 'administrator',
+  EarlyAccess = 'early_access',
   UnlimitedCopilot = 'unlimited_copilot',
   FreePlan = 'free_plan_v1',
   ProPlan = 'pro_plan_v1',
 }
 
 export const FeaturesShapes = {
+  administrator: EMPTY_CONFIG,
+  early_access: EMPTY_CONFIG,
   unlimited_copilot: EMPTY_CONFIG,
   free_plan_v1: UserPlanQuotaConfig,
   pro_plan_v1: UserPlanQuotaConfig,
@@ -36,7 +40,11 @@ export const FeaturesShapes = {
 
 export type UserFeatureName = keyof Pick<
   typeof FeaturesShapes,
-  'unlimited_copilot' | 'free_plan_v1' | 'pro_plan_v1'
+  | 'administrator'
+  | 'early_access'
+  | 'unlimited_copilot'
+  | 'free_plan_v1'
+  | 'pro_plan_v1'
 >;
 export type FeatureName = UserFeatureName;
 export type FeatureConfig<T extends FeatureName> = z.infer<
@@ -67,6 +75,14 @@ export const FeatureConfigs: {
       storageQuota: 100 * OneGB,
       copilotLimit: undefined,
     },
+  },
+  administrator: {
+    type: FeatureType.Feature,
+    configs: {},
+  },
+  early_access: {
+    type: FeatureType.Feature,
+    configs: {},
   },
   unlimited_copilot: {
     type: FeatureType.Feature,

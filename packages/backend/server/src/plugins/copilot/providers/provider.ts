@@ -63,14 +63,14 @@ export abstract class CopilotProvider<C = any> {
   abstract readonly models: CopilotProviderModel[];
   abstract configured(): boolean;
 
-  @Inject() protected readonly AFFiNEConfig!: Config;
+  @Inject() protected readonly OpenAgentConfig!: Config;
   @Inject() protected readonly factory!: CopilotProviderFactory;
   @Inject() protected readonly moduleRef!: ModuleRef;
   @Inject() protected readonly cache!: Cache;
   @Inject() protected readonly copilotStorage!: CopilotStorage;
 
   get config(): C {
-    return this.AFFiNEConfig.copilot.providers[this.type] as C;
+    return this.OpenAgentConfig.copilot.providers[this.type] as C;
   }
 
   @OnEvent('config.init')
@@ -174,7 +174,7 @@ export abstract class CopilotProvider<C = any> {
           case 'browserUse': {
             tools.browser_use = createBrowserUseTool(
               writable,
-              this.AFFiNEConfig
+              this.OpenAgentConfig
             );
             break;
           }
@@ -220,8 +220,8 @@ export abstract class CopilotProvider<C = any> {
             break;
           }
           case 'webSearch': {
-            tools.web_search_exa = createExaSearchTool(this.AFFiNEConfig);
-            tools.web_crawl_exa = createExaCrawlTool(this.AFFiNEConfig);
+            tools.web_search_exa = createExaSearchTool(this.OpenAgentConfig);
+            tools.web_crawl_exa = createExaCrawlTool(this.OpenAgentConfig);
             break;
           }
           case 'docCompose': {
@@ -254,7 +254,7 @@ export abstract class CopilotProvider<C = any> {
             const copilotStorage = this.copilotStorage;
             tools.e2b_python_sandbox = createE2bPythonSandboxTool(
               writable,
-              this.AFFiNEConfig,
+              this.OpenAgentConfig,
               copilotStorage,
               options.user || ''
             );

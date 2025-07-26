@@ -10,13 +10,13 @@ import graphqlUploadExpress from 'graphql-upload/graphqlUploadExpress.mjs';
 import supertest from 'supertest';
 
 import {
-  AFFiNELogger,
   CacheInterceptor,
   CloudThrottlerGuard,
   EventBus,
   GlobalExceptionFilter,
   JobQueue,
   OneMB,
+  OpenAgentLogger,
 } from '../../base';
 import { SocketIoAdapter } from '../../base/websocket';
 import { AuthGuard, AuthService } from '../../core/auth';
@@ -225,7 +225,7 @@ export async function createApp(
     rawBody: true,
   });
 
-  const logger = new AFFiNELogger();
+  const logger = new OpenAgentLogger();
   logger.setLogLevels([TEST_LOG_LEVEL]);
   app.useLogger(logger);
   app.use(cookieParser());

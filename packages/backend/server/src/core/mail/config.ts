@@ -37,7 +37,7 @@ defineModuleConfig('mailer', {
     env: 'MAILER_PASSWORD',
   },
   'SMTP.sender': {
-    desc: 'Sender of all the emails (e.g. "AFFiNE Team <noreply@affine.pro>")',
+    desc: 'Sender of all the emails (e.g. "Open-Agent Team <noreply@open-agent.io>")',
     default: '',
     env: 'MAILER_SENDER',
   },

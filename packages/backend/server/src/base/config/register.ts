@@ -1,5 +1,4 @@
 import { existsSync, readFileSync } from 'node:fs';
-import { homedir } from 'node:os';
 import { join } from 'node:path';
 
 import { mergeWith, once, set } from 'lodash-es';
@@ -213,10 +212,7 @@ export function defineModuleConfig<T extends keyof AppConfigSchema>(
   };
 }
 
-const CONFIG_JSON_PATHS = [
-  join(env.projectRoot, 'config.json'),
-  `${homedir()}/.affine/config/config.json`,
-];
+const CONFIG_JSON_PATHS = [join(env.projectRoot, 'config.json')];
 function readConfigJSONOverrides(path: string) {
   const overrides: DeepPartial<AppConfig> = {};
   if (existsSync(path)) {

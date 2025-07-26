@@ -120,9 +120,9 @@ export class ChatPrompt {
 
   private preDefinedParams(params: PromptParams) {
     return {
-      'affine::date': new Date().toLocaleDateString(),
-      'affine::language': params.language || 'same language as the user query',
-      'affine::timezone': params.timezone || 'no preference',
+      'oa::date': new Date().toLocaleDateString(),
+      'oa::language': params.language || 'same language as the user query',
+      'oa::timezone': params.timezone || 'no preference',
     };
   }
 
@@ -135,7 +135,7 @@ export class ChatPrompt {
     this.checkParams(params, sessionId);
 
     const { attachments: attach, ...restParams } = Object.fromEntries(
-      Object.entries(params).filter(([k]) => !k.startsWith('affine::'))
+      Object.entries(params).filter(([k]) => !k.startsWith('oa::'))
     );
     const paramsAttach = Array.isArray(attach) ? attach : [];
 

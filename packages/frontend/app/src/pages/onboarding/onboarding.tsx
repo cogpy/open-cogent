@@ -1,7 +1,6 @@
 import { Button, RowInput } from '@afk/component';
 import { CollaborationIcon, GithubDuotoneIcon } from '@blocksuite/icons/rc';
 import { type HTMLAttributes, useMemo, useState } from 'react';
-import { Link } from 'react-router';
 
 import { cn } from '@/lib/utils';
 
@@ -47,7 +46,7 @@ const WelcomeStep: React.FC<StepProps> = ({ onNext }) => {
             Chat with all the frontier models and our multi-agent will have the
             job done
           </p>,
-          <OnboardingNext onClick={() => setShow(false)}>
+          <OnboardingNext className="mt-4" onClick={() => setShow(false)}>
             Get Started
           </OnboardingNext>,
         ]}

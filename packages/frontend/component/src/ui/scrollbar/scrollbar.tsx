@@ -13,6 +13,8 @@ export type ScrollableContainerProps = {
   styles?: React.CSSProperties;
   scrollBarClassName?: string;
   scrollThumbClassName?: string;
+  horizontal?: boolean;
+  vertical?: boolean;
 };
 
 export const ScrollableContainer = ({
@@ -24,6 +26,8 @@ export const ScrollableContainer = ({
   viewPortClassName,
   scrollBarClassName,
   scrollThumbClassName,
+  horizontal = false,
+  vertical = true,
 }: PropsWithChildren<ScrollableContainerProps>) => {
   const [setContainer, hasScrollTop] = useHasScrollTop();
   return (
@@ -41,16 +45,31 @@ export const ScrollableContainer = ({
       >
         <div className={styles.scrollableContainer}>{children}</div>
       </ScrollArea.Viewport>
-      <ScrollArea.Scrollbar
-        orientation="vertical"
-        className={clsx(styles.scrollbar, scrollBarClassName, {
-          [styles.TableScrollbar]: inTableView,
-        })}
-      >
-        <ScrollArea.Thumb
-          className={clsx(styles.scrollbarThumb, scrollThumbClassName)}
-        />
-      </ScrollArea.Scrollbar>
+      {vertical ? (
+        <ScrollArea.Scrollbar
+          orientation="vertical"
+          className={clsx(styles.scrollbar, scrollBarClassName, {
+            [styles.TableScrollbar]: inTableView,
+          })}
+        >
+          <ScrollArea.Thumb
+            className={clsx(styles.scrollbarThumb, scrollThumbClassName)}
+          />
+        </ScrollArea.Scrollbar>
+      ) : null}
+
+      {horizontal ? (
+        <ScrollArea.Scrollbar
+          orientation="horizontal"
+          className={clsx(styles.scrollbar, scrollBarClassName, {
+            [styles.TableScrollbar]: inTableView,
+          })}
+        >
+          <ScrollArea.Thumb
+            className={clsx(styles.scrollbarThumb, scrollThumbClassName)}
+          />
+        </ScrollArea.Scrollbar>
+      ) : null}
     </ScrollArea.Root>
   );
 };

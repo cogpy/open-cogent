@@ -1,4 +1,4 @@
-import { Loading } from '@afk/component';
+import { Loading, ScrollableContainer } from '@afk/component';
 import {
   SingleSelectCheckSolidIcon,
   SingleSelectUnIcon,
@@ -90,9 +90,9 @@ export function TodoListResult({ result, className }: TodoListResultProps) {
 
   return (
     <LayoutGroup>
-      <div className={cn('', className)}>
+      <ScrollableContainer horizontal className={cn(className)}>
         {/* Horizontal scroll wrapper */}
-        <div className="overflow-x-auto pb-2">
+        <div className="pb-2">
           {/* Track: flex on mobile, grid on medium+ */}
           <div className="flex md:grid md:grid-cols-3 gap-4 min-w-max pb-2 max-h-[800px]">
             {/** Render each column */}
@@ -133,7 +133,7 @@ export function TodoListResult({ result, className }: TodoListResultProps) {
             })}
           </div>
         </div>
-      </div>
+      </ScrollableContainer>
     </LayoutGroup>
   );
 }

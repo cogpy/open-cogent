@@ -103,9 +103,9 @@ const createHelmCommand = ({ isDryRun }) => {
     .map(host => host.trim())
     .filter(host => host);
   const deployCommand = [
-    `helm upgrade --install affine .github/helm/affine`,
+    `helm upgrade --install open-agent .github/helm/open-agent`,
     `--namespace  ${namespace}`,
-    `--set-string global.deployment.type="affine"`,
+    `--set-string global.deployment.type="open-agent"`,
     `--set-string global.deployment.platform="gcp"`,
     `--set-string global.app.buildType="${buildType}"`,
     `--set        global.ingress.enabled=true`,

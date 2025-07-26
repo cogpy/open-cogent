@@ -1103,6 +1103,14 @@ ${passwordLimitsFragment}
 ${credentialsRequirementsFragment}`,
 };
 
+export const submitWishlistMutation = {
+  id: 'submitWishlistMutation' as const,
+  op: 'submitWishlist',
+  query: `mutation submitWishlist($email: String!) {
+  submitWishlist(email: $email)
+}`,
+};
+
 export const updateUserProfileMutation = {
   id: 'updateUserProfileMutation' as const,
   op: 'updateUserProfile',

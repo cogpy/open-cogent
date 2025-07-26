@@ -129,6 +129,14 @@ model UserFeature {
   @@map("user_features")
 }
 
+model Wishlist {
+  email     String   @id @db.VarChar
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@index([email])
+  @@map("wishlists")
+}
+
 enum AiPromptRole {
   system
   assistant

@@ -566,6 +566,9 @@ type Mutation {
   sendVerifyEmail(callbackUrl: String!): Boolean!
   submitAudioTranscription(blob: Upload, blobId: String!, blobs: [Upload!]): TranscriptionResultType
 
+  """Submit email to wishlist"""
+  submitWishlist(email: String!): Boolean!
+
   """Trigger generate missing titles cron job"""
   triggerGenerateTitleCron: Boolean!
 

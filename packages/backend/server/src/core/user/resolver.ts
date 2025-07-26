@@ -89,6 +89,19 @@ export class UserResolver {
     return await this.models.user.getPublicUser(id);
   }
 
+  @Throttle('strict')
+  @Mutation(() => Boolean, {
+    name: 'submitWishlist',
+    description: 'Submit email to wishlist',
+  })
+  @Public()
+  async submitWishlist(
+    @Args('email', { type: () => String }) email: string
+  ): Promise<boolean> {
+    validators.assertValidEmail(email);
+    return await this.models.wishlist.submitEmail(email);
+  }
+
   @Mutation(() => UserType, {
     name: 'uploadAvatar',
     description: 'Upload user avatar',

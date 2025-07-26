@@ -669,6 +669,8 @@ export interface Mutation {
   sendVerifyChangeEmail: Scalars['Boolean']['output'];
   sendVerifyEmail: Scalars['Boolean']['output'];
   submitAudioTranscription: Maybe<TranscriptionResultType>;
+  /** Submit email to wishlist */
+  submitWishlist: Scalars['Boolean']['output'];
   /** Trigger generate missing titles cron job */
   triggerGenerateTitleCron: Scalars['Boolean']['output'];
   /** update app configuration */
@@ -820,6 +822,10 @@ export interface MutationSubmitAudioTranscriptionArgs {
   blob?: InputMaybe<Scalars['Upload']['input']>;
   blobId: Scalars['String']['input'];
   blobs?: InputMaybe<Array<Scalars['Upload']['input']>>;
+}
+
+export interface MutationSubmitWishlistArgs {
+  email: Scalars['String']['input'];
 }
 
 export interface MutationUpdateAppConfigArgs {
@@ -2746,6 +2752,15 @@ export type ServerConfigQuery = {
   };
 };
 
+export type SubmitWishlistMutationVariables = Exact<{
+  email: Scalars['String']['input'];
+}>;
+
+export type SubmitWishlistMutation = {
+  __typename?: 'Mutation';
+  submitWishlist: boolean;
+};
+
 export type UpdateUserProfileMutationVariables = Exact<{
   input: UpdateUserInput;
 }>;
@@ -3140,6 +3155,11 @@ export type Mutations =
       name: 'sendVerifyEmailMutation';
       variables: SendVerifyEmailMutationVariables;
       response: SendVerifyEmailMutation;
+    }
+  | {
+      name: 'submitWishlistMutation';
+      variables: SubmitWishlistMutationVariables;
+      response: SubmitWishlistMutation;
     }
   | {
       name: 'updateUserProfileMutation';

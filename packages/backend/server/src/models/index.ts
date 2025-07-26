@@ -19,6 +19,7 @@ import { UserModel } from './user';
 import { UserFeatureModel } from './user-feature';
 import { UserSettingsModel } from './user-settings';
 import { VerificationTokenModel } from './verification-token';
+import { WishlistModel } from './wishlist';
 
 const MODELS = {
   user: UserModel,
@@ -32,6 +33,7 @@ const MODELS = {
   copilotUser: CopilotUserConfigModel,
   copilotJob: CopilotJobModel,
   appConfig: AppConfigModel,
+  wishlist: WishlistModel,
 };
 
 type ModelsType = {
@@ -94,3 +96,4 @@ export * from './user';
 export * from './user-feature';
 export * from './user-settings';
 export * from './verification-token';
+export * from './wishlist';

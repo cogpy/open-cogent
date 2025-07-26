@@ -105,13 +105,6 @@ export function AIReasoningCard({
           }}
         />
       </div>
-
-      {/* Scroll indicator during expansion */}
-      {loading && (
-        <div className="mt-2 text-xs text-gray-500 text-center">
-          Content is being generated...
-        </div>
-      )}
     </div>
   );
 

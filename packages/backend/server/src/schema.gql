@@ -411,6 +411,7 @@ enum ErrorNames {
 
 enum FeatureType {
   Administrator
+  EarlyAccess
   FreePlan
   ProPlan
   UnlimitedCopilot

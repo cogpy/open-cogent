@@ -531,6 +531,8 @@ export enum ErrorNames {
 }
 
 export enum FeatureType {
+  Administrator = 'Administrator',
+  EarlyAccess = 'EarlyAccess',
   FreePlan = 'FreePlan',
   ProPlan = 'ProPlan',
   UnlimitedCopilot = 'UnlimitedCopilot',

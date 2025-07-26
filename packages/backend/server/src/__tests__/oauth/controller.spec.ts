@@ -193,7 +193,7 @@ test('should be able to get registered oauth providers', async t => {
 
   const providers = oauth.availableOAuthProviders();
 
-  t.deepEqual(providers, [OAuthProviderName.Google]);
+  t.deepEqual(providers, [OAuthProviderName.Google, OAuthProviderName.GitHub]);
 });
 
 test('should throw if code is missing in callback uri', async t => {

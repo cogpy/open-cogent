@@ -59,7 +59,7 @@ export const ChatPage = () => {
       const newSessionId = await chatSessionsStore.getState().createSession({
         client: copilotClient,
         options: {
-          promptName: 'Chat With AFFiNE AI', // default prompt
+          promptName: 'Chat With Open-Agent', // default prompt
         },
       });
 

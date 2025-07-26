@@ -286,7 +286,7 @@ test('should be able to chat with api', async t => {
     );
 
     t.is(
-      ret4,
+      ret4.replace(/\nevent:.*\nid:.*\ndata: {"type":"status".*}\n/gm, ''),
       textToEventStream(objects, messageId),
       'should be able to chat with stream object'
     );

@@ -115,9 +115,10 @@ const assertNotWrappedInCodeBlock = (
   );
 };
 
+type Citation = { citationNumber: string; citationJson: string };
 const citationChecker = (
   t: ExecutionContext<Tester>,
-  citations: { citationNumber: string; citationJson: string }[]
+  citations: Citation[]
 ) => {
   t.assert(citations.length > 0, 'should have citation');
   for (const { citationJson } of citations) {
@@ -135,7 +136,7 @@ const assertCitation = (
   citationCondition: CitationChecker = citationChecker
 ) => {
   const regex = /\[\^(\d+)\]:\s*({.*})/g;
-  const citations = [];
+  const citations: Citation[] = [];
   let match;
   while ((match = regex.exec(result)) !== null) {
     const citationNumber = match[1];
@@ -148,7 +149,7 @@ const assertCitation = (
 const checkMDList = (text: string) => {
   const lines = text.split('\n');
   const listItemRegex = /^( {2})*(-|\u2010-\u2015|\*|\+)? .+$/;
-  let prevIndent = null;
+  let prevIndent: number | null = null;
 
   for (const line of lines) {
     if (line.trim() === '') continue;
@@ -288,7 +289,7 @@ test('should validate markdown list', t => {
 const actions = [
   {
     name: 'Should chat with histories',
-    promptName: ['Chat With AFFiNE AI'],
+    promptName: ['Chat With Open-Agent'],
     messages: [
       {
         role: 'user' as const,
@@ -343,11 +344,11 @@ The term **“CRDT”** was first introduced by Marc Shapiro, Nuno Preguiça, Ca
   },
   {
     name: 'Should not have citation',
-    promptName: ['Chat With AFFiNE AI'],
+    promptName: ['Chat With Open-Agent'],
     messages: [
       {
         role: 'user' as const,
-        content: 'what is AFFiNE AI?',
+        content: 'what is Open-Agent?',
         params: {
           files: [
             {
@@ -378,7 +379,7 @@ The term **“CRDT”** was first introduced by Marc Shapiro, Nuno Preguiça, Ca
   },
   {
     name: 'Should have citation',
-    promptName: ['Chat With AFFiNE AI'],
+    promptName: ['Chat With Open-Agent'],
     messages: [
       {
         role: 'user' as const,
@@ -403,11 +404,11 @@ The term **“CRDT”** was first introduced by Marc Shapiro, Nuno Preguiça, Ca
   },
   {
     name: 'stream objects',
-    promptName: ['Chat With AFFiNE AI'],
+    promptName: ['Chat With Open-Agent'],
     messages: [
       {
         role: 'user' as const,
-        content: 'what is AFFiNE AI',
+        content: 'what is Open-Agent',
       },
     ],
     verifier: (t: ExecutionContext<Tester>, result: string) => {
@@ -531,8 +532,7 @@ The term **“CRDT”** was first introduced by Marc Shapiro, Nuno Preguiça, Ca
       'Make it longer',
       'Make it shorter',
       'Continue writing',
-      'Chat With AFFiNE AI',
-      'Search With AFFiNE AI',
+      'Chat With Open-Agent',
     ],
     messages: [{ role: 'user' as const, content: TestAssets.SSOT }],
     verifier: (t: ExecutionContext<Tester>, result: string) => {
@@ -765,7 +765,7 @@ for (const {
                 finalConfig
               );
 
-              const result = [];
+              const result: string[] = [];
               for await (const attachment of stream) {
                 result.push(attachment);
               }

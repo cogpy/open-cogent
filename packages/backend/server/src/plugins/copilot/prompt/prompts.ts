@@ -1891,7 +1891,7 @@ Content:
 
 const chat: Prompt[] = [
   {
-    name: 'Chat With Open-Agent AI',
+    name: 'Chat With Open-Agent',
     model: 'claude-sonnet-4@20250514',
     optionalModels: [
       'gpt-4.1',
@@ -1899,10 +1899,8 @@ const chat: Prompt[] = [
       'o4-mini',
       'gemini-2.5-flash',
       'gemini-2.5-pro',
-      'claude-opus-4@20250514',
       'claude-sonnet-4@20250514',
       'claude-3-7-sonnet@20250219',
-      'claude-3-5-sonnet-v2@20241022',
     ],
     messages: [
       {

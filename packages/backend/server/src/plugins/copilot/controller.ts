@@ -323,6 +323,7 @@ export class CopilotController implements BeforeApplicationShutdown {
           })
         )
       ).pipe(
+        mergeMap(stream => stream), // flatten the async iterator
         connect(shared$ =>
           merge(
             // actual chat event stream
@@ -688,6 +689,7 @@ export class CopilotController implements BeforeApplicationShutdown {
         )
       ).pipe(
         mergeMap(handleRemoteLink),
+        mergeMap(stream => stream), // flatten the async iterator
         connect(shared$ =>
           merge(
             // actual chat event stream

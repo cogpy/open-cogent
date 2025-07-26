@@ -32,7 +32,7 @@ export function ChatPanel({ docId }: { docId?: string }) {
       const newSessionId = await chatSessionsStore.getState().createSession({
         client: copilotClient,
         options: {
-          promptName: 'Chat With AFFiNE AI',
+          promptName: 'Chat With Open-Agent',
           docId,
         },
       });

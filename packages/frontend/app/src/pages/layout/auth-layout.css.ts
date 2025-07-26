@@ -8,8 +8,6 @@ export const root = style({
   flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
-  backgroundColor: '#fff',
-  borderRadius: 8,
 });
 
 export const logo = style({

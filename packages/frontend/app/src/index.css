@@ -21,11 +21,20 @@
   --color-hover: var(--affine-v2-layer-background-hoverOverlay);
   --color-icon-primary: var(--affine-v2-icon-primary);
   --color-icon-secondary: var(--affine-v2-icon-secondary);
+  --color-layer-background-secondary: var(
+    --affine-v2-layer-background-secondary
+  );
   --shadow-view: 0px 1px 5px rgba(0, 0, 0, 0.05);
 }
 
 .panel {
   @apply border rounded-lg overflow-hidden shadow-view bg-white;
+}
+.onboarding-title {
+  @apply mb-2 text-center text-2xl font-bold tracking-[-0.32px];
+}
+.onboarding-caption {
+  @apply max-w-[550px] text-center text-text-secondary text-[15px] leading-6 mb-4;
 }
 
 html,
@@ -44,7 +53,7 @@ body {
 html {
   background-color: var(--affine-v2-layer-background-secondary);
 }
-body {
+body:has(#oa-content) {
   padding: 8px !important;
   transition: padding 0.2s ease;
 }

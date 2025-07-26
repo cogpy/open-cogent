@@ -1,138 +1,280 @@
 import { Button, RowInput } from '@afk/component';
-import { Suspense, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router';
-import useSWR from 'swr';
+import { CollaborationIcon, GithubDuotoneIcon } from '@blocksuite/icons/rc';
+import { type HTMLAttributes, useMemo, useState } from 'react';
+import { Link } from 'react-router';
 
-import { ChatPlayback } from '@/components/chat/chat-playback';
-import type { ChatMessage } from '@/store/copilot/types';
+import { cn } from '@/lib/utils';
 
 import { OnboardingStep, useOnboardingStore } from '../../store/onboarding';
 import { AuthLayout as OnboardingLayout } from '../layout/auth-layout';
+import { MultiAgentPreview } from './assets/multi-agent-preview';
+import { TodoListPreview } from './assets/todo-list-preview';
+import { EnterAnim } from './enter-anim';
+import { LeaveAnim } from './leave-anim';
+import { OnboardingNext } from './onboarding-next';
+import { ShowCase } from './show-case';
 
 interface StepProps {
   onNext?: () => void;
   onPrev?: () => void;
+  onNavigate?: (step: OnboardingStep) => void;
 }
-
-const fetcher = (url: string) => fetch(url).then(res => res.json());
-
-const playbacks = {
-  example: '/playbacks/example-playback.json',
-};
-
-const ExamplePlayback = ({ id }: { id: keyof typeof playbacks }) => {
-  const { data: examplePlayback } = useSWR<ChatMessage[]>(
-    playbacks[id],
-    fetcher,
-    {
-      suspense: true,
-    }
-  );
-
-  if (!examplePlayback) return null;
-  return (
-    <div className="border border-gray-200 rounded-lg p-4 max-h-[300px] overflow-y-auto">
-      <ChatPlayback rawMessages={examplePlayback} />
-    </div>
-  );
-};
-
-const WelcomeStep: React.FC<StepProps> = ({ onNext }) => (
-  <>
-    <h1 className="text-2xl font-bold mb-4 text-center">
-      Welcome to OpenAgent
-    </h1>
-    <p className="text-text-secondary mb-8 text-center max-w-md">
-      Kick-start your journey into the world of agents. We‘ll guide you through
-      a few quick steps to set up your first project.
-    </p>
-    <Button onClick={onNext}>Get Started</Button>
-    <Suspense fallback={<div>Loading...</div>}>
-      <ExamplePlayback id="example" />
-    </Suspense>
-  </>
+const Logo = () => (
+  <div
+    className={cn(
+      'size-[55px] bg-white rounded-full shadow-view',
+      'flex items-center justify-center',
+      'mb-6'
+    )}
+  >
+    <img src="/logo.svg" alt="Open Agent" />
+  </div>
 );
 
-const ShowcaseStep: React.FC<StepProps> = ({ onNext, onPrev }) => (
-  <>
-    <h1 className="text-xl font-semibold mb-4 text-center">
-      Some of the things you can build
-    </h1>
-    <p className="text-text-secondary mb-6 text-center max-w-md">
-      Choose an example to see a preview. (Coming soon)
-    </p>
-    <div className="flex gap-4 mb-8">
-      <div className="w-40 h-24 bg-neutral-100 rounded" />
-      <div className="w-40 h-24 bg-neutral-100 rounded" />
-      <div className="w-40 h-24 bg-neutral-100 rounded" />
-    </div>
-    <div className="flex gap-3">
-      <Button variant="plain" onClick={onPrev}>
-        Back
-      </Button>
-      <Button onClick={onNext}>Next</Button>
-    </div>
-  </>
-);
-
-const JoinNowStep: React.FC<StepProps> = ({ onNext, onPrev }) => {
-  const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-
-  const handleContinue = () => {
-    if (!email) return;
-    // For now just move to next step; in the future this will hit API / magic link.
-    onNext?.();
-  };
-
-  const handleSignIn = () => navigate('/sign-in');
-
+const WelcomeStep: React.FC<StepProps> = ({ onNext }) => {
+  const [show, setShow] = useState(true);
   return (
-    <>
-      <h1 className="text-xl font-semibold mb-6 text-center">
-        Begin your journey into the world of agents
-      </h1>
-
-      <RowInput
-        type="email"
-        placeholder="name@example.com"
-        value={email}
-        onChange={e => setEmail(e.target.value)}
-        className="mb-4"
+    <LeaveAnim
+      show={show}
+      onAnimationEnd={() => onNext?.()}
+      className="flex flex-col items-center"
+    >
+      <EnterAnim
+        items={[
+          <Logo />,
+          <h1 className="onboarding-title">Welcome to OpenAgent</h1>,
+          <p className="onboarding-caption">
+            Chat with all the frontier models and our multi-agent will have the
+            job done
+          </p>,
+          <OnboardingNext onClick={() => setShow(false)}>
+            Get Started
+          </OnboardingNext>,
+        ]}
       />
-
-      <Button
-        className="w-full mb-4"
-        disabled={!email}
-        onClick={handleContinue}
-      >
-        Continue with Email
-      </Button>
-
-      <Button variant="plain" className="w-full mb-6" onClick={handleSignIn}>
-        Sign in
-      </Button>
-
-      <Button variant="plain" onClick={onPrev}>
-        Back
-      </Button>
-    </>
+    </LeaveAnim>
   );
 };
 
-const SubmittedStep: React.FC<StepProps> = () => (
-  <>
-    <h1 className="text-xl font-semibold mb-4 text-center">
-      We‘ve received your submission!
-    </h1>
-    <p className="text-text-secondary mb-8 text-center max-w-md">
-      Check your inbox for a confirmation email. We‘ll be in touch soon.
-    </p>
-    <Button>
-      <a href="/">Back to Home</a>
-    </Button>
-  </>
-);
+const MultiAgentStep: React.FC<StepProps> = ({ onNext }) => {
+  const [show, setShow] = useState(true);
+  return (
+    <LeaveAnim
+      className="flex flex-col items-center"
+      show={show}
+      onAnimationEnd={() => onNext?.()}
+    >
+      <EnterAnim
+        items={[
+          <h1 className="onboarding-title">
+            Multi-agent that collaborate together
+          </h1>,
+          <p className="onboarding-caption">
+            Instead of chatting with singluar AI, all the frontier models
+            collaborate together to finish your task with our multi-agents
+          </p>,
+          <MultiAgentPreview />,
+          <OnboardingNext onClick={() => setShow(false)} className="mt-8">
+            Continue
+          </OnboardingNext>,
+        ]}
+      />
+    </LeaveAnim>
+  );
+};
+
+const TodoListStep: React.FC<StepProps> = ({ onNext }) => {
+  const [show, setShow] = useState(true);
+
+  return (
+    <LeaveAnim
+      className="flex flex-col items-center"
+      show={show}
+      onAnimationEnd={() => onNext?.()}
+    >
+      <EnterAnim
+        items={[
+          <h1 className="onboarding-title">
+            Stop prompt‑chasing. Start decision‑making
+          </h1>,
+          <p className="onboarding-caption">
+            Spec & context engineering give agents structure to plan, score, and
+            surface options. You stay in control of the final call. Achieve
+            more, struggle less.
+          </p>,
+          <TodoListPreview />,
+          <OnboardingNext onClick={() => setShow(false)} className="mt-8">
+            Continue
+          </OnboardingNext>,
+        ]}
+      />
+    </LeaveAnim>
+  );
+};
+
+const ShowcaseStep: React.FC<StepProps> = ({ onNext }) => {
+  const [show, setShow] = useState(true);
+  return (
+    <LeaveAnim
+      className="flex flex-col items-center"
+      onAnimationEnd={() => onNext?.()}
+      show={show}
+    >
+      <EnterAnim
+        items={[
+          <h1 className="onboarding-title">
+            See what OpenAgent can do for you
+          </h1>,
+          <p className="onboarding-caption mb-4">
+            Spec & context engineering give agents structure to plan, score, and
+            surface options. You stay in control of the final call. Achieve
+            more, struggle less.
+          </p>,
+          <ShowCase />,
+          <OnboardingNext className="mt-8" onClick={() => setShow(false)}>
+            Continue
+          </OnboardingNext>,
+        ]}
+      />
+    </LeaveAnim>
+  );
+};
+
+const SelectCard = ({
+  className,
+  ...props
+}: HTMLAttributes<HTMLDivElement>) => {
+  return (
+    <div
+      className={cn(
+        'p-6 border shadow-view rounded-2xl bg-white w-100 max-w-full',
+        'hover:bg-[#fcfcfc] cursor-pointer transition-all',
+        'flex flex-col gap-2',
+        className
+      )}
+      {...props}
+    />
+  );
+};
+
+const SelectStep: React.FC<StepProps> = ({ onNext }) => {
+  const [show, setShow] = useState(true);
+  return (
+    <LeaveAnim
+      className="flex flex-col items-center"
+      show={show}
+      onAnimationEnd={() => onNext?.()}
+    >
+      <EnterAnim
+        items={[
+          <Logo />,
+          <h1 className="onboarding-title">Ready to experience OpenAgent!?</h1>,
+          <p className="onboarding-caption">
+            Spec & context engineering give agents structure to plan, score, and
+            surface options. You stay in control of the final call. Achieve
+            more, struggle less.
+          </p>,
+          <div className="flex items-stretch gap-4 w-full max-w-[816px] flex-wrap justify-center">
+            <SelectCard onClick={() => setShow(false)}>
+              <CollaborationIcon className="size-6 text-icon-primary" />
+              <p className="text-text-primary font-semibold text-lg leading-[26px]">
+                Register and Join Waiting List
+              </p>
+              <p className="text-sm text-text-secondary leading-[22px]">
+                Get early access to development version, no configuration
+                required
+              </p>
+              <ul className="text-text-primary">
+                <li>✓ &nbsp;First-time notification of product releases</li>
+                <li>✓ &nbsp;Free real conversation replay</li>
+                <li>✓ &nbsp;Priority access to new features</li>
+              </ul>
+            </SelectCard>
+            <a href="https://github.com/AFK-surf/open-agent" target="_blank">
+              <SelectCard className="h-full">
+                <GithubDuotoneIcon className="size-6 text-icon-primary" />
+                <p className="text-text-primary font-semibold text-lg leading-[26px]">
+                  GitHub Self-deployment
+                </p>
+                <p className="text-sm text-text-secondary leading-[22px]">
+                  Fully open source, start using immediately
+                </p>
+                <ul className="text-text-primary">
+                  <li>✓ &nbsp;View complete source code</li>
+                  <li>✓ &nbsp;Customize configuration as needed</li>
+                  <li>✓ &nbsp;Participate in open source contributions</li>
+                </ul>
+              </SelectCard>
+            </a>
+          </div>,
+        ]}
+      />
+    </LeaveAnim>
+  );
+};
+
+const RegisterStep: React.FC<StepProps> = ({ onPrev }) => {
+  const [show, setShow] = useState(true);
+  return (
+    <LeaveAnim
+      className="flex flex-col items-center"
+      show={show}
+      onAnimationEnd={() => onPrev?.()}
+    >
+      <EnterAnim
+        items={[
+          <Logo />,
+          <h1 className="onboarding-title">Register and Join Waiting List</h1>,
+          <p className="onboarding-caption">
+            Get early access to development version, no configuration required
+          </p>,
+          <div
+            className={cn(
+              'w-[440px] max-w-full-screen p-6 flex flex-col items-start',
+              'border bg-white shadow-view rounded-2xl',
+              'mb-8'
+            )}
+          >
+            <label className="text-xs text-text-secondary">Email</label>
+            <RowInput
+              placeholder="Enter your email"
+              style={{
+                height: 40,
+                fontSize: 14,
+                fontWeight: 500,
+              }}
+              className="border w-full rounded-lg mt-1 px-2"
+            />
+
+            <Button
+              className="mt-6"
+              size="large"
+              style={{ width: '100%', height: 40 }}
+              variant="primary"
+            >
+              Submit
+            </Button>
+          </div>,
+          <Button
+            onClick={() => setShow(false)}
+            style={{
+              height: 40,
+              width: 200,
+              fontWeight: 500,
+              fontSize: 14,
+            }}
+          >
+            Back
+          </Button>,
+        ]}
+      />
+    </LeaveAnim>
+  );
+};
+
+const WaitingStep: React.FC<StepProps> = ({ onNext }) => {
+  return <div>WaitingStep</div>;
+};
 
 export const OnboardingPage: React.FC = () => {
   const { step, nextStep, prevStep } = useOnboardingStore();
@@ -141,12 +283,18 @@ export const OnboardingPage: React.FC = () => {
     switch (step) {
       case OnboardingStep.Welcome:
         return <WelcomeStep onNext={nextStep} />;
+      case OnboardingStep.MultiAgent:
+        return <MultiAgentStep onNext={nextStep} onPrev={prevStep} />;
+      case OnboardingStep.TodoList:
+        return <TodoListStep onNext={nextStep} onPrev={prevStep} />;
       case OnboardingStep.Showcase:
         return <ShowcaseStep onNext={nextStep} onPrev={prevStep} />;
-      case OnboardingStep.JoinNow:
-        return <JoinNowStep onNext={nextStep} onPrev={prevStep} />;
-      case OnboardingStep.Submitted:
-        return <SubmittedStep />;
+      case OnboardingStep.Select:
+        return <SelectStep onNext={nextStep} onPrev={prevStep} />;
+      case OnboardingStep.Register:
+        return <RegisterStep onPrev={prevStep} />;
+      case OnboardingStep.Waiting:
+        return <WaitingStep />;
       default:
         return null;
     }

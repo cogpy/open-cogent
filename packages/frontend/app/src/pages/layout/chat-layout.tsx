@@ -189,7 +189,7 @@ const SidebarContent = () => {
 
 export const OALayout = () => {
   return (
-    <SidebarLayout sidebar={<SidebarContent />}>
+    <SidebarLayout sidebar={<SidebarContent />} id="oa-content">
       <Outlet />
     </SidebarLayout>
   );

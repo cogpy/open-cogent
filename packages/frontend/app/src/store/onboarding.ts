@@ -3,12 +3,16 @@ import { persist } from 'zustand/middleware';
 
 export enum OnboardingStep {
   Welcome = 0,
+  MultiAgent,
+  TodoList,
   Showcase,
-  JoinNow,
-  Submitted,
+  Select,
+  Register,
+  Waiting,
 }
 
 export interface OnboardingState {
+  visited: boolean;
   step: OnboardingStep;
   setStep: (step: OnboardingStep) => void;
   nextStep: () => void;
@@ -18,11 +22,12 @@ export interface OnboardingState {
 export const useOnboardingStore = create<OnboardingState>()(
   persist(
     (set, get) => ({
+      visited: false,
       step: OnboardingStep.Welcome,
       setStep: (step: OnboardingStep) => set({ step }),
       nextStep: () => {
         const current = get().step;
-        const next = Math.min(current + 1, OnboardingStep.Submitted);
+        const next = Math.min(current + 1, OnboardingStep.Waiting);
         set({ step: next });
       },
       prevStep: () => {
@@ -34,7 +39,7 @@ export const useOnboardingStore = create<OnboardingState>()(
     {
       name: 'onboarding-storage',
       partialize: state => ({
-        step: state.step,
+        visited: state.visited,
       }),
     }
   )

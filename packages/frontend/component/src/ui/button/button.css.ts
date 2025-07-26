@@ -38,7 +38,7 @@ export const button = style({
   userSelect: 'none',
   outline: 0,
   borderRadius: 8,
-  transition: 'all .3s',
+  transition: 'all .3s, transform .1s',
   ['WebkitAppRegion' as string]: 'no-drag',
 
   // hover layer
@@ -58,6 +58,11 @@ export const button = style({
     pointerEvents: 'none',
     borderWidth: 'inherit',
     borderStyle: 'inherit',
+  },
+
+  // active
+  ':active': {
+    transform: 'translateY(1px) scale(0.98)',
   },
 
   // style

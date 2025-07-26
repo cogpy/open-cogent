@@ -3,14 +3,19 @@ import { SidebarIcon } from '@blocksuite/icons/rc';
 import { useEffect, useState } from 'react';
 
 import AppSidebar from '@/components/ui/sidebar/sidebar';
+import { cn } from '@/lib/utils';
 import { useSidebarStore } from '@/store/sidebar';
 
 export const SidebarLayout = ({
   sidebar,
   children,
+  className,
+  id,
 }: {
   sidebar: React.ReactNode;
   children: React.ReactNode;
+  className?: string;
+  id?: string;
 }) => {
   const {
     toggleSidebar,
@@ -32,9 +37,12 @@ export const SidebarLayout = ({
   }, [resizing]);
 
   return (
-    <div className="relative flex size-full justify-end">
+    <div
+      className={cn('relative flex size-full justify-end', className)}
+      id={id}
+    >
       {/* sidebar */}
-      <AppSidebar id="app-sidebar" className="flex flex-col">
+      <AppSidebar id="app-sidebar" className={cn('flex flex-col', className)}>
         {/* Head spacer */}
         <header className="w-full h-15 p-3 flex items-center">
           <img src="/logo.svg" alt="logo" className="w-6 h-6" />

@@ -43,7 +43,7 @@ test.beforeEach(async t => {
   await t.context.module.initTestingDB();
   await t.context.copilotSession.createPrompt('prompt-name', 'gpt-4.1');
   user = await t.context.user.create({
-    email: 'test@affine.pro',
+    email: 'test@open-agent.io',
   });
   sessionId = await t.context.copilotSession.create({
     sessionId: randomUUID(),

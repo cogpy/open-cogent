@@ -22,7 +22,7 @@ test.before(async t => {
 test.beforeEach(async t => {
   await t.context.module.initTestingDB();
   t.context.u1 = await t.context.module.get(UserModel).create({
-    email: 'u1@affine.pro',
+    email: 'u1@open-agent.io',
     registered: true,
   });
 });

@@ -10,10 +10,10 @@ import graphqlUploadExpress from 'graphql-upload/graphqlUploadExpress.mjs';
 import supertest from 'supertest';
 
 import {
-  OpenAgentLogger,
   ApplyType,
   GlobalExceptionFilter,
   JobQueue,
+  OpenAgentLogger,
 } from '../../base';
 import { AuthService } from '../../core/auth';
 import { Mailer } from '../../core/mail';
@@ -208,7 +208,7 @@ export class TestingApp extends ApplyType<INestApplication>() {
   }
 
   private randomEmail() {
-    return `test-${randomUUID()}@affine.pro`;
+    return `test-${randomUUID()}@open-agent.io`;
   }
 
   /**

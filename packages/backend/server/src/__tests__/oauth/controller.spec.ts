@@ -56,7 +56,7 @@ test.before(async t => {
 test.beforeEach(async t => {
   Sinon.restore();
   await t.context.app.initTestingDB();
-  t.context.u1 = await t.context.auth.signUp('u1@affine.pro', '1');
+  t.context.u1 = await t.context.auth.signUp('u1@open-agent.io', '1');
 });
 
 test.after.always(async t => {
@@ -343,7 +343,7 @@ function mockOAuthProvider(
 test('should be able to sign up with oauth', async t => {
   const { app, db } = t.context;
 
-  mockOAuthProvider(app, 'u2@affine.pro');
+  mockOAuthProvider(app, 'u2@open-agent.io');
 
   await app
     .POST('/api/oauth/callback')
@@ -353,7 +353,7 @@ test('should be able to sign up with oauth', async t => {
   const sessionUser = await currentUser(app);
 
   t.truthy(sessionUser);
-  t.is(sessionUser!.email, 'u2@affine.pro');
+  t.is(sessionUser!.email, 'u2@open-agent.io');
 
   const user = await db.user.findFirst({
     select: {
@@ -361,12 +361,12 @@ test('should be able to sign up with oauth', async t => {
       connectedAccounts: true,
     },
     where: {
-      email: 'u2@affine.pro',
+      email: 'u2@open-agent.io',
     },
   });
 
   t.truthy(user);
-  t.is(user!.email, 'u2@affine.pro');
+  t.is(user!.email, 'u2@open-agent.io');
   t.is(user!.connectedAccounts[0].providerAccountId, '1');
 });
 
@@ -374,7 +374,7 @@ test('should be able to sign up with oauth and client_nonce', async t => {
   const { app, db } = t.context;
 
   const clientNonce = randomUUID();
-  const userEmail = `${clientNonce}@affine.pro`;
+  const userEmail = `${clientNonce}@open-agent.io`;
   mockOAuthProvider(app, userEmail, clientNonce);
 
   await app
@@ -406,7 +406,7 @@ test('should throw if client_nonce is invalid', async t => {
   const { app } = t.context;
 
   const clientNonce = randomUUID();
-  const userEmail = `${clientNonce}@affine.pro`;
+  const userEmail = `${clientNonce}@open-agent.io`;
   mockOAuthProvider(app, userEmail, clientNonce);
 
   await app
@@ -441,7 +441,7 @@ test('should not throw if account registered', async t => {
 test('should be able to fullfil user with oauth sign in', async t => {
   const { app, models } = t.context;
 
-  const u3 = await app.createUser('u3@affine.pro');
+  const u3 = await app.createUser('u3@open-agent.io');
 
   mockOAuthProvider(app, u3.email);
 

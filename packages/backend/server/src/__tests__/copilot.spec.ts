@@ -163,7 +163,10 @@ test.beforeEach(async t => {
   Sinon.restore();
   const { auth, prompt } = t.context;
   await prompt.onApplicationBootstrap();
-  const user = await auth.signUp(`test-${randomUUID()}@affine.pro`, '123456');
+  const user = await auth.signUp(
+    `test-${randomUUID()}@open-agent.io`,
+    '123456'
+  );
   userId = user.id;
   promptName = randomUUID().replaceAll('-', '');
 });
@@ -257,7 +260,7 @@ test('should be able to render listed prompt', async t => {
     content: 'links:\n{{#links}}- {{.}}\n{{/links}}',
   };
   const params = {
-    links: ['https://affine.pro', 'https://github.com/toeverything/affine'],
+    links: ['https://open-agent.io', 'https://github.com/toeverything/affine'],
   };
 
   await prompt.set(promptName, 'test', [msg]);
@@ -265,7 +268,7 @@ test('should be able to render listed prompt', async t => {
 
   t.is(
     testPrompt?.finish(params).pop()?.content,
-    'links:\n- https://affine.pro\n- https://github.com/toeverything/affine\n',
+    'links:\n- https://open-agent.io\n- https://github.com/toeverything/affine\n',
     'should render the prompt'
   );
 });
@@ -436,7 +439,7 @@ test('should be able to generate with message id', async t => {
 
     const message = await session.createMessage({
       sessionId,
-      attachments: ['https://affine.pro/example.jpg'],
+      attachments: ['https://open-agent.io/example.jpg'],
     });
 
     await s.pushByMessageId(message);
@@ -447,7 +450,7 @@ test('should be able to generate with message id', async t => {
       // system prompt
       undefined,
       // user prompt
-      ['https://affine.pro/example.jpg'],
+      ['https://open-agent.io/example.jpg'],
     ]);
   }
 
@@ -924,7 +927,7 @@ test('should be able to run text executor', async t => {
   {
     const ret = await wrapAsyncIter(
       executor.next(nodeData, {
-        attachments: ['https://affine.pro/example.jpg'],
+        attachments: ['https://open-agent.io/example.jpg'],
       })
     );
 
@@ -938,7 +941,7 @@ test('should be able to run text executor', async t => {
     );
     t.deepEqual(
       textStream.lastCall.args[1][0].params?.attachments,
-      ['https://affine.pro/example.jpg'],
+      ['https://open-agent.io/example.jpg'],
       'should pass attachments to provider'
     );
   }
@@ -987,7 +990,7 @@ test('should be able to run image executor', async t => {
   {
     const ret = await wrapAsyncIter(
       executor.next(nodeData, {
-        attachments: ['https://affine.pro/example.jpg'],
+        attachments: ['https://open-agent.io/example.jpg'],
       })
     );
 
@@ -1004,7 +1007,7 @@ test('should be able to run image executor', async t => {
     );
     t.deepEqual(
       imageStream.lastCall.args[1][0].params?.attachments,
-      ['https://affine.pro/example.jpg'],
+      ['https://open-agent.io/example.jpg'],
       'should pass attachments to provider'
     );
   }
@@ -1251,7 +1254,7 @@ test('TextStreamParser should format different types of chunks correctly', t => 
 
   // Test each chunk type individually
   Object.entries(fixtures).forEach(([_name, fixture]) => {
-    const parser = new TextStreamParser();
+    const parser = new TextStreamParser('gpt-4.1');
     if ('errorMessage' in fixture) {
       t.throws(
         () => parser.parse(fixture.chunk),
@@ -1266,7 +1269,7 @@ test('TextStreamParser should format different types of chunks correctly', t => 
 });
 
 test('TextStreamParser should process a sequence of message chunks', t => {
-  const parser = new TextStreamParser();
+  const parser = new TextStreamParser('gpt-4.1');
 
   // Define test fixtures for mixed chunks sequence
   const mixedChunksFixture = {

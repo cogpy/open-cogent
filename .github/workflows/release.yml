@@ -3,7 +3,7 @@ name: Release Images
 on:
   schedule:
     - cron: '0 9 * * *'
-
+  workflow_dispatch:
 permissions:
   contents: write
   id-token: write

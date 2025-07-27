@@ -36,6 +36,7 @@ import { AuthService } from './service';
 import { CurrentUser, Session } from './session';
 
 interface PreflightResponse {
+  canSignIn: boolean;
   registered: boolean;
   hasPassword: boolean;
 }
@@ -90,15 +91,18 @@ export class AuthController {
     validators.assertValidEmail(params.email);
 
     const user = await this.models.user.getUserByEmail(params.email);
+    const canSignIn = await this.auth.canSignIn(params.email);
 
     if (!user) {
       return {
+        canSignIn,
         registered: false,
         hasPassword: false,
       };
     }
 
     return {
+      canSignIn,
       registered: user.registered,
       hasPassword: !!user.password,
     };

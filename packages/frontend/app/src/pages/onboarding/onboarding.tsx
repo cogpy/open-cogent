@@ -1,8 +1,12 @@
 import { Button, RowInput } from '@afk/component';
+import { submitWishlistMutation } from '@afk/graphql';
 import { CollaborationIcon, GithubDuotoneIcon } from '@blocksuite/icons/rc';
 import { type HTMLAttributes, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router';
 
+import { gql } from '@/lib/gql';
 import { cn } from '@/lib/utils';
+import { useAuthStore } from '@/store/auth';
 
 import { OnboardingStep, useOnboardingStore } from '../../store/onboarding';
 import { AuthLayout as OnboardingLayout } from '../layout/auth-layout';
@@ -212,13 +216,64 @@ const SelectStep: React.FC<StepProps> = ({ onNext }) => {
   );
 };
 
-const RegisterStep: React.FC<StepProps> = ({ onPrev }) => {
+const RegisterStep: React.FC<StepProps> = ({ onPrev, onNext }) => {
+  const { setVisited } = useOnboardingStore();
+  const navigate = useNavigate();
+  const { checkUserByEmail } = useAuthStore();
   const [show, setShow] = useState(true);
+  const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const [dir, setDir] = useState<'next' | 'prev'>('next');
+
+  const handleSubmit = async (e?: React.FormEvent<HTMLFormElement>) => {
+    e?.preventDefault();
+    if (loading) return;
+
+    setLoading(true);
+
+    // 1. submit
+    try {
+      await gql({
+        query: submitWishlistMutation,
+        variables: { email },
+      });
+    } catch (err) {
+      console.error(err);
+      setError('Failed to submit wishlist');
+      setLoading(false);
+      return;
+    }
+    setVisited(true);
+
+    // 2. if submitted, check if in early access
+    try {
+      const info = await checkUserByEmail(email);
+      if (info.canSignIn) {
+        navigate('/sign-in');
+      }
+    } catch (err) {
+      console.error(err);
+      setError('Failed to check user');
+      return;
+    } finally {
+      setLoading(false);
+    }
+
+    // 3. if not submitted, or in waiting list
+    setLoading(false);
+    setDir('next');
+    setShow(false);
+  };
+
   return (
     <LeaveAnim
       className="flex flex-col items-center"
       show={show}
-      onAnimationEnd={() => onPrev?.()}
+      onAnimationEnd={() => {
+        dir === 'next' ? onNext?.() : onPrev?.();
+      }}
     >
       <EnterAnim
         items={[
@@ -234,28 +289,41 @@ const RegisterStep: React.FC<StepProps> = ({ onPrev }) => {
               'mb-8'
             )}
           >
-            <label className="text-xs text-text-secondary">Email</label>
-            <RowInput
-              placeholder="Enter your email"
-              style={{
-                height: 40,
-                fontSize: 14,
-                fontWeight: 500,
-              }}
-              className="border w-full rounded-lg mt-1 px-2"
-            />
+            <form onSubmit={handleSubmit} className="w-full">
+              <label className="text-xs text-text-secondary">Email</label>
+              <RowInput
+                placeholder="Enter your email"
+                style={{
+                  height: 40,
+                  fontSize: 14,
+                  fontWeight: 500,
+                }}
+                value={email}
+                onChange={e => setEmail(e)}
+                required
+                autoFocus
+                type="email"
+                className="border w-full rounded-lg mt-1 px-2 outline-black"
+              />
+              {error && <p className="text-red-500 text-xs">{error}</p>}
 
-            <Button
-              className="mt-6"
-              size="large"
-              style={{ width: '100%', height: 40 }}
-              variant="primary"
-            >
-              Submit
-            </Button>
+              <Button
+                {...{ type: 'submit' }}
+                className="mt-6"
+                size="large"
+                style={{ width: '100%', height: 40, backgroundColor: 'black' }}
+                disabled={!email}
+                variant="primary"
+              >
+                Submit
+              </Button>
+            </form>
           </div>,
           <Button
-            onClick={() => setShow(false)}
+            onClick={() => {
+              setDir('prev');
+              setShow(false);
+            }}
             style={{
               height: 40,
               width: 200,
@@ -271,8 +339,19 @@ const RegisterStep: React.FC<StepProps> = ({ onPrev }) => {
   );
 };
 
-const WaitingStep: React.FC<StepProps> = ({ onNext }) => {
-  return <div>WaitingStep</div>;
+const WaitingStep: React.FC<StepProps> = () => {
+  return (
+    <EnterAnim
+      items={[
+        <Logo />,
+        <h1 className="onboarding-title">You’re on the waitlist!</h1>,
+        <p className="onboarding-caption">
+          We have added you to the waiting list. If you pass, we will notify you
+          by email as soon as possible.
+        </p>,
+      ]}
+    />
+  );
 };
 
 export const OnboardingPage: React.FC = () => {
@@ -291,7 +370,7 @@ export const OnboardingPage: React.FC = () => {
       case OnboardingStep.Select:
         return <SelectStep onNext={nextStep} onPrev={prevStep} />;
       case OnboardingStep.Register:
-        return <RegisterStep onPrev={prevStep} />;
+        return <RegisterStep onPrev={prevStep} onNext={nextStep} />;
       case OnboardingStep.Waiting:
         return <WaitingStep />;
       default:

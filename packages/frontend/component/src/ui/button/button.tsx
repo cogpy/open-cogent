@@ -23,7 +23,7 @@ export type ButtonType =
 export type ButtonSize = 'default' | 'large' | 'extraLarge' | 'custom';
 
 export interface ButtonProps
-  extends Omit<HTMLAttributes<HTMLButtonElement>, 'type' | 'prefix'> {
+  extends Omit<HTMLAttributes<HTMLButtonElement>, 'prefix'> {
   /**
    * Preset color scheme
    * @default 'secondary'

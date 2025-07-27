@@ -1,6 +1,7 @@
 import { Button, RowInput } from '@afk/component';
 import { OAuthProviderType } from '@afk/graphql';
 import { GithubDuotoneIcon, GoogleDuotoneIcon } from '@blocksuite/icons/rc';
+import { AnimatePresence, motion } from 'framer-motion';
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import ReactCodeInput from 'react-verification-code-input';
@@ -120,7 +121,9 @@ export const SignInPage: React.FC = () => {
     try {
       const info = await checkUserByEmail(email);
       setHasPassword(info.hasPassword);
-      if (info.hasPassword) {
+      if (!info.canSignIn) {
+        return;
+      } else if (info.hasPassword) {
         setStep('password');
       } else {
         // automatically send magic link
@@ -168,17 +171,38 @@ export const SignInPage: React.FC = () => {
               type="email"
               placeholder="Email address"
               value={email}
-              onChange={setEmail}
-              className={styles.input}
-              style={{ marginBottom: 16 }}
+              onChange={e => {
+                setEmail(e);
+                clearError();
+              }}
+              className={cn(
+                styles.input,
+                'px-2 py-1',
+                error ? 'border-red-600!' : 'border-black!',
+                'outline-black'
+              )}
               autoComplete="email"
               required
               autoFocus
               onEnter={() => void handleEmailContinue()}
             />
+            <AnimatePresence>
+              {error ? (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <p className="text-[15px] text-red-600 mt-2 font-medium">
+                    {error}
+                  </p>
+                </motion.div>
+              ) : null}
+            </AnimatePresence>
             <button
               onClick={() => void handleEmailContinue()}
-              className={styles.submit}
+              className={cn(styles.submit, 'mt-4')}
               disabled={!email || isLoading}
               aria-disabled={!email || isLoading}
             >

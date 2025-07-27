@@ -18,7 +18,9 @@ export interface AuthState {
     options?: { verifyToken?: string; challenge?: string }
   ) => Promise<void>;
   login: (email: string, password: string) => Promise<void>; // alias
-  checkUserByEmail: (email: string) => Promise<{ hasPassword: boolean }>;
+  checkUserByEmail: (
+    email: string
+  ) => Promise<{ hasPassword: boolean; canSignIn: boolean }>;
   sendMagicLink: (
     email: string,
     options?: { verifyToken?: string; challenge?: string; redirectUrl?: string }
@@ -40,14 +42,18 @@ export const useAuthStore = create<AuthState>()(
       // Check if user exists and whether they have a password
       checkUserByEmail: async (
         email: string
-      ): Promise<{ hasPassword: boolean }> => {
+      ): Promise<{ hasPassword: boolean; canSignIn: boolean }> => {
         const res = await fetch('/api/auth/preflight', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email }),
         });
         if (!res.ok) throw new Error('Failed to check user');
-        return res.json();
+        const data = await res.json();
+        if (!data.canSignIn) {
+          set({ error: 'Early access required' });
+        }
+        return data;
       },
 
       // Password login (renamed from login)

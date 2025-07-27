@@ -13,6 +13,7 @@ export enum OnboardingStep {
 
 export interface OnboardingState {
   visited: boolean;
+  setVisited: (visited: boolean) => void;
   step: OnboardingStep;
   setStep: (step: OnboardingStep) => void;
   nextStep: () => void;
@@ -23,6 +24,7 @@ export const useOnboardingStore = create<OnboardingState>()(
   persist(
     (set, get) => ({
       visited: false,
+      setVisited: (visited: boolean) => set({ visited }),
       step: OnboardingStep.Welcome,
       setStep: (step: OnboardingStep) => set({ step }),
       nextStep: () => {

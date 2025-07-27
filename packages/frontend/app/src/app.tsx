@@ -3,7 +3,7 @@ import '@afk/component/theme';
 
 import { ConfirmModalProvider } from '@afk/component';
 import { useEffect } from 'react';
-import { Route, Routes } from 'react-router';
+import { Route, Routes, useNavigate } from 'react-router';
 
 import { AuthGuard } from './components/auth-guard';
 import { ChatPage } from './pages/chats/chat';
@@ -20,6 +20,7 @@ import { oauthLoginLoader, OAuthLoginPage } from './pages/oauth-login';
 import { OnboardingPage } from './pages/onboarding';
 import { redirectProxyLoader, RedirectProxyPage } from './pages/redirect';
 import { SignInPage } from './pages/sign-in';
+import { useOnboardingStore } from './store/onboarding';
 import { useSidebarStore } from './store/sidebar';
 
 const ChatsPage = () => {
@@ -47,7 +48,16 @@ const LibraryPage = () => {
 };
 
 function App() {
+  const navigate = useNavigate();
   const { open } = useSidebarStore();
+  const { visited } = useOnboardingStore();
+
+  useEffect(() => {
+    if (!visited) {
+      navigate('/onboarding');
+    }
+  }, [navigate, visited]);
+
   useEffect(() => {
     document.body.classList.toggle('sidebar-open', open);
   }, [open]);

@@ -47,8 +47,6 @@ export const item = style({
 export const input = style([
   item,
   {
-    borderColor: '#000',
-    padding: '9px 16px',
     marginTop: 32,
   },
 ]);

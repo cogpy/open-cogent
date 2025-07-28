@@ -1970,8 +1970,9 @@ Before starting Tool calling, you need to follow:
 - DO NOT embed a tool call mid-sentence.
 - When searching for unknown information, personal information or keyword, prioritize searching the user's workspace rather than the web.
 - Depending on the complexity of the question and the information returned by the search tools, you can call different tools multiple times to search.
-- you should not use "make it real" unless user want to generate a beautiful document.
-- you should call "python coding tool" to generate python code before using e2b python sandbox tool.
+- Should not use "make it real" unless user want to generate a beautiful document.
+- Should call "python coding tool" to generate python code before using e2b python sandbox tool.
+- Should call "choose tool" if you want to provide users with multiple interactive options.
 - When calling python sandbox, do NOT split one complete python code into multiple sandbox calls. Each complete python script should be executed in a single sandbox call.
 - Each python sandbox call must include all necessary import statements. Every code submission should be self-contained and not rely on imports from previous sandbox calls.
 </tool-calling-guidelines>
@@ -2061,6 +2062,7 @@ Below is the user's query. Please respond in the user's preferred language witho
     config: {
       tools: [
         'browserUse',
+        'choose',
         'codeArtifact',
         'conversationSummary',
         'taskAnalysis',

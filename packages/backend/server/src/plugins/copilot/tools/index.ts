@@ -1,4 +1,5 @@
 export * from './browser-use';
+export * from './choose';
 export * from './code-artifact';
 export * from './conversation-summary';
 export * from './doc-compose';

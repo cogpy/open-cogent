@@ -1,6 +1,7 @@
 import { ToolSet } from 'ai';
 
 import type { createBrowserUseTool } from './browser-use';
+import type { createChooseTool } from './choose';
 import type { createCodeArtifactTool } from './code-artifact';
 import type { createConversationSummaryTool } from './conversation-summary';
 import type { createDocComposeTool } from './doc-compose';
@@ -15,6 +16,7 @@ import type { createMarkTodoTool, createTodoTool } from './todo';
 
 export interface CustomAITools extends ToolSet {
   browser_use: ReturnType<typeof createBrowserUseTool>;
+  choose: ReturnType<typeof createChooseTool>;
   code_artifact: ReturnType<typeof createCodeArtifactTool>;
   conversation_summary: ReturnType<typeof createConversationSummaryTool>;
   doc_semantic_search: ReturnType<typeof createDocSemanticSearchTool>;
@@ -32,6 +34,7 @@ export interface CustomAITools extends ToolSet {
 
 export const Tools = [
   'browser_use',
+  'choose',
   'code_artifact',
   'doc_compose',
   'doc_semantic_search',

@@ -18,6 +18,7 @@ import {
   buildDocSearchGetter,
   buildSaveDocGetter,
   createBrowserUseTool,
+  createChooseTool,
   createCodeArtifactTool,
   createConversationSummaryTool,
   createDocComposeTool,
@@ -180,6 +181,10 @@ export abstract class CopilotProvider<C = any> {
           }
           case 'codeArtifact': {
             tools.code_artifact = createCodeArtifactTool(prompt, this.factory);
+            break;
+          }
+          case 'choose': {
+            tools.choose = createChooseTool();
             break;
           }
           case 'conversationSummary': {

@@ -21,11 +21,6 @@ export const tempModels = [
     icon: <ClaudeIcon />,
   },
   {
-    label: 'Claude Opus 4',
-    value: 'claude-opus-4@20250514',
-    icon: <ClaudeIcon />,
-  },
-  {
     label: 'Claude 3.7 Sonnet',
     value: 'claude-3-7-sonnet@20250219',
     icon: <ClaudeIcon />,
@@ -36,7 +31,6 @@ export const tempModels = [
     icon: <ClaudeIcon />,
   },
   { label: 'GPT-4.1', value: 'gpt-4.1', icon: <ChatGPTIcon /> },
-  { label: 'o3', value: 'o3', icon: <ChatGPTIcon /> },
   { label: 'o4 Mini', value: 'o4-mini', icon: <ChatGPTIcon /> },
   {
     label: 'Gemini 2.5 Flash',
@@ -97,6 +91,7 @@ export const defaultTools = [
   'todoList',
   'markTodo',
   'docEdit',
+  'choose',
   ...configurableTools.map(tool => tool.value).flat(),
 ];
 

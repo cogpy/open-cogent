@@ -60,6 +60,7 @@ export const VertexSchema: JSONSchema = {
 export const PromptTools = z
   .enum([
     'browserUse',
+    'choose',
     'codeArtifact',
     'conversationSummary',
     'taskAnalysis',

@@ -161,6 +161,7 @@ export const ChatConfigMenu = ({
                   </div>
                   <div className="flex-1">{tool.label}</div>
                   <Switch
+                    size={20}
                     checked={isEnabled}
                     onClick={e => {
                       e.stopPropagation();

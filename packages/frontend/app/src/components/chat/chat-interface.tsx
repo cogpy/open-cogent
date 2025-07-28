@@ -14,7 +14,10 @@ import { ChatScrollerProvider } from './use-chat-scroller';
 interface ChatPlaceholderProps {
   placeholder?: string;
   placeholderTitle?: string;
-  onPlaceholderSend?: (input: string) => Promise<void>;
+  onPlaceholderSend?: (
+    input: string,
+    config?: { tools: string[]; model: string }
+  ) => Promise<void>;
   isCreating?: boolean;
   message?: string;
 }
@@ -27,8 +30,8 @@ const ChatPlaceholder = ({
   message,
 }: ChatPlaceholderProps) => {
   const onSend = useCallback(
-    async (input: string) => {
-      if (onPlaceholderSend) await onPlaceholderSend(input);
+    async (input: string, config?: { tools: string[]; model: string }) => {
+      if (onPlaceholderSend) await onPlaceholderSend(input, config);
     },
     [onPlaceholderSend]
   );
@@ -88,8 +91,11 @@ const ChatSession = ({
     });
   }, []);
 
-  const onSend = async (input: string) => {
-    await store.getState().sendMessage({ content: input });
+  const onSend = async (
+    input: string,
+    config?: { tools: string[]; model: string }
+  ) => {
+    await store.getState().sendMessage({ content: input }, config);
     scrollToBottom();
   };
 
@@ -195,7 +201,10 @@ export interface ChatInterfaceProps {
   footerContent?: React.ReactNode;
   // For placeholder mode when no store is provided
   placeholderTitle?: string;
-  onPlaceholderSend?: (input: string) => Promise<void>;
+  onPlaceholderSend?: (
+    input: string,
+    config?: { tools: string[]; model: string }
+  ) => Promise<void>;
   isCreating?: boolean;
   message?: string;
 }

@@ -1,49 +1,20 @@
-import { IconButton, Menu, MenuItem } from '@afk/component';
-import { ArrowUpBigIcon, PlusIcon, StopIcon } from '@blocksuite/icons/rc';
+import { Button, IconButton } from '@afk/component';
+import {
+  ArrowDownSmallIcon,
+  ArrowUpBigIcon,
+  PlusIcon,
+} from '@blocksuite/icons/rc';
 import { cssVarV2 } from '@toeverything/theme/v2';
-import { motion } from 'framer-motion';
+import { m, motion } from 'framer-motion';
 import { useCallback, useRef, useState } from 'react';
 import type { StoreApi } from 'zustand';
 
 import { cn } from '@/lib/utils';
 import type { ChatSessionState } from '@/store/copilot/types';
 
+import { ChatConfigMenu, defaultTools, tempModels } from './chat-config';
 import { ContextPreview, ContextSelectorMenu } from './chat-context';
 import * as styles from './chat-input.css';
-
-const tempModels = [
-  'claude-sonnet-4@20250514',
-  'claude-opus-4@20250514',
-  'claude-3-7-sonnet@20250219',
-  'claude-3-5-sonnet-v2@20241022',
-  'gpt-4.1',
-  'o3',
-  'o4-mini',
-  'gemini-2.5-flash',
-  'gemini-2.5-pro',
-];
-
-const ModelSelectorMenu = ({
-  model,
-  setModel,
-  children,
-}: {
-  children: React.ReactNode;
-  model: string;
-  setModel: (model: string) => void;
-}) => {
-  return (
-    <Menu
-      items={tempModels.map(m => (
-        <MenuItem key={m} onClick={() => setModel(m)}>
-          {m}
-        </MenuItem>
-      ))}
-    >
-      {children}
-    </Menu>
-  );
-};
 
 export const ChatInput = ({
   onSend: propsOnSend,
@@ -55,7 +26,7 @@ export const ChatInput = ({
   isCreating,
   initialInput,
 }: {
-  onSend: (input: string) => void;
+  onSend: (input: string, config: { tools: string[]; model: string }) => void;
   onAbort?: () => void;
   placeholder?: string;
   sending?: boolean;
@@ -64,6 +35,8 @@ export const ChatInput = ({
   isCreating?: boolean;
   initialInput?: string;
 }) => {
+  const [tools, setTools] = useState(defaultTools);
+  const [model, setModel] = useState(tempModels[0].value);
   const [input, setInput] = useState(initialInput ?? '');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [textareaHeight, setTextareaHeight] = useState(45);
@@ -96,12 +69,12 @@ export const ChatInput = ({
 
   const onSend = useCallback(() => {
     if (!input.trim()) return;
-    propsOnSend(input);
+    propsOnSend(input, { tools, model });
     setInput('');
     setTimeout(() => {
       updateTextAreaHeight();
     }, 0);
-  }, [input, propsOnSend, updateTextAreaHeight]);
+  }, [input, model, propsOnSend, tools, updateTextAreaHeight]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -167,14 +140,19 @@ export const ChatInput = ({
         </ContextSelectorMenu>
 
         <div className="flex items-center gap-2">
-          {/* <ModelSelectorMenu model={model} setModel={setModel}>
+          <ChatConfigMenu
+            model={model}
+            setModel={setModel}
+            tools={tools}
+            setTools={setTools}
+          >
             <Button className={styles.modelSelector} variant="plain">
               <div className="flex items-center gap-1">
-                {model}
+                {tempModels.find(m => m.value === model)?.label}
                 <ArrowDownSmallIcon className="text-xl" />
               </div>
             </Button>
-          </ModelSelectorMenu> */}
+          </ChatConfigMenu>
           {streaming ? (
             <IconButton
               icon={

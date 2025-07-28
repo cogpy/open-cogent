@@ -50,7 +50,10 @@ export const ChatPage = () => {
   /* ---------------- Placeholder mode handlers ---------------- */
   const [isCreating, setIsCreating] = useState(false);
 
-  const onSendPlaceholder = async (inputContent: string) => {
+  const onSendPlaceholder = async (
+    inputContent: string,
+    config?: { tools: string[]; model: string }
+  ) => {
     if (!inputContent.trim() || isCreating) return;
     setIsCreating(true);
 
@@ -95,9 +98,12 @@ export const ChatPage = () => {
       );
       await clearCacheContexts();
 
-      await newStore.getState().sendMessage({
-        content: inputContent.trim(),
-      });
+      await newStore.getState().sendMessage(
+        {
+          content: inputContent.trim(),
+        },
+        config
+      );
 
       // Navigate to URL with new session id
       navigate('/chats/' + newSessionId, { replace: true });

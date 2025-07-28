@@ -55,7 +55,13 @@ export interface ChatSessionState extends SessionFlags {
   init(): Promise<void>;
   reload(): Promise<void>;
   abortSend(): void;
-  sendMessage(options: Omit<SendMessageOptions, 'sessionId'>): Promise<void>;
+  sendMessage(
+    options: Omit<SendMessageOptions, 'sessionId'>,
+    config?: {
+      tools: string[];
+      model: string;
+    }
+  ): Promise<void>;
   cleanup(sessionIds: string[]): Promise<void>;
   clearError(): void;
   // contexts

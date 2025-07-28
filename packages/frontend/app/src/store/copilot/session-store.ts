@@ -191,7 +191,13 @@ export function createChatSessionStore(params: {
         }
       },
 
-      sendMessage: async (options: SendMessageOptions) => {
+      sendMessage: async (
+        options: SendMessageOptions,
+        config?: {
+          tools: string[];
+          model: string;
+        }
+      ) => {
         if (!options.content || !options.content.trim()) {
           return;
         }
@@ -244,6 +250,8 @@ export function createChatSessionStore(params: {
                 sessionId,
                 messageId: messageId ?? undefined,
                 signal: abortController.signal,
+                tools: config?.tools,
+                model: config?.model,
               });
 
               for await (const ev of toTextStream(es, {
@@ -325,11 +333,7 @@ export function createChatSessionStore(params: {
       },
 
       cleanup: async (sessionIds: string[]) => {
-        await withFlag(store, 'isSubmitting', async () => {
-          await client.cleanupSessions({
-            sessionIds,
-          });
-        });
+        await withFlag(store, 'isSubmitting', async () => {});
       },
 
       clearError: () => {

@@ -338,6 +338,8 @@ export class CopilotClient {
       webSearch,
       modelId,
       signal,
+      tools,
+      model,
     }: {
       sessionId: string;
       messageId?: string;
@@ -345,6 +347,8 @@ export class CopilotClient {
       webSearch?: boolean;
       modelId?: string;
       signal?: AbortSignal;
+      tools?: string[];
+      model?: string;
     },
     endpoint = Endpoint.StreamObject
   ) {
@@ -354,6 +358,8 @@ export class CopilotClient {
       reasoning,
       webSearch,
       modelId,
+      tools,
+      model,
     });
     if (queryString) {
       url += `?${queryString}`;
@@ -379,10 +385,16 @@ export class CopilotClient {
     return this.eventSource(url);
   }
 
-  paramsToQueryString(params: Record<string, string | boolean | undefined>) {
+  paramsToQueryString(
+    params: Record<string, string | boolean | undefined | string[]>
+  ) {
     const queryString = new URLSearchParams();
     Object.entries(params).forEach(([key, value]) => {
-      if (typeof value === 'boolean') {
+      if (Array.isArray(value)) {
+        value.forEach(v => {
+          queryString.append(key, v);
+        });
+      } else if (typeof value === 'boolean') {
         if (value) {
           queryString.append(key, 'true');
         }

@@ -24,6 +24,8 @@
   --color-layer-background-secondary: var(
     --affine-v2-layer-background-secondary
   );
+  --color-status-success: var(--affine-v2-status-success);
+  --color-icon-tertiary: var(--affine-v2-icon-tertiary);
   --shadow-view: 0px 1px 5px rgba(0, 0, 0, 0.05);
 }
 

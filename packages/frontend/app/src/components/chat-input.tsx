@@ -5,8 +5,9 @@ import {
   PlusIcon,
 } from '@blocksuite/icons/rc';
 import { cssVarV2 } from '@toeverything/theme/v2';
-import { m, motion } from 'framer-motion';
-import { useCallback, useRef, useState } from 'react';
+import { EventEmitter } from 'events';
+import { motion } from 'framer-motion';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { StoreApi } from 'zustand';
 
 import { cn } from '@/lib/utils';
@@ -15,6 +16,8 @@ import type { ChatSessionState } from '@/store/copilot/types';
 import { ChatConfigMenu, defaultTools, tempModels } from './chat-config';
 import { ContextPreview, ContextSelectorMenu } from './chat-context';
 import * as styles from './chat-input.css';
+
+export const chatInputEmitter = new EventEmitter();
 
 export const ChatInput = ({
   onSend: propsOnSend,
@@ -67,14 +70,18 @@ export const ChatInput = ({
     [updateTextAreaHeight]
   );
 
-  const onSend = useCallback(() => {
-    if (!input.trim()) return;
-    propsOnSend(input, { tools, model });
-    setInput('');
-    setTimeout(() => {
-      updateTextAreaHeight();
-    }, 0);
-  }, [input, model, propsOnSend, tools, updateTextAreaHeight]);
+  const onSend = useCallback(
+    (message?: string) => {
+      const messageToSend = message ?? input;
+      if (!messageToSend.trim()) return;
+      propsOnSend(messageToSend, { tools, model });
+      setInput('');
+      setTimeout(() => {
+        updateTextAreaHeight();
+      }, 0);
+    },
+    [input, model, propsOnSend, tools, updateTextAreaHeight]
+  );
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -90,6 +97,16 @@ export const ChatInput = ({
     },
     [onSend]
   );
+
+  useEffect(() => {
+    const onMessage = (message: string) => {
+      onSend(message);
+    };
+    chatInputEmitter.on('send', onMessage);
+    return () => {
+      chatInputEmitter.off('send', onMessage);
+    };
+  }, [onSend, updateTextAreaHeight]);
 
   return (
     <div

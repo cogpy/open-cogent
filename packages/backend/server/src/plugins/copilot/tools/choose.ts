@@ -12,7 +12,10 @@ export const createChooseTool = () => {
         question: z.string().describe('The question or prompt to ask the user'),
         options: z
           .array(z.string())
-          .describe('Array of options for the user to choose from')
+          // .describe('Array of options for the user to choose from')
+          .describe(
+            'Array of options for the user to choose from. MUST be provided as an array, e.g., ["Option 1", "Option 2", "Option 3"]. Do NOT provide as a string.'
+          )
           .min(2, 'At least 2 options are required'),
         multiSelect: z
           .boolean()

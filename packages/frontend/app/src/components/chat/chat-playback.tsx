@@ -12,6 +12,7 @@ import { MessageRenderer } from '@/pages/chats/renderers/message';
 import type { ChatMessage } from '@/store/copilot/types';
 
 import { DownArrow, type DownArrowRef } from './chat-arrow';
+import { MessagesProvider } from './messages.context';
 import { ChatScrollerProvider } from './use-chat-scroller';
 
 /**
@@ -164,15 +165,17 @@ export const ChatPlayback = (props: ChatPlaybackProps) => {
             </div>
           )}
 
-          <div className="max-w-[800px] mx-auto w-full flex flex-col [&>*:not(:first-child)]:mt-4">
-            {messages.map((m, idx) => (
-              <MessageRenderer
-                key={(m.id ?? idx) + '-skip'}
-                message={m}
-                isStreaming={false}
-              />
-            ))}
-          </div>
+          <MessagesProvider messages={messages}>
+            <div className="max-w-[800px] mx-auto w-full flex flex-col [&>*:not(:first-child)]:mt-4">
+              {messages.map((m, idx) => (
+                <MessageRenderer
+                  key={(m.id ?? idx) + '-skip'}
+                  message={m}
+                  isStreaming={false}
+                />
+              ))}
+            </div>
+          </MessagesProvider>
         </div>
 
         {footerContent}
@@ -200,20 +203,22 @@ export const ChatPlayback = (props: ChatPlaybackProps) => {
           </div>
         )}
 
-        <div className="max-w-[800px] mx-auto w-full flex flex-col [&>*:not(:first-child)]:mt-4">
-          {frames.map((m, idx) => {
-            const isAssistant = m.role !== 'user';
-            const isStreaming =
-              !streamDone && idx === frames.length - 1 && isAssistant;
-            return (
-              <MessageRenderer
-                key={m.id ?? idx}
-                message={m}
-                isStreaming={isStreaming}
-              />
-            );
-          })}
-        </div>
+        <MessagesProvider messages={frames}>
+          <div className="max-w-[800px] mx-auto w-full flex flex-col [&>*:not(:first-child)]:mt-4">
+            {frames.map((m, idx) => {
+              const isAssistant = m.role !== 'user';
+              const isStreaming =
+                !streamDone && idx === frames.length - 1 && isAssistant;
+              return (
+                <MessageRenderer
+                  key={m.id ?? idx}
+                  message={m}
+                  isStreaming={isStreaming}
+                />
+              );
+            })}
+          </div>
+        </MessagesProvider>
       </ChatScrollerProvider>
       <DownArrow
         ref={downArrowRef}

@@ -293,6 +293,7 @@ __metadata:
     "@smarttools/eslint-plugin-rxjs": "npm:^1.0.8"
     "@taplo/cli": "npm:^0.7.0"
     "@types/eslint": "npm:^9.6.1"
+    "@types/events": "npm:^3"
     "@types/node": "npm:^22.0.0"
     "@typescript-eslint/parser": "npm:^8.18.0"
     "@vanilla-extract/vite-plugin": "npm:^5.0.0"
@@ -310,6 +311,7 @@ __metadata:
     eslint-plugin-simple-import-sort: "npm:^12.1.1"
     eslint-plugin-sonarjs: "npm:^3.0.1"
     eslint-plugin-unicorn: "npm:^59.0.0"
+    events: "npm:^3.3.0"
     happy-dom: "npm:^18.0.0"
     husky: "npm:^9.1.7"
     idb: "npm:^8.0.3"
@@ -14192,6 +14194,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/events@npm:^3":
+  version: 3.0.3
+  resolution: "@types/events@npm:3.0.3"
+  checksum: 10/50af9312fab001fd6bd4bb3ff65830f940877e6778de140a92481a0d9bf5f4853d44ec758a8800ef60e0598ac43ed1b5688116a3c65906ae54e989278d6c7c82
+  languageName: node
+  linkType: hard
+
 "@types/express-serve-static-core@npm:*, @types/express-serve-static-core@npm:^5.0.0, @types/express-serve-static-core@npm:^5.0.6":
   version: 5.0.7
   resolution: "@types/express-serve-static-core@npm:5.0.7"
@@ -19838,7 +19847,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"events@npm:^3.2.0":
+"events@npm:^3.2.0, events@npm:^3.3.0":
   version: 3.3.0
   resolution: "events@npm:3.3.0"
   checksum: 10/a3d47e285e28d324d7180f1e493961a2bbb4cad6412090e4dec114f4db1f5b560c7696ee8e758f55e23913ede856e3689cd3aa9ae13c56b5d8314cd3b3ddd1be

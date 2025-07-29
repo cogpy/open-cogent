@@ -8,6 +8,7 @@ import { TypeMarkdownText } from '@/components/ui/markdown';
 
 import { AIReasoningCard } from './ai-reasoning-card';
 import { BrowserUseResult, transformStep } from './browser-use-result';
+import { ChooseResult } from './choose-result';
 import { CodeArtifactResult } from './code-artifact-result';
 import { E2bPythonResult } from './e2b-python-result';
 import { GeneratingCard } from './generating-card';
@@ -254,6 +255,10 @@ export function ChatContentStreamObjects({
                   estimatedSteps={obj.result.estimatedSteps as any}
                 />
               );
+            }
+
+            if (obj.toolName === 'choose') {
+              return <ChooseResult key={key} result={obj.result as any} />;
             }
 
             // Default tool result display

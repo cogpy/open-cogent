@@ -57,6 +57,7 @@
     "@smarttools/eslint-plugin-rxjs": "^1.0.8",
     "@taplo/cli": "^0.7.0",
     "@types/eslint": "^9.6.1",
+    "@types/events": "^3",
     "@types/node": "^22.0.0",
     "@typescript-eslint/parser": "^8.18.0",
     "@vanilla-extract/vite-plugin": "^5.0.0",
@@ -166,6 +167,7 @@
     "yjs": "patch:yjs@npm%3A13.6.21#~/.yarn/patches/yjs-npm-13.6.21-c9f1f3397c.patch"
   },
   "dependencies": {
+    "events": "^3.3.0",
     "idb": "^8.0.3"
   }
 }

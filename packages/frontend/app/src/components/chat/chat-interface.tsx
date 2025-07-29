@@ -8,6 +8,7 @@ import type { ChatSessionState } from '@/store/copilot/types';
 
 import { AggregatedTodoList } from './aggregated-todo-list';
 import { DownArrow, type DownArrowRef } from './chat-arrow';
+import { MessagesProvider } from './messages.context';
 import { ChatScrollerProvider } from './use-chat-scroller';
 
 // Placeholder component for when no session exists
@@ -154,15 +155,17 @@ const ChatSession = ({
               </div>
             )}
 
-            <div className="max-w-[832px] mx-auto px-4 w-full  flex flex-col  [&>*:not(:first-child)]:mt-4">
-              {messages.map((m, idx) => (
-                <MessageRenderer
-                  key={m.id ?? idx}
-                  message={m}
-                  isStreaming={isStreaming && idx === messages.length - 1}
-                />
-              ))}
-            </div>
+            <MessagesProvider messages={messages}>
+              <div className="max-w-[832px] mx-auto px-4 w-full  flex flex-col  [&>*:not(:first-child)]:mt-4">
+                {messages.map((m, idx) => (
+                  <MessageRenderer
+                    key={m.id ?? idx}
+                    message={m}
+                    isStreaming={isStreaming && idx === messages.length - 1}
+                  />
+                ))}
+              </div>
+            </MessagesProvider>
           </div>
         </ChatScrollerProvider>
 

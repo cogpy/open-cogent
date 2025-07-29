@@ -5,7 +5,6 @@ import { cn } from '@/lib/utils';
 import type { ChatMessage } from '@/store/copilot/types';
 
 import { ChatContentStreamObjects } from './chat-content-stream-objects';
-import * as styles from './message.css';
 
 interface MessageRendererProps {
   /** Chat message to render */

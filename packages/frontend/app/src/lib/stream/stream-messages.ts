@@ -61,6 +61,7 @@ export async function* streamMessages(
       const placeholder: ChatMessage = { ...msg } as ChatMessage;
       if (msg.streamObjects && msg.streamObjects.length > 0) {
         placeholder.streamObjects = [];
+        placeholder.content = '';
       } else {
         placeholder.content = '';
       }

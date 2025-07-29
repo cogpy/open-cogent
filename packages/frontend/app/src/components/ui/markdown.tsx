@@ -83,7 +83,7 @@ function remarkStripFootnoteRefs() {
 /* ────────────────────────────────────────── */
 /* helper: pull first external <a> from each <li> */
 function extractLinks(footnoteSection: Element) {
-  const links: { href: string; text: string }[] = [];
+  const links: { href: string; text: string; footnoteRef: string }[] = [];
 
   // <ol> is child #1 of the <section>
   const ol = footnoteSection.children.find(
@@ -97,21 +97,32 @@ function extractLinks(footnoteSection: Element) {
     const p = li.children.find(
       n => n.type === 'element' && n.tagName === 'p'
     ) as Element | undefined;
+
     if (!p) continue;
 
-    const a = p.children.find(
-      n =>
-        n.type === 'element' &&
-        n.tagName === 'a' &&
-        typeof n.properties?.href === 'string' &&
-        !n.properties.href.startsWith('#') // skip the ↩ back-link
-    ) as Element | undefined;
-    if (!a) continue;
+    const [_, a, __, aref] = p.children as [
+      any,
+      {
+        type: 'element';
+        tagName: 'a';
+        properties: { href: string };
+        children: any[];
+      },
+      any,
+      {
+        type: 'element';
+        tagName: 'a';
+        properties: { href: string };
+        children: any[];
+      },
+    ];
 
+    if (!a || !aref || !a.properties?.href || !aref.properties?.href) continue;
     const textNode = a.children.find(c => c.type === 'text') as any;
     links.push({
       href: a.properties?.href as string,
       text: textNode?.value?.slice(0, -2) ?? a.properties?.href,
+      footnoteRef: aref.properties.href,
     });
   }
 
@@ -150,6 +161,39 @@ const footnoteComponents: Components = {
     );
   },
 
+  a({ node, children, ...rest }) {
+    if (node?.properties?.dataFootnoteRef) {
+      // handle clicking footnote ref correctly
+      const href = node?.properties?.href as string;
+      const scrollToRef = (e: React.MouseEvent) => {
+        e.preventDefault();
+        const markdownContainer = (e.target as HTMLElement).closest(
+          '[data-markdown-text]'
+        );
+        const selector = `a[data-footnote-ref="#${node.properties.id}"]`;
+        const ref = markdownContainer?.querySelector(
+          selector
+        ) as HTMLElement | null;
+        if (ref) {
+          ref.scrollIntoView({
+            behavior: 'smooth',
+          });
+          // highlight the reference briefly so it is easier to spot
+          ref.classList.add('bg-yellow-200', 'transition-colors');
+          setTimeout(() => {
+            ref.classList.remove('bg-yellow-200');
+          }, 1500);
+        }
+      };
+      return (
+        <a href={href} onClick={scrollToRef}>
+          {children}
+        </a>
+      );
+    }
+    return <a {...rest}>{children}</a>;
+  },
+
   /* replace the whole footnote block */
   section({ node, ...rest }) {
     if (node?.properties?.dataFootnotes) {
@@ -157,9 +201,14 @@ const footnoteComponents: Components = {
 
       return (
         <ol className="mt-4">
-          {links.map(({ href, text }) => (
-            <li key={href} className="break-all">
-              <a href={href} target="_blank" rel="noopener noreferrer">
+          {links.map(({ href, text, footnoteRef }) => (
+            <li key={footnoteRef} className="break-all">
+              <a
+                href={href}
+                data-footnote-ref={footnoteRef}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 {text}
               </a>
             </li>
@@ -239,6 +288,7 @@ export function MarkdownText({
 }) {
   return (
     <span
+      data-markdown-text
       className={cn(
         className,
         styles.markdownBlock,

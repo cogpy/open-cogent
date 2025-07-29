@@ -39,6 +39,19 @@ export abstract class AnthropicProvider<T> extends CopilotProvider<T> {
       return e;
     } else if (e instanceof AISDKError) {
       this.logger.error('Throw error from ai sdk:', e);
+
+      // Special handling for rate limiting errors
+      if (
+        e.message.includes('Too Many Requests') || // hit account rate limit
+        e.message.includes('Overloaded') // anthropic' infrastructure overload
+      ) {
+        return new CopilotProviderSideError({
+          provider: this.type,
+          kind: 'rate_limit_exceeded',
+          message: 'Rate limit exceeded. Please try again in a few moments.',
+        });
+      }
+
       return new CopilotProviderSideError({
         provider: this.type,
         kind: e.name || 'unknown',

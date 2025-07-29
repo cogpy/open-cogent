@@ -61,6 +61,24 @@ export async function* mergeStreams<F, S>(
   const reads: Promise<IndexedRead>[] = readers.map((r, idx) =>
     r.read().then(result => ({ idx, result }))
   );
+  const readerStates = readers.map(() => ({ locked: true, released: false }));
+
+  const safeReleaseLock = (
+    reader: ReadableStreamDefaultReader<F | S>,
+    idx: number
+  ) => {
+    try {
+      if (readerStates[idx].locked && !readerStates[idx].released) {
+        reader.releaseLock();
+        readerStates[idx].released = true;
+        readerStates[idx].locked = false;
+      }
+    } catch (error) {
+      // Reader might already be released or in an invalid state
+      readerStates[idx].released = true;
+      readerStates[idx].locked = false;
+    }
+  };
 
   try {
     while (reads.length) {
@@ -68,15 +86,17 @@ export async function* mergeStreams<F, S>(
 
       if (result.done) {
         if (idx === 0) {
-          for (const reader of readers) {
-            reader.releaseLock();
-          }
+          // Release all readers when first stream is done
+          readers.forEach((reader, i) => safeReleaseLock(reader, i));
           break;
         } else {
-          readers[idx].releaseLock();
+          // Release only the finished reader
+          safeReleaseLock(readers[idx], idx);
           reads.splice(idx, 1);
           readers.splice(idx, 1);
+          readerStates.splice(idx, 1);
 
+          // Adjust indices for remaining reads
           for (let i = idx; i < reads.length; i++) {
             reads[i] = reads[i].then(({ idx: old, result }) => ({
               idx: old - 1,
@@ -91,12 +111,7 @@ export async function* mergeStreams<F, S>(
       yield result.value!;
     }
   } finally {
-    readers.forEach(r => {
-      try {
-        r.releaseLock();
-      } catch (_) {
-        /* ignore */
-      }
-    });
+    // Safe cleanup of all remaining readers
+    readers.forEach((reader, idx) => safeReleaseLock(reader, idx));
   }
 }

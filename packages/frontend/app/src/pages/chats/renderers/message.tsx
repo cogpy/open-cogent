@@ -23,28 +23,30 @@ export const MessageRenderer = memo(function MessageRenderer({
   message,
   isStreaming = false,
 }: MessageRendererProps) {
-  const isAssistant = message.role !== 'user';
+  if (message.role === 'assistant') {
+    return (
+      <div className={cn('flex flex-col items-start')}>
+        {message.streamObjects?.length ? (
+          <ChatContentStreamObjects
+            streamObjects={message.streamObjects}
+            isStreaming={isStreaming}
+            isAssistant
+          />
+        ) : (
+          <MarkdownText text={message.content} loading={isStreaming} />
+        )}
+      </div>
+    );
+  }
+
   return (
     <div
       className={cn(
         'flex flex-col',
-        isAssistant
-          ? 'items-start'
-          : 'self-end p-3 inline-block ax-w-full prose rounded-lg mb-4 bg-[#f3f3f3]'
+        'self-end p-3 inline-block ax-w-full rounded-lg mb-4 bg-[#f3f3f3]'
       )}
     >
-      {message.streamObjects?.length ? (
-        <ChatContentStreamObjects
-          streamObjects={message.streamObjects}
-          isStreaming={isStreaming && isAssistant}
-          isAssistant={isAssistant}
-        />
-      ) : (
-        <MarkdownText
-          text={message.content}
-          loading={isAssistant && isStreaming}
-        />
-      )}
+      {message.content}
     </div>
   );
 });

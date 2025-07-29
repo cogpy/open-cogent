@@ -74,7 +74,7 @@ body.sidebar-open:has(#app-sidebar) {
   transform: translateY(-2px);
 }
 
-.with-cursor p {
+.with-cursor p:last-of-type {
   display: inline-block;
 }
 

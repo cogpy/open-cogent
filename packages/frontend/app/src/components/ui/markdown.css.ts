@@ -6,7 +6,7 @@ globalStyle(`${markdownBlock} li > p`, {
   marginBottom: 0,
 });
 globalStyle(
-  `${markdownBlock} p:not(:last-child), ${markdownBlock} ul:not(:last-child)`,
+  `${markdownBlock} p:not(:last-child), ${markdownBlock} ul:not(:last-child), ${markdownBlock} :where(p):not(:where([class~='not-prose'], [class~='not-prose'] *))`,
   {
     marginBottom: 12,
     marginTop: 12,

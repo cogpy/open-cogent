@@ -169,6 +169,20 @@ export const TokenTrackingContextSchema = z.object({
   usageRecords: z.array(TokenUsageDetailSchema),
 });
 
+export const TokenReport = z.object({
+  model: z.string(),
+  processed: z.number(),
+  generated: z.number(),
+  calls: z.number(),
+  timeTaken: z.number(),
+});
+
+export const TokenSummarySchema = z.object({
+  overview: z.string(),
+  report: z.array(TokenReport),
+});
+
+export type TokenSummary = z.infer<typeof TokenSummarySchema>;
 export type TokenUsage = z.infer<typeof TokenUsageSchema>;
 export type TokenUsageTotal = z.infer<typeof TokenUsageTotalSchema>;
 export type TokenUsageDetail = z.infer<typeof TokenUsageDetailSchema>;
@@ -200,6 +214,7 @@ const StreamObjectPureSchema = [
     type: z.literal('status'),
     result: z.object({
       completed: z.boolean(),
+      summary: TokenSummarySchema.optional(),
       tokenUsage: TokenUsageTotalSchema.optional(),
       records: TokenUsageDetailSchema.array().optional(),
     }),

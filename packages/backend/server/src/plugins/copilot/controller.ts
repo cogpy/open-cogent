@@ -9,6 +9,7 @@ import {
   Res,
   Sse,
 } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import type { Request, Response } from 'express';
 import {
   BehaviorSubject,
@@ -75,6 +76,7 @@ export class CopilotController implements BeforeApplicationShutdown {
 
   constructor(
     private readonly config: Config,
+    private readonly moduleRef: ModuleRef,
     private readonly chatSession: ChatSessionService,
     private readonly provider: CopilotProviderFactory,
     private readonly workflow: CopilotWorkflowService,
@@ -404,7 +406,7 @@ export class CopilotController implements BeforeApplicationShutdown {
       });
 
       const { messageId, tools } = ChatQuerySchema.parse(query);
-      const parser = new StreamObjectParser(model);
+      const parser = new StreamObjectParser(model, this.moduleRef);
       const ctx = TokenTracker.getOrCreateTracker({
         sessionId: session.config.sessionId,
         userId: user.id,
@@ -434,7 +436,7 @@ export class CopilotController implements BeforeApplicationShutdown {
               reduce((acc, chunk) => acc.concat([chunk]), [] as StreamObject[]),
               tap(result => {
                 void TokenTracker.runWith(ctx, async () => {
-                  const streamObjects = parser.mergeTextDelta(result);
+                  const streamObjects = await parser.mergeTextDelta(result);
                   const content = parser.mergeContent(streamObjects);
 
                   session.push({
@@ -459,7 +461,7 @@ export class CopilotController implements BeforeApplicationShutdown {
                 TokenTracker.runWith(ctx, async () => ({
                   type: 'message' as const,
                   id: messageId,
-                  data: parser.statusStreamObject(),
+                  data: await parser.statusStreamObject(),
                 }))
               )
             )

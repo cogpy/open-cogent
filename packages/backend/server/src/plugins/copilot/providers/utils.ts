@@ -1,4 +1,5 @@
 import { Logger } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import {
   CoreAssistantMessage,
   CoreUserMessage,
@@ -10,9 +11,18 @@ import {
 } from 'ai';
 import { ZodType } from 'zod';
 
+import { PromptService } from '../prompt';
 import { CustomAITools } from '../tools';
+import { CopilotProviderFactory } from './factory';
 import { TokenTracker } from './token-tracker';
-import { PromptMessage, StreamObject, StreamObjectToolResult } from './types';
+import {
+  PromptMessage,
+  StreamObject,
+  StreamObjectToolResult,
+  TokenSummary,
+  TokenUsageDetail,
+  TokenUsageTotal,
+} from './types';
 
 type ChatMessage = CoreUserMessage | CoreAssistantMessage;
 
@@ -657,6 +667,16 @@ export class TextStreamParser extends BaseStreamParser<string> {
 }
 
 export class StreamObjectParser extends BaseStreamParser<StreamObject> {
+  private readonly logger = new Logger(StreamObjectParser.name);
+  private lastSummary: StreamObject | null = null;
+
+  constructor(
+    modelId: string,
+    private readonly moduleRef?: ModuleRef
+  ) {
+    super(modelId);
+  }
+
   public parse(
     chunk: TextStreamPart<CustomAITools> | StreamObjectToolResult
   ): StreamObject | null {
@@ -677,7 +697,7 @@ export class StreamObjectParser extends BaseStreamParser<StreamObject> {
     }
   }
 
-  public mergeTextDelta(chunks: StreamObject[]): StreamObject[] {
+  public async mergeTextDelta(chunks: StreamObject[]): Promise<StreamObject[]> {
     const objects = chunks.reduce((acc, curr) => {
       const prev = acc.at(-1);
       switch (curr.type) {
@@ -711,7 +731,7 @@ export class StreamObjectParser extends BaseStreamParser<StreamObject> {
       }
       return acc;
     }, [] as StreamObject[]);
-    objects.push(this.statusStreamObject());
+    objects.push(await this.statusStreamObject());
     return objects;
   }
 
@@ -724,13 +744,102 @@ export class StreamObjectParser extends BaseStreamParser<StreamObject> {
     }, '');
   }
 
-  public statusStreamObject(): StreamObject {
+  private async chatWithPrompt(
+    promptName: string,
+    content: string
+  ): Promise<string | null> {
+    if (!this.moduleRef) return null;
+    const promptService = this.moduleRef.get(PromptService, { strict: false });
+    const providerFactory = this.moduleRef.get(CopilotProviderFactory, {
+      strict: false,
+    });
+    const prompt = await promptService.get(promptName);
+    if (!prompt) return null;
+    const cond = { modelId: prompt.model };
+    const provider = await providerFactory.getProvider(cond);
+    if (!provider) return null;
+
+    return await provider.text(
+      cond,
+      [...prompt.finish({ content })],
+      Object.assign({}, prompt.config)
+    );
+  }
+
+  private async summaryUsage(
+    total: TokenUsageTotal | undefined,
+    steps: TokenUsageDetail[] | undefined
+  ): Promise<TokenSummary | null> {
+    if (!total || !steps) {
+      return null;
+    }
+
+    try {
+      const map = new Map<string, TokenSummary['report'][number]>(); // key = model, val = agg object
+      const defaultObj = {
+        processed: 0,
+        generated: 0,
+        calls: 0,
+        timeTaken: 0,
+      };
+      for (const r of steps) {
+        const key = r.model;
+        if (!map.has(key)) {
+          map.set(key, { model: key, ...defaultObj });
+        }
+        // oxlint-disable-next-line typescript-eslint(no-non-null-assertion)
+        const agg = map.get(key)!;
+        agg.calls += 1;
+        agg.timeTaken += r.duration;
+
+        if (r.usage) {
+          agg.processed += r.usage.inputTokens ?? 0;
+          agg.generated += r.usage.outputTokens ?? 0;
+        }
+      }
+      const report = [...map.values()].map(it => ({
+        ...it,
+        timeTaken: Number((it.timeTaken / 1000).toFixed(1)), // ms→s
+      }));
+      const overview = await this.chatWithPrompt(
+        'Summarize the token usage',
+        JSON.stringify(report)
+      );
+      if (overview) {
+        return { overview, report };
+      } else {
+        const { inputTokens, outputTokens, timing } = total;
+        const durationSec = timing.duration / 1000;
+        const overview =
+          `In this task, the system processed about ${inputTokens.toLocaleString()} ` +
+          `tokens of input and produced roughly ${outputTokens.toLocaleString()} ` +
+          `tokens of output in ${durationSec.toFixed(1)} seconds, ` +
+          `spread across ${timing.callCount} model/tool calls.`;
+        return { overview, report };
+      }
+    } catch (e) {
+      this.logger.error('Failed to get module references', e);
+
+      return null;
+    }
+  }
+
+  public async statusStreamObject(): Promise<StreamObject> {
+    if (this.lastSummary) return this.lastSummary;
     const tracker = TokenTracker.getCurrentTracker();
     const tokenUsage = tracker?.getTotalUsage();
     const records = tracker?.getCurrentUsages();
-    return {
+    const summary = await this.summaryUsage(tokenUsage, records);
+    const statusObject = {
       type: 'status' as const,
-      result: { completed: !!tokenUsage && !!records, tokenUsage, records },
+      result: {
+        completed: !!tokenUsage && !!records,
+        summary: summary || undefined,
+        tokenUsage,
+        records,
+      },
     };
+    this.lastSummary = statusObject;
+    return statusObject;
   }
 }

@@ -112,7 +112,8 @@ export const createBrowserUseTool = (
   return createTool(
     { toolName: 'browser_use' },
     {
-      description: 'Use the browser to accomplish a task',
+      description:
+        'Use the browser to accomplish a task, should try web search tools before using this.',
       parameters: z.object({
         task_description: z.string().describe('The task to accomplish'),
       }),

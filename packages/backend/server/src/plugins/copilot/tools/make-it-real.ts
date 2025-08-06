@@ -55,8 +55,6 @@ export const createMakeItRealTool = (
             abortSignal
           );
 
-          console.log('content', content);
-
           return await saveDoc(content);
         } catch (err: any) {
           logger.error(`Failed to make it real layout enhancer`, err);

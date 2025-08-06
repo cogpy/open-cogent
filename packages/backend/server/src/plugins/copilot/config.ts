@@ -3,6 +3,7 @@ import {
   StorageJSONSchema,
   StorageProviderConfig,
 } from '../../base';
+import { CopilotPromptScenario } from './prompt/prompts';
 import {
   AnthropicOfficialConfig,
   AnthropicVertexConfig,
@@ -30,6 +31,7 @@ declare global {
         key: string;
       }>;
       storage: ConfigItem<StorageProviderConfig>;
+      scenarios: ConfigItem<CopilotPromptScenario>;
       providers: {
         openai: ConfigItem<OpenAIConfig>;
         fal: ConfigItem<FalConfig>;
@@ -49,10 +51,29 @@ defineModuleConfig('copilot', {
     desc: 'Whether to enable the copilot plugin.',
     default: false,
   },
+  scenarios: {
+    desc: 'Use custom models in scenarios and override default settings.',
+    default: {
+      override_enabled: false,
+      scenarios: {
+        audio_transcribing: 'gemini-2.5-flash',
+        chat: 'claude-sonnet-4@20250514',
+        embedding: 'gemini-embedding-001',
+        image: 'gpt-image-1',
+        rerank: 'gpt-4.1',
+        coding: 'claude-sonnet-4@20250514',
+        complex_text_generation: 'gpt-4o-2024-08-06',
+        quick_decision_making: 'gpt-4.1-mini',
+        quick_text_generation: 'gemini-2.5-flash',
+        polish_and_summarize: 'gemini-2.5-flash',
+      },
+    },
+  },
   'providers.openai': {
     desc: 'The config for the openai provider.',
     default: {
       apiKey: '',
+      baseURL: 'https://api.openai.com/v1',
     },
     link: 'https://github.com/openai/openai-node',
   },
@@ -66,6 +87,7 @@ defineModuleConfig('copilot', {
     desc: 'The config for the gemini provider.',
     default: {
       apiKey: '',
+      baseURL: 'https://generativelanguage.googleapis.com/v1beta',
     },
   },
   'providers.geminiVertex': {
@@ -83,6 +105,7 @@ defineModuleConfig('copilot', {
     desc: 'The config for the anthropic provider.',
     default: {
       apiKey: '',
+      baseURL: 'https://api.anthropic.com/v1',
     },
   },
   'providers.anthropicVertex': {

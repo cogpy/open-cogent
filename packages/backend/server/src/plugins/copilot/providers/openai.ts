@@ -5,6 +5,10 @@ import {
   OpenAIResponsesProviderOptions,
 } from '@ai-sdk/openai';
 import {
+  createOpenAICompatible,
+  OpenAICompatibleProvider as VercelOpenAICompatibleProvider,
+} from '@ai-sdk/openai-compatible';
+import {
   AISDKError,
   embedMany,
   experimental_generateImage as generateImage,
@@ -17,6 +21,7 @@ import { z } from 'zod';
 
 import {
   CopilotPromptInvalid,
+  CopilotProviderNotSupported,
   CopilotProviderSideError,
   metrics,
   UserFriendlyError,
@@ -46,8 +51,13 @@ export const DEFAULT_DIMENSIONS = 256;
 
 export type OpenAIConfig = {
   apiKey: string;
-  baseUrl?: string;
+  baseURL?: string;
+  oldApiStyle?: boolean;
 };
+
+const ModelListSchema = z.object({
+  data: z.array(z.object({ id: z.string() })),
+});
 
 const ImageResponseSchema = z.union([
   z.object({
@@ -192,7 +202,7 @@ export class OpenAIProvider extends CopilotProvider<OpenAIConfig> {
 
   private readonly MAX_STEPS = 20;
 
-  #instance!: VercelOpenAIProvider;
+  #instance!: VercelOpenAIProvider | VercelOpenAICompatibleProvider;
 
   override configured(): boolean {
     return !!this.config.apiKey;
@@ -200,10 +210,17 @@ export class OpenAIProvider extends CopilotProvider<OpenAIConfig> {
 
   protected override setup() {
     super.setup();
-    this.#instance = createOpenAI({
-      apiKey: this.config.apiKey,
-      baseURL: this.config.baseUrl,
-    });
+    this.#instance =
+      this.config.oldApiStyle && this.config.baseURL
+        ? createOpenAICompatible({
+            name: 'openai-compatible-old-style',
+            apiKey: this.config.apiKey,
+            baseURL: this.config.baseURL,
+          })
+        : createOpenAI({
+            apiKey: this.config.apiKey,
+            baseURL: this.config.baseURL,
+          });
   }
 
   private handleError(
@@ -234,11 +251,34 @@ export class OpenAIProvider extends CopilotProvider<OpenAIConfig> {
     }
   }
 
+  override async refreshOnlineModels() {
+    try {
+      const baseUrl = this.config.baseURL || 'https://api.openai.com/v1';
+      if (this.config.apiKey && baseUrl && !this.onlineModelList.length) {
+        const { data } = await fetch(`${baseUrl}/models`, {
+          headers: {
+            Authorization: `Bearer ${this.config.apiKey}`,
+            'Content-Type': 'application/json',
+          },
+        })
+          .then(r => r.json())
+          .then(r => ModelListSchema.parse(r));
+        this.onlineModelList = data.map(model => model.id);
+      }
+    } catch (e) {
+      this.logger.error('Failed to fetch available models', e);
+    }
+  }
+
   override getProviderSpecificTools(
     toolName: CopilotChatTools,
     model: string
   ): [string, Tool?] | undefined {
-    if (toolName === 'webSearch' && !this.isReasoningModel(model)) {
+    if (
+      toolName === 'webSearch' &&
+      'responses' in this.#instance &&
+      !this.isReasoningModel(model)
+    ) {
       return ['web_search_preview', openai.tools.webSearchPreview()];
     } else if (toolName === 'docEdit') {
       return ['doc_edit', undefined];
@@ -251,10 +291,7 @@ export class OpenAIProvider extends CopilotProvider<OpenAIConfig> {
     messages: PromptMessage[],
     options: CopilotChatOptions = {}
   ): Promise<string> {
-    const fullCond = {
-      ...cond,
-      outputType: ModelOutputType.Text,
-    };
+    const fullCond = { ...cond, outputType: ModelOutputType.Text };
     await this.checkParams({ messages, cond: fullCond, options });
     const model = this.selectModel(fullCond);
 
@@ -263,8 +300,15 @@ export class OpenAIProvider extends CopilotProvider<OpenAIConfig> {
 
       const { text } = await TokenTracker.trackAICall(model.id, async () => {
         const [system, msgs] = await chatToGPTMessage(messages);
+        console.log(
+          `OpenAIProvider.text: model=${model.id}, messages=${msgs.length}`,
+          JSON.stringify(msgs, null, 2)
+        );
 
-        const modelInstance = this.#instance.responses(model.id);
+        const modelInstance =
+          'responses' in this.#instance
+            ? this.#instance.responses(model.id)
+            : this.#instance(model.id);
 
         const { tools } = await this.getTools(options, model.id);
         return await generateText({
@@ -285,6 +329,7 @@ export class OpenAIProvider extends CopilotProvider<OpenAIConfig> {
       return text.trim();
     } catch (e: any) {
       metrics.ai.counter('chat_text_errors').add(1, { model: model.id });
+      console.log('Error in OpenAIProvider.text:', e);
       throw this.handleError(e, model.id, options);
     }
   }
@@ -404,7 +449,10 @@ export class OpenAIProvider extends CopilotProvider<OpenAIConfig> {
           throw new CopilotPromptInvalid('Schema is required');
         }
 
-        const modelInstance = this.#instance.responses(model.id);
+        const modelInstance =
+          'responses' in this.#instance
+            ? this.#instance.responses(model.id)
+            : this.#instance(model.id);
 
         return await generateObject({
           model: modelInstance,
@@ -504,7 +552,10 @@ export class OpenAIProvider extends CopilotProvider<OpenAIConfig> {
     options: CopilotChatOptions = {}
   ) {
     const [system, msgs] = await chatToGPTMessage(messages);
-    const modelInstance = this.#instance.responses(model.id);
+    const modelInstance =
+      'responses' in this.#instance
+        ? this.#instance.responses(model.id)
+        : this.#instance(model.id);
 
     const { tools } = await this.getTools(options, model.id);
     const { fullStream, usage } = streamText({
@@ -555,7 +606,7 @@ export class OpenAIProvider extends CopilotProvider<OpenAIConfig> {
       );
     }
 
-    const url = `${this.config.baseUrl || 'https://api.openai.com'}/v1/images/edits`;
+    const url = `${this.config.baseURL || 'https://api.openai.com/v1'}/images/edits`;
     const res = await fetch(url, {
       method: 'POST',
       headers: { Authorization: `Bearer ${this.config.apiKey}` },
@@ -590,6 +641,13 @@ export class OpenAIProvider extends CopilotProvider<OpenAIConfig> {
     const fullCond = { ...cond, outputType: ModelOutputType.Image };
     await this.checkParams({ messages, cond: fullCond, options });
     const model = this.selectModel(fullCond);
+
+    if (!('image' in this.#instance)) {
+      throw new CopilotProviderNotSupported({
+        provider: this.type,
+        kind: 'image',
+      });
+    }
 
     metrics.ai
       .counter('generate_images_stream_calls')
@@ -640,6 +698,13 @@ export class OpenAIProvider extends CopilotProvider<OpenAIConfig> {
     const fullCond = { ...cond, outputType: ModelOutputType.Embedding };
     await this.checkParams({ embeddings: messages, cond: fullCond, options });
     const model = this.selectModel(fullCond);
+
+    if (!('embedding' in this.#instance)) {
+      throw new CopilotProviderNotSupported({
+        provider: this.type,
+        kind: 'embedding',
+      });
+    }
 
     try {
       metrics.ai

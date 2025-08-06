@@ -198,7 +198,9 @@ test('should be able to manage prompt', async t => {
     'should have two messages'
   );
 
-  await prompt.update(promptName, [{ role: 'system', content: 'hello' }]);
+  await prompt.update(promptName, {
+    messages: [{ role: 'system', content: 'hello' }],
+  });
   t.is(
     (await prompt.get(promptName))!.finish({}).length,
     1,

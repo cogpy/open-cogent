@@ -2,14 +2,19 @@ import {
   createGoogleGenerativeAI,
   type GoogleGenerativeAIProvider,
 } from '@ai-sdk/google';
+import z from 'zod';
 
 import { CopilotProviderType, ModelInputType, ModelOutputType } from '../types';
 import { GeminiProvider } from './gemini';
 
 export type GeminiGenerativeConfig = {
   apiKey: string;
-  baseUrl?: string;
+  baseURL?: string;
 };
+
+const ModelListSchema = z.object({
+  models: z.array(z.object({ name: z.string() })),
+});
 
 export class GeminiGenerativeProvider extends GeminiProvider<GeminiGenerativeConfig> {
   override readonly type = CopilotProviderType.Gemini;
@@ -104,7 +109,27 @@ export class GeminiGenerativeProvider extends GeminiProvider<GeminiGenerativeCon
     super.setup();
     this.instance = createGoogleGenerativeAI({
       apiKey: this.config.apiKey,
-      baseURL: this.config.baseUrl,
+      baseURL: this.config.baseURL,
     });
+  }
+
+  override async refreshOnlineModels() {
+    try {
+      const baseUrl =
+        this.config.baseURL ||
+        'https://generativelanguage.googleapis.com/v1beta';
+      if (this.config.apiKey && baseUrl && !this.onlineModelList.length) {
+        const { models } = await fetch(
+          `${baseUrl}/models?key=${this.config.apiKey}`
+        )
+          .then(r => r.json())
+          .then(r => ModelListSchema.parse(r));
+        this.onlineModelList = models.map(model =>
+          model.name.replace('models/', '')
+        );
+      }
+    } catch (e) {
+      this.logger.error('Failed to fetch available models', e);
+    }
   }
 }

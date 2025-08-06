@@ -19,6 +19,87 @@ type Prompt = Omit<
   config?: PromptConfig;
 };
 
+export const Scenario = {
+  audio_transcribing: ['Transcript audio'],
+  chat: ['Chat With Open-Agent'],
+  // no prompt needed, just a placeholder
+  embedding: [],
+  image: [
+    'Convert to Anime style',
+    'Convert to Clay style',
+    'Convert to Pixel style',
+    'Convert to Sketch style',
+    'Convert to sticker',
+    'Generate image',
+    'Remove background',
+    'Upscale image',
+  ],
+  rerank: ['Rerank results'],
+  coding: [
+    'Apply Updates',
+    'Code Artifact',
+    'Make it real',
+    'Make it real with text',
+    'Section Edit',
+    'Generate python code',
+  ],
+  complex_text_generation: [
+    'Brainstorm mindmap',
+    'Create a presentation',
+    'Expand mind map',
+    'workflow:brainstorm:step2',
+    'workflow:presentation:step2',
+    'workflow:presentation:step4',
+  ],
+  quick_decision_making: [
+    'Create headings',
+    'Generate a caption',
+    'Translate to',
+    'Task Analysis',
+    'Summarize the token usage',
+    'workflow:brainstorm:step1',
+    'workflow:presentation:step1',
+    'workflow:image-anime:step2',
+    'workflow:image-clay:step2',
+    'workflow:image-pixel:step2',
+    'workflow:image-sketch:step2',
+  ],
+  quick_text_generation: [
+    'Brainstorm ideas about this',
+    'Continue writing',
+    'Explain this code',
+    'Fix spelling for it',
+    'Improve writing for it',
+    'Make it longer',
+    'Make it shorter',
+    'Write a blog post about this',
+    'Write a poem about this',
+    'Write an article about this',
+    'Write a twitter about this',
+    'Write outline',
+  ],
+  polish_and_summarize: [
+    'Change tone to',
+    'Check code error',
+    'Conversation Summary',
+    'Explain this',
+    'Explain this image',
+    'Find action for summary',
+    'Find action items from it',
+    'Improve grammar for it',
+    'Summarize the meeting',
+    'Summary',
+    'Summary as title',
+    'Summary the webpage',
+    'make-it-real',
+  ],
+};
+
+export type CopilotPromptScenario = {
+  override_enabled?: boolean;
+  scenarios?: Partial<Record<keyof typeof Scenario, string>>;
+};
+
 const workflows: Prompt[] = [
   {
     name: 'workflow:presentation',
@@ -392,7 +473,8 @@ Respond ONLY with a valid JSON object in this exact format:
 - Consider: code_artifact, python_coding for development
 - Consider: doc_compose for documentation
 - Consider: e2b_python_sandbox for testing/execution
-- Consider: browser_use, web_crawl_exa for web interaction
+- Consider: web_search_exa and web_crawl_exa for web interaction
+- consider: browser_use when the previous web interaction fails to obtain sufficient results
 - Consider: make_it_real for design/UI tasks
 - Consider: todo_list, mark_todo for task management
 - Consider: conversation_summary for context management
@@ -1836,9 +1918,65 @@ Now apply the \`updates\` to the \`content\`, following the intent in \`op\`, an
       },
     ],
   },
-];
+  {
+    name: 'Code Artifact',
+    model: 'claude-sonnet-4@20250514',
+    messages: [
+      {
+        role: 'system',
+        content: `
+        When sent new notes, respond ONLY with the contents of the html file.
+        DO NOT INCLUDE ANY OTHER TEXT, EXPLANATIONS, APOLOGIES, OR INTRODUCTORY/CLOSING PHRASES.
+        IF USER DOES NOT SPECIFY A STYLE, FOLLOW THE DEFAULT STYLE.
+        <generate_guide>
+        - The results should be a single HTML file.
+        - Use tailwindcss to style the website
+        - Put any additional CSS styles in a style tag and any JavaScript in a script tag.
+        - Use unpkg or skypack to import any required dependencies.
+        - Use Google fonts to pull in any open source fonts you require.
+        - Use lucide icons for any icons.
+        - If you have any images, load them from Unsplash or use solid colored rectangles.
+        </generate_guide>
 
-const MAKE_IT_REAL_PROMPT: Prompt[] = [
+        <DO_NOT_USE_COLORS>
+        - DO NOT USE ANY COLORS
+        </DO_NOT_USE_COLORS>
+        <DO_NOT_USE_GRADIENTS>
+        - DO NOT USE ANY GRADIENTS
+        </DO_NOT_USE_GRADIENTS>
+
+        <COLOR_THEME>
+          - --affine-blue-300: #93e2fd
+          - --affine-blue-400: #60cffa
+          - --affine-blue-500: #3ab5f7
+          - --affine-blue-600: #1e96eb
+          - --affine-blue-700: #1e67af
+          - --affine-text-primary-color: #121212
+          - --affine-text-secondary-color: #8e8d91
+          - --affine-text-disable-color: #a9a9ad
+          - --affine-background-overlay-panel-color: #fbfbfc
+          - --affine-background-secondary-color: #f4f4f5
+          - --affine-background-primary-color: #fff
+        </COLOR_THEME>
+        <default_style_guide>
+        - MUST USE White and Blue(#1e96eb) as the primary color
+        - KEEP THE DEFAULT STYLE SIMPLE AND CLEAN
+        - DO NOT USE ANY COMPLEX STYLES
+        - DO NOT USE ANY GRADIENTS
+        - USE LESS SHADOWS
+        - USE RADIUS 4px or 8px for rounded corners
+        - USE 12px or 16px for padding
+        - Use the tailwind color gray, zinc, slate, neutral much more.
+        - Use 0.5px border should be better
+        </default_style_guide>
+        `,
+      },
+      {
+        role: 'user',
+        content: '{{content}}',
+      },
+    ],
+  },
   {
     name: 'make-it-real',
     action: 'make-it-real',
@@ -2066,8 +2204,8 @@ When the user poses a question or task, **first** evaluate whether you must call
 <workflows>
 ### Generic Multi-step Workflow (For Complex Tasks)
 1. **Plan & Scope** - Use the <todo> tool to create an overall to-do list with phase goals and milestones.
-2. **Information Gathering** - Use search/browser tools to collect authoritative background sources.
-3. **Media & Evidence Collection** - Gather images, videos, maps, and other multimedia evidence with search/browser tools.
+2. **Information Gathering** - Use web search(prioritize) or browser tools to collect authoritative background sources.
+3. **Media & Evidence Collection** - Gather images, videos, maps, and other multimedia evidence with web search(prioritize) or browser tools.
 4. **Data Curation** - Consolidate, clean, and structure raw data.
 5. **Analysis & Computation** - Run statistical analysis, visualizations, and insight extraction (e.g., via Python tools).
 6. **Deliverable Production** - Compile findings into a polished report or visualization.
@@ -2157,76 +2295,12 @@ Below is the user's query. Please respond in the user's preferred language witho
   },
 ];
 
-const artifactActions: Prompt[] = [
-  {
-    name: 'Code Artifact',
-    model: 'claude-sonnet-4@20250514',
-    messages: [
-      {
-        role: 'system',
-        content: `
-        When sent new notes, respond ONLY with the contents of the html file.
-        DO NOT INCLUDE ANY OTHER TEXT, EXPLANATIONS, APOLOGIES, OR INTRODUCTORY/CLOSING PHRASES.
-        IF USER DOES NOT SPECIFY A STYLE, FOLLOW THE DEFAULT STYLE.
-        <generate_guide>
-        - The results should be a single HTML file.
-        - Use tailwindcss to style the website
-        - Put any additional CSS styles in a style tag and any JavaScript in a script tag.
-        - Use unpkg or skypack to import any required dependencies.
-        - Use Google fonts to pull in any open source fonts you require.
-        - Use lucide icons for any icons.
-        - If you have any images, load them from Unsplash or use solid colored rectangles.
-        </generate_guide>
-
-        <DO_NOT_USE_COLORS>
-        - DO NOT USE ANY COLORS
-        </DO_NOT_USE_COLORS>
-        <DO_NOT_USE_GRADIENTS>
-        - DO NOT USE ANY GRADIENTS
-        </DO_NOT_USE_GRADIENTS>
-
-        <COLOR_THEME>
-          - --affine-blue-300: #93e2fd
-          - --affine-blue-400: #60cffa
-          - --affine-blue-500: #3ab5f7
-          - --affine-blue-600: #1e96eb
-          - --affine-blue-700: #1e67af
-          - --affine-text-primary-color: #121212
-          - --affine-text-secondary-color: #8e8d91
-          - --affine-text-disable-color: #a9a9ad
-          - --affine-background-overlay-panel-color: #fbfbfc
-          - --affine-background-secondary-color: #f4f4f5
-          - --affine-background-primary-color: #fff
-        </COLOR_THEME>
-        <default_style_guide>
-        - MUST USE White and Blue(#1e96eb) as the primary color
-        - KEEP THE DEFAULT STYLE SIMPLE AND CLEAN
-        - DO NOT USE ANY COMPLEX STYLES
-        - DO NOT USE ANY GRADIENTS
-        - USE LESS SHADOWS
-        - USE RADIUS 4px or 8px for rounded corners
-        - USE 12px or 16px for padding
-        - Use the tailwind color gray, zinc, slate, neutral much more.
-        - Use 0.5px border should be better
-        </default_style_guide>
-        `,
-      },
-      {
-        role: 'user',
-        content: '{{content}}',
-      },
-    ],
-  },
-];
-
 export const prompts: Prompt[] = [
   ...textActions,
   ...imageActions,
   ...modelActions,
   ...chat,
   ...workflows,
-  ...artifactActions,
-  ...MAKE_IT_REAL_PROMPT,
 ];
 
 export async function refreshPrompts(db: PrismaClient) {

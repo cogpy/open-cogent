@@ -148,7 +148,7 @@ export class MorphProvider extends CopilotProvider<MorphConfig> {
         abortSignal: options.signal,
       });
 
-      const textParser = new TextStreamParser();
+      const textParser = new TextStreamParser(model.id);
       for await (const chunk of fullStream) {
         switch (chunk.type) {
           case 'text-delta': {

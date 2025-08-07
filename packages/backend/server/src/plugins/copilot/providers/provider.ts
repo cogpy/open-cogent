@@ -20,6 +20,7 @@ import {
   createBrowserUseTool,
   createChooseTool,
   createCodeArtifactTool,
+  createComputerUseCCTool,
   createConversationSummaryTool,
   createDocComposeTool,
   createDocSemanticSearchTool,
@@ -199,6 +200,13 @@ export abstract class CopilotProvider<C = any> {
           }
           case 'choose': {
             tools.choose = createChooseTool();
+            break;
+          }
+          case 'computerUseCC': {
+            tools.computer_use_cc = createComputerUseCCTool(
+              writable,
+              this.cache
+            );
             break;
           }
           case 'conversationSummary': {

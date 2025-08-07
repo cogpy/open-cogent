@@ -16,4 +16,5 @@ export interface CommonPackageJsonContent {
   scripts?: { [key: string]: string };
   main?: string;
   exports?: { [key: string]: string | { [key: string]: string } };
+  tsProjectGenExcluded?: boolean;
 }

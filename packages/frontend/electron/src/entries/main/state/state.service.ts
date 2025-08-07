@@ -1,21 +1,21 @@
 import {
   Injectable,
-  OnModuleInit,
   OnApplicationShutdown,
+  OnModuleInit,
 } from '@nestjs/common';
 
-import { IpcHandle, IpcScope, IpcEvent } from '../../../ipc';
+import { IpcEvent, IpcHandle, IpcScope } from '../../../ipc';
 import { createJsonStateService } from './json-state.factory';
 import {
+  type AppState,
   AppStateSchema,
   defaultAppState,
-  type AppState,
   type StateUpdate,
 } from './state.types';
 
 @Injectable()
 export class StateService implements OnModuleInit, OnApplicationShutdown {
-  private stateService = createJsonStateService(
+  private readonly stateService = createJsonStateService(
     'app-state.json',
     defaultAppState,
     AppStateSchema

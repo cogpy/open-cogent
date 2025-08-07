@@ -27,3 +27,5 @@ bootstrap().catch(err => {
     process.exit(1);
   }, 1000);
 });
+
+export * from './claude-code';

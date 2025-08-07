@@ -58,5 +58,8 @@
     "tsx": "^4.19.4",
     "typescript": "^5.8.3",
     "uuid": "^11.0.3"
+  },
+  "dependencies": {
+    "@anthropic-ai/claude-code": "^1.0.81"
   }
 }

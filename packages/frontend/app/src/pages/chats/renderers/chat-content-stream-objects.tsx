@@ -10,6 +10,8 @@ import { AIReasoningCard } from './ai-reasoning-card';
 import { BrowserUseResult, transformStep } from './browser-use-result';
 import { ChooseResult } from './choose-result';
 import { CodeArtifactResult } from './code-artifact-result';
+import { ComputerUseCCCalling } from './computer-use-cc-calling';
+import { ComputerUseCCResultCard } from './computer-use-cc-result';
 import { E2bPythonResult } from './e2b-python-result';
 import { GeneratingCard } from './generating-card';
 import { GenericToolCalling } from './generic-tool-calling';
@@ -123,6 +125,25 @@ export function ChatContentStreamObjects({
               );
             }
 
+            if (obj.toolName === 'computer_use_cc' && obj.textDelta) {
+              // Parse request JSON (could be streamed chunks forming an array)
+              let parsedResult: any;
+              try {
+                parsedResult = JSON.parse(`[${obj.textDelta}]`);
+              } catch (err) {
+                console.error('Failed to parse middleResult', err);
+                return null;
+              }
+              const latest = Array.isArray(parsedResult)
+                ? parsedResult[parsedResult.length - 1]
+                : parsedResult;
+              if (latest && latest.taskId) {
+                return (
+                  <ComputerUseCCCalling key={key} request={parsedResult} />
+                );
+              }
+            }
+
             if (obj.toolName === 'browser_use' && obj.textDelta) {
               const result = transformStep(obj.textDelta as any);
               if (result) {
@@ -161,6 +182,9 @@ export function ChatContentStreamObjects({
             );
 
           case 'tool-result': {
+            if (obj.toolName === 'computer_use_cc' && obj.result) {
+              return <ComputerUseCCResultCard key={key} result={obj.result} />;
+            }
             if (obj.toolName === 'code_artifact' && obj.result) {
               return <CodeArtifactResult key={key} result={obj.result} />;
             }

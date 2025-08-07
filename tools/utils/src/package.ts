@@ -25,6 +25,7 @@ export class Package {
   readonly isTsProject: boolean;
   readonly workspaceDependencies: string[];
   readonly deps: Package[] = [];
+  readonly isTsProjectExcluded: boolean;
   private _workspace: Workspace | null = null;
 
   get entry() {
@@ -69,6 +70,7 @@ export class Package {
     this.version = packageJson.version;
     this.workspaceDependencies = meta.workspaceDependencies;
     this.isTsProject = this.path.join('tsconfig.json').isFile();
+    this.isTsProjectExcluded = this.packageJson.tsProjectGenExcluded || false;
   }
 
   get scripts() {

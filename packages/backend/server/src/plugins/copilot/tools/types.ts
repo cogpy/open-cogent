@@ -3,6 +3,7 @@ import { ToolSet } from 'ai';
 import type { createBrowserUseTool } from './browser-use';
 import type { createChooseTool } from './choose';
 import type { createCodeArtifactTool } from './code-artifact';
+import type { createComputerUseCCTool } from './computer-use-cc';
 import type { createConversationSummaryTool } from './conversation-summary';
 import type { createDocComposeTool } from './doc-compose';
 import type { createDocSemanticSearchTool } from './doc-semantic-search';
@@ -30,6 +31,7 @@ export interface CustomAITools extends ToolSet {
   python_coding: ReturnType<typeof createPythonCodingTool>;
   python_sandbox: ReturnType<typeof createE2bPythonSandboxTool>;
   task_analysis: ReturnType<typeof createTaskAnalysisTool>;
+  computer_use_cc: ReturnType<typeof createComputerUseCCTool>;
 }
 
 export const Tools = [
@@ -47,4 +49,5 @@ export const Tools = [
   'todo_list',
   'mark_todo',
   'task_analysis',
+  'computer_use_cc',
 ];

@@ -33,7 +33,7 @@ export class InitCommand extends Command {
       ],
       [this.workspace.join('oxlint.json'), this.genOxlintConfig, 'json'],
       ...this.workspace.packages
-        .filter(p => p.isTsProject)
+        .filter(p => p.isTsProject && !p.isTsProjectExcluded)
         .map(
           p =>
             [

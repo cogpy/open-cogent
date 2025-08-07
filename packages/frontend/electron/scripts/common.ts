@@ -44,6 +44,7 @@ export const config = (): BuildOptions => {
       'ts-morph',
       'class-validator',
       'class-transformer',
+      '@anthropic-ai/claude-code',
     ],
     format: 'cjs',
     loader: {

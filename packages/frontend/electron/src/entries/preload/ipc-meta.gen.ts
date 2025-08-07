@@ -8,6 +8,9 @@ export const handlersMeta = {
     ]
   },
   "main": {
+    "claudeCode": [
+      "execute"
+    ],
     "appState": [
       "handleGetState",
       "handleUpdateState",

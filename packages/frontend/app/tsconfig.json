@@ -7,11 +7,13 @@
     "tsBuildInfoFile": "./dist/tsconfig.tsbuildinfo",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@afk/electron/*": ["../electron/src/*"]
     }
   },
   "references": [
     { "path": "../component" },
+    { "path": "../electron-api" },
     { "path": "../../common/error" },
     { "path": "../../common/graphql" }
   ]

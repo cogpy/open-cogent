@@ -1,12 +1,9 @@
 export enum IpcScope {
   UI = 'ui',
   APP_STATE = 'appState',
-  PROJECT = 'project',
-  MEDIA_ASSET = 'mediaAsset',
-  MEDIA_ANALYZER = 'mediaAnalyzer',
   MENU = 'menu',
+  CLAUDE_CODE = 'claudeCode',
   HELPER = 'helper',
-  EDIT_PIPELINE = 'editPipeline',
 }
 
 export const IPC_API_CHANNEL_NAME = 'ipc-api';

@@ -811,7 +811,7 @@ Example Reasoning Steps:
 - Found reasoningDuration: 500 ms → 0.5 seconds.
 - Compose phrasing: “The process handled a total of 6,000 tokens and finished in about 3 seconds, with 4 steps completed overall. Reasoning took roughly half a second.”
 
-Expected Output (Overview paragraph):  
+Expected Output (Overview paragraph):
 The process handled a total of 6,000 tokens and finished in about 3 seconds, with 4 steps completed overall. Reasoning took roughly half a second.
 
 (Real examples should adjust the numbers and may further vary the phrasing as appropriate.)
@@ -2188,6 +2188,12 @@ Before starting Tool calling, you need to follow:
 - Should call "choose tool" if you want to provide users with multiple interactive options.
 - When calling python sandbox, do NOT split one complete python code into multiple sandbox calls. Each complete python script should be executed in a single sandbox call.
 - Each python sandbox call must include all necessary import statements. Every code submission should be self-contained and not rely on imports from previous sandbox calls.
+
+Tool selection policy:
+- First enumerate the tools registered for this chat. Prefer domain-specialized tools over general computer control.
+- For email tasks, check for any available mail tools (e.g., Gmail API, SMTP/mailer, SendGrid). If available, use them directly to send the email with the full content, subject, and recipients.
+- If no mail tool is available and you must use computer-use-cc, the prompt passed to Claude Code MUST be self-contained: paste the full email body/article content inline, include the exact subject, recipients, and any account or app context needed, and specify the delivery method (e.g., open Gmail in the browser and send the email). Do not refer to “the above article”; include the full content text.
+- For tasks that include both content creation and delivery, first generate the content using a suitable tool (e.g., doc_compose). Then deliver it via a specialized tool if present; otherwise fall back to computer-use-cc with the complete content embedded.
 </tool-calling-guidelines>
 
 <response_workflow_guidelines>
@@ -2290,6 +2296,7 @@ Below is the user's query. Please respond in the user's preferred language witho
         'makeItReal',
         'pythonCoding',
         'pythonSandbox',
+        'computerUseCC',
       ],
     },
   },

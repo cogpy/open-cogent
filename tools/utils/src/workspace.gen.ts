@@ -1217,6 +1217,7 @@ export const PackageList = [
     name: '@afk/app',
     workspaceDependencies: [
       'packages/frontend/component',
+      'packages/frontend/electron-api',
       'packages/common/error',
       'packages/common/graphql',
     ],
@@ -1231,6 +1232,16 @@ export const PackageList = [
       'tools/utils',
       'blocksuite/affine/all',
     ],
+  },
+  {
+    location: 'packages/frontend/electron',
+    name: '@afk/electron',
+    workspaceDependencies: [],
+  },
+  {
+    location: 'packages/frontend/electron-api',
+    name: '@afk/electron-api',
+    workspaceDependencies: [],
   },
   {
     location: 'tools/@types/build-config',
@@ -1347,6 +1358,8 @@ export type PackageName =
   | '@afk/graphql'
   | '@afk/app'
   | '@afk/component'
+  | '@afk/electron'
+  | '@afk/electron-api'
   | '@types/build-config'
   | '@types/affine__env'
   | '@afk/changelog'

@@ -14,9 +14,9 @@ import {
   WebContentsView,
 } from 'electron';
 
+import { logger } from '../entries/main/logger';
 import { IPC_API_CHANNEL_NAME, IPC_EVENT_CHANNEL_NAME } from './constant';
 import { IpcScanner } from './ipc-scanner';
-import { logger } from '../entries/main/logger';
 
 /**
  * Injecting IpcMainInvokeEvent to the handler function
@@ -100,7 +100,7 @@ class IpcMainInitializerService implements OnModuleInit {
     ipcMain.handle(
       IPC_API_CHANNEL_NAME,
       (e: IpcMainInvokeEvent, ...args: any[]) => {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve, _reject) => {
           ipcEventStore.run(e, () => {
             handleIpcMessage(...args)
               .then(resolve)

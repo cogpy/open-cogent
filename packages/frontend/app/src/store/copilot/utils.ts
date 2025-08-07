@@ -113,7 +113,9 @@ export function mergeStreamObjects(chunks: StreamObject[] = []) {
           // Add or append streaming data to the tool call
           acc[index] = {
             ...toolCall,
-            textDelta: (toolCall.textDelta ?? '') + (curr.data.textDelta ?? ''),
+            textDelta: [toolCall.textDelta ?? '', curr.data.textDelta ?? '']
+              .filter(Boolean)
+              .join(','),
           };
         } else {
           // If no matching tool-call found, just add it

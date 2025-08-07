@@ -1,4 +1,5 @@
 import { Menu, MenuItem, MenuSeparator, MenuSub, Switch } from '@afk/component';
+import { apis } from '@afk/electron-api';
 import {
   AiIcon,
   CodeIcon,
@@ -84,6 +85,15 @@ export const configurableTools = [
     icon: <ThinkingIcon />,
     value: 'taskAnalysis',
   },
+  ...(apis
+    ? [
+        {
+          label: 'Computer Use (Claude Code)',
+          icon: <CodeIcon />,
+          value: 'computerUseCC',
+        },
+      ]
+    : []),
 ];
 
 export const defaultTools = [
@@ -92,7 +102,7 @@ export const defaultTools = [
   'markTodo',
   'docEdit',
   'choose',
-  ...configurableTools.map(tool => tool.value).flat(),
+  ...configurableTools.flatMap(tool => tool.value),
 ];
 
 export const ChatConfigMenu = ({

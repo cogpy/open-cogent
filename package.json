@@ -18,7 +18,7 @@
     "af": "yarn oa",
     "oa": "r oa.ts",
     "dev:web": "yarn workspace @afk/app dev",
-    "dev:electron": "yarn workspace @afk/electron dev",
+    "dev:electron": "yarn --cwd packages/frontend/electron dev",
     "dev:server": "yarn oa server dev",
     "dev": "concurrently --kill-others --success first \"yarn dev:web\" \"yarn dev:server\"",
     "build": "yarn oa build",

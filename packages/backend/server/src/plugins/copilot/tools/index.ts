@@ -1,6 +1,7 @@
 export * from './browser-use';
 export * from './choose';
 export * from './code-artifact';
+export * from './computer-use-cc';
 export * from './conversation-summary';
 export * from './doc-compose';
 export * from './doc-semantic-search';

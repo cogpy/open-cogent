@@ -10,6 +10,13 @@ export interface ElectronApis {
   helper: {
     test: ApiMethod<import('@afk/electron/entries/helper/test/test').TestService['test']>;
   };
+  claudeCode: {
+    /**
+     * Executes Claude Code CLI based on the request coming from renderer.
+     * The IPC channel is automatically derived as `claudeCode:execute`.
+     */
+    execute: ApiMethod<import('@afk/electron/entries/main/claude-code/claude-code.service').ClaudeCodeService['execute']>;
+  };
   appState: {
     handleGetState: ApiMethod<import('@afk/electron/entries/main/state/state.service').StateService['handleGetState']>;
     handleUpdateState: ApiMethod<import('@afk/electron/entries/main/state/state.service').StateService['handleUpdateState']>;

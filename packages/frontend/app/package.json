@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@afk/component": "workspace:*",
+    "@afk/electron-api": "workspace:^",
     "@afk/error": "workspace:*",
     "@afk/graphql": "workspace:*",
     "@blocksuite/icons": "^2.2.15",

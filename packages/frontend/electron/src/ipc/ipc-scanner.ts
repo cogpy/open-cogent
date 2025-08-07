@@ -2,10 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { DiscoveryService, MetadataScanner } from '@nestjs/core';
 import type { Observable } from 'rxjs';
 
+import { logger } from '../entries/main/logger';
 import { isDev } from '../shared/constants';
 import { IPC_EVENT_META_KEY } from './ipc-event';
 import { IPC_HANDLE_META_KEY } from './ipc-handle';
-import { logger } from '../entries/main/logger';
 
 @Injectable()
 export class IpcScanner {

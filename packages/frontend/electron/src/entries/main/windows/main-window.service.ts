@@ -97,7 +97,7 @@ export class MainWindowManager {
 
     await new Promise(resolve => setTimeout(resolve, 500));
 
-    await browserWindow.loadURL(mainWindowOrigin + '/demo');
+    await browserWindow.loadURL(mainWindowOrigin);
 
     return browserWindow;
   }

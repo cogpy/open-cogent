@@ -62,10 +62,10 @@ export const PromptTools = z
     'browserUse',
     'choose',
     'codeArtifact',
+    // computer use - claude code cli
+    'computerUseCC',
     'conversationSummary',
     'taskAnalysis',
-    // artifact tools
-    'docCompose',
     // work with morph
     'docEdit',
     // work with indexer

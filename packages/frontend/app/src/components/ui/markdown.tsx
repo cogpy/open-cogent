@@ -1,9 +1,5 @@
-// Replaced `marked` block-splitting with the incremental parser from `@lixpi/markdown-stream-parser`.
-// The parser allows us to detect "block defining" segments as the stream progresses. We feed the
-// entire markdown string in one go (since this util is synchronous) and collect a new block every
-// time the parser notifies us that the current segment starts a fresh block.
-import { MarkdownStreamParser } from '@lixpi/markdown-stream-parser';
 import type { Element, Root } from 'hast';
+import { marked } from 'marked';
 import {
   createContext,
   memo,
@@ -21,55 +17,9 @@ import { cn } from '@/lib/utils';
 import { CodeBlock } from './code-block';
 import * as styles from './markdown.css';
 
-// Re-use a single parser instance across calls to avoid the overhead of
-// constructing and tearing down a temporary one every render. We keep this
-// module-scoped so it lives for the lifetime of the bundle (or until a hot
-// reload), and we scope it with a unique ID that is unlikely to clash with
-// any other consumer inside the app.
-const MARKDOWN_SPLITTER_PARSER_ID = 'markdown-splitter';
-const sharedMarkdownParser = MarkdownStreamParser.getInstance(
-  MARKDOWN_SPLITTER_PARSER_ID
-);
-
 function parseMarkdownIntoBlocks(markdown: string): string[] {
-  // Early-out for empty strings – prevents the parser from creating an instance needlessly.
-  if (!markdown) return [''];
-
-  // Reuse our shared parser instance. We subscribe/unsubscribe on every call so
-  // we still don't leak any listeners or cross-contaminate block buffers
-  // between invocations.
-  const parser = sharedMarkdownParser;
-
-  const blocks: string[] = [];
-  let current = '';
-
-  const unsubscribe = parser.subscribeToTokenParse((parsedSegment: any) => {
-    // We only care about streaming tokens that carry a segment payload
-    if (parsedSegment.status !== 'STREAMING' || !parsedSegment.segment) {
-      return;
-    }
-
-    const { segment: segContent, isBlockDefining } = parsedSegment.segment;
-
-    if (isBlockDefining && current) {
-      // Push the buffered block (if any) and start a new one
-      blocks.push(current);
-      current = '';
-    }
-
-    current += segContent;
-  });
-
-  // Begin parsing → feed → end & flush
-  parser.startParsing();
-  parser.parseToken(markdown);
-  parser.stopParsing();
-
-  unsubscribe();
-
-  if (current) blocks.push(current);
-
-  return blocks;
+  const tokens = marked.lexer(markdown);
+  return tokens.map(token => token.raw);
 }
 
 function remarkStripFootnoteRefs() {

@@ -125,6 +125,8 @@
     { "path": "./packages/common/graphql" },
     { "path": "./packages/frontend/app" },
     { "path": "./packages/frontend/component" },
+    { "path": "./packages/frontend/electron" },
+    { "path": "./packages/frontend/electron-api" },
     { "path": "./tools/cli" },
     { "path": "./tools/utils" }
   ]

@@ -8,5 +8,5 @@
     },
     "baseUrl": "."
   },
-  "references": [{ "path": "../electron" }]
+  "references": []
 }

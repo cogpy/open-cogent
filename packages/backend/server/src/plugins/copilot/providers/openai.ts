@@ -363,10 +363,6 @@ export class OpenAIProvider extends CopilotProvider<OpenAIConfig> {
 
       const { text } = await TokenTracker.trackAICall(model.id, async () => {
         const [system, msgs] = await chatToGPTMessage(messages);
-        console.log(
-          `OpenAIProvider.text: model=${model.id}, messages=${msgs.length}`,
-          JSON.stringify(msgs, null, 2)
-        );
 
         const modelInstance =
           'responses' in this.#instance

@@ -552,7 +552,7 @@ export class ChatSessionService {
         await this.models.copilotSession.update({ userId, sessionId, title });
       }
     } catch (error) {
-      console.error(
+      this.logger.warn(
         `Failed to generate title for session ${sessionId}:`,
         error
       );

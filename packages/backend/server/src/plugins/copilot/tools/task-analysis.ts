@@ -40,7 +40,7 @@ export const createTaskAnalysisTool = (
     {
       description:
         'Analyze a user task to determine if it needs to be broken down into phases, estimate the number of steps required, create a todo list, and identify which tools might be needed for each step. You should use this tool to confirm whether a task is complex and whether it needs to be broken down whenever you encounter any potentially complex tasks (such as those involving report creation, data analysis, or writing complex code).',
-      parameters: z.object({
+      inputSchema: z.object({
         task: z.string().describe('The user task to analyze and break down'),
         context: z
           .string()

@@ -20,24 +20,19 @@ export const tempModels = [
     value: 'claude-sonnet-4@20250514',
     icon: <ClaudeIcon />,
   },
+  { label: 'Gemini 2.5 Pro', value: 'gemini-2.5-pro', icon: <GeminiIcon /> },
+  { label: 'GPT-5', value: 'gpt-5', icon: <ChatGPTIcon /> },
   {
     label: 'Claude 3.7 Sonnet',
     value: 'claude-3-7-sonnet@20250219',
     icon: <ClaudeIcon />,
   },
   {
-    label: 'Claude 3.5 Sonnet v2',
-    value: 'claude-3-5-sonnet-v2@20241022',
-    icon: <ClaudeIcon />,
-  },
-  { label: 'GPT-4.1', value: 'gpt-4.1', icon: <ChatGPTIcon /> },
-  { label: 'o4 Mini', value: 'o4-mini', icon: <ChatGPTIcon /> },
-  {
     label: 'Gemini 2.5 Flash',
     value: 'gemini-2.5-flash',
     icon: <GeminiIcon />,
   },
-  { label: 'Gemini 2.5 Pro', value: 'gemini-2.5-pro', icon: <GeminiIcon /> },
+  { label: 'o4 Mini', value: 'o4-mini', icon: <ChatGPTIcon /> },
 ];
 
 export const configurableTools = [

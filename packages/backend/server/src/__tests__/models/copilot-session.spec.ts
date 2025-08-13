@@ -52,9 +52,9 @@ const createTestPrompts = async (
   copilotSession: CopilotSessionModel,
   db: PrismaClient
 ) => {
-  await copilotSession.createPrompt(TEST_PROMPTS.NORMAL, 'gpt-4.1');
+  await copilotSession.createPrompt(TEST_PROMPTS.NORMAL, 'gpt-5-mini');
   await db.aiPrompt.create({
-    data: { name: TEST_PROMPTS.ACTION, model: 'gpt-4.1', action: 'edit' },
+    data: { name: TEST_PROMPTS.ACTION, model: 'gpt-5-mini', action: 'edit' },
   });
 };
 
@@ -107,7 +107,7 @@ const addMessagesToSession = async (
   await copilotSession.updateMessages({
     sessionId,
     userId: user.id,
-    prompt: { model: 'gpt-4.1' },
+    prompt: { model: 'gpt-5-mini' },
     messages: [
       {
         role: 'user',

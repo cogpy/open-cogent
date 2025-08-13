@@ -62,7 +62,7 @@ Example output:
   "pdf": "https://example.com/file.pdf"
 }
 `,
-      parameters: z.object({
+      inputSchema: z.object({
         code: z
           .string()
           .describe(

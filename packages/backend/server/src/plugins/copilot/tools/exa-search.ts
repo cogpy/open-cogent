@@ -10,7 +10,7 @@ export const createExaSearchTool = (config: Config) => {
     { toolName: 'web_search_exa' },
     {
       description: 'Search the web for information',
-      parameters: z.object({
+      inputSchema: z.object({
         query: z.string().describe('The query to search the web for.'),
         mode: z
           .enum(['MUST', 'AUTO'])

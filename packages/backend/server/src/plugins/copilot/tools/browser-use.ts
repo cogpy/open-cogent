@@ -114,7 +114,7 @@ export const createBrowserUseTool = (
     {
       description:
         'Use the browser to accomplish a task, should try web search tools before using this.',
-      parameters: z.object({
+      inputSchema: z.object({
         task_description: z.string().describe('The task to accomplish'),
       }),
       execute: async ({ task_description }, { toolCallId }) => {

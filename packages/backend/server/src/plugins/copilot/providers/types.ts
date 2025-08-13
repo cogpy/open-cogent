@@ -222,7 +222,9 @@ const StreamObjectPureSchema = [
 ] as const;
 const StreamObjectToolResultSchema = z.object({
   type: z.literal('tool-incomplete-result'),
+  toolName: z.string().optional(),
   toolCallId: z.string(),
+  input: z.record(z.any()).optional(),
   data: z.discriminatedUnion('type', StreamObjectPureSchema),
 });
 

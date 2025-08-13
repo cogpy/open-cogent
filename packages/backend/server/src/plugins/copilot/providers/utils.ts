@@ -106,24 +106,24 @@ export async function chatToGPTMessage(
 
       if (withAttachment) {
         for (let attachment of attachments) {
-          let mimeType: string;
+          let mediaType: string;
           if (typeof attachment === 'string') {
-            mimeType =
+            mediaType =
               typeof mimetype === 'string'
                 ? mimetype
                 : await inferMimeType(attachment);
           } else {
-            ({ attachment, mimeType } = attachment);
+            ({ attachment, mimeType: mediaType } = attachment);
           }
           if (SIMPLE_IMAGE_URL_REGEX.test(attachment)) {
             const data =
               attachment.startsWith('data:') || useBase64Attachment
                 ? await fetch(attachment).then(r => r.arrayBuffer())
                 : new URL(attachment);
-            if (mimeType.startsWith('image/')) {
-              contents.push({ type: 'image', image: data, mimeType });
+            if (mediaType.startsWith('image/')) {
+              contents.push({ type: 'image', image: data, mediaType });
             } else {
-              contents.push({ type: 'file' as const, data, mimeType });
+              contents.push({ type: 'file' as const, data, mediaType });
             }
           }
         }
@@ -413,13 +413,12 @@ export abstract class BaseStreamParser<T> {
         const resolvedUsage = await usage;
         if (resolvedUsage) {
           const tokenUsage = {
-            inputTokens: resolvedUsage.promptTokens || 0,
-            outputTokens: resolvedUsage.completionTokens || 0,
-            reasoningTokens:
-              (resolvedUsage as any).reasoningTokens || undefined,
+            inputTokens: resolvedUsage.inputTokens || 0,
+            outputTokens: resolvedUsage.outputTokens || 0,
+            reasoningTokens: resolvedUsage.reasoningTokens || undefined,
             totalTokens:
-              (resolvedUsage.promptTokens || 0) +
-              (resolvedUsage.completionTokens || 0),
+              (resolvedUsage.inputTokens || 0) +
+              (resolvedUsage.outputTokens || 0),
             totalWithReasoning: resolvedUsage.totalTokens || undefined,
           };
 
@@ -495,12 +494,12 @@ export class TextStreamParser extends BaseStreamParser<string> {
         if (!this.prefix) {
           this.resetPrefix();
         }
-        result = chunk.textDelta;
+        result = chunk.text;
         result = this.addNewline(chunk.type, result);
         break;
       }
-      case 'reasoning': {
-        result = chunk.textDelta;
+      case 'reasoning-delta': {
+        result = chunk.text;
         result = this.addPrefix(result);
         result = this.markAsCallout(result);
         break;
@@ -516,28 +515,28 @@ export class TextStreamParser extends BaseStreamParser<string> {
             break;
           }
           case 'web_search_exa': {
-            result += `\nSearching the web "${chunk.args.query}"\n`;
+            result += `\nSearching the web "${chunk.input.query}"\n`;
             break;
           }
           case 'web_crawl_exa': {
-            result += `\nCrawling the web "${chunk.args.url}"\n`;
+            result += `\nCrawling the web "${chunk.input.url}"\n`;
             break;
           }
           case 'doc_keyword_search': {
-            result += `\nSearching the keyword "${chunk.args.query}"\n`;
+            result += `\nSearching the keyword "${chunk.input.query}"\n`;
             break;
           }
           case 'doc_read': {
-            result += `\nReading the doc "${chunk.args.doc_id}"\n`;
+            result += `\nReading the doc "${chunk.input.doc_id}"\n`;
             break;
           }
           case 'doc_compose': {
-            result += `\nWriting document "${chunk.args.title}"\n`;
+            result += `\nWriting document "${chunk.input.title}"\n`;
             break;
           }
           case 'doc_edit': {
             this.docEditFootnotes.push({
-              intent: chunk.args.instructions,
+              intent: chunk.input.instructions,
               result: '',
             });
             break;
@@ -565,46 +564,45 @@ export class TextStreamParser extends BaseStreamParser<string> {
         result = this.addPrefix(result);
         switch (chunk.toolName) {
           case 'doc_semantic_search': {
-            if (Array.isArray(chunk.result)) {
-              result += `\nFound ${chunk.result.length} document${chunk.result.length !== 1 ? 's' : ''} related to “${chunk.args.query}”.\n`;
-            } else if (typeof chunk.result === 'string') {
-              result += `\n${chunk.result}\n`;
+            const output = chunk.output;
+            if (Array.isArray(output)) {
+              result += `\nFound ${output.length} document${output.length !== 1 ? 's' : ''} related to “${chunk.input.query}”.\n`;
+            } else if (typeof output === 'string') {
+              result += `\n${output}\n`;
             } else {
               this.logger.warn(
-                `Unexpected result type for doc_semantic_search: ${chunk.result?.message || 'Unknown error'}`
+                `Unexpected result type for doc_semantic_search: ${output?.message || 'Unknown error'}`
               );
             }
             break;
           }
           case 'doc_compose': {
-            if (
-              chunk.result &&
-              typeof chunk.result === 'object' &&
-              'title' in chunk.result
-            ) {
-              result += `\nDocument "${chunk.result.title}" created successfully with ${chunk.result.wordCount} words.\n`;
+            const output = chunk.output;
+            if (output && typeof output === 'object' && 'title' in output) {
+              result += `\nDocument "${output.title}" created successfully with ${output.wordCount} words.\n`;
             }
             break;
           }
           case 'web_search_exa': {
-            if (Array.isArray(chunk.result)) {
-              result += `\n${this.getWebSearchLinks(chunk.result)}\n`;
+            const output = chunk.output;
+            if (Array.isArray(output)) {
+              result += `\n${this.getWebSearchLinks(output)}\n`;
             }
             break;
           }
           case 'make_it_real': {
             if (
-              chunk.result &&
-              typeof chunk.result === 'object' &&
-              'content' in chunk.result
+              chunk.output &&
+              typeof chunk.output === 'object' &&
+              'content' in chunk.output
             ) {
-              result += `\n${chunk.result.content}\n`;
+              result += `\n${chunk.output.content}\n`;
             }
             break;
           }
           case 'python_coding': {
-            if (chunk.result && typeof chunk.result === 'string') {
-              result += `\n${chunk.result}\n`;
+            if (chunk.output && typeof chunk.output === 'string') {
+              result += `\n${chunk.output}\n`;
             }
             break;
           }
@@ -684,12 +682,19 @@ export class StreamObjectParser extends BaseStreamParser<StreamObject> {
     chunk: TextStreamPart<CustomAITools> | StreamObjectToolResult
   ): StreamObject | null {
     switch (chunk.type) {
-      case 'reasoning':
-      case 'text-delta':
+      case 'reasoning-delta': {
+        return { type: 'reasoning' as const, textDelta: chunk.text };
+      }
+      case 'text-delta': {
+        const { type, text: textDelta } = chunk;
+        return { type, textDelta };
+      }
       case 'tool-call':
       case 'tool-incomplete-result':
       case 'tool-result': {
-        return chunk;
+        const { type, toolCallId, toolName, input: args } = chunk;
+        const result = 'output' in chunk ? chunk.output : undefined;
+        return { type, toolCallId, toolName, args, result } as StreamObject;
       }
       case 'error': {
         throw toError(chunk.error);

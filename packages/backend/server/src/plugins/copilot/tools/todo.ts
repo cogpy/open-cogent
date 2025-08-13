@@ -21,7 +21,7 @@ export const createTodoTool = (cache: Cache) => {
     {
       description:
         'Make a todo list for client, returns the todo list with a unique ID, this tool should only used when you are doing something that requires multiple steps, like writing a document or composing an email.',
-      parameters: z.object({
+      inputSchema: z.object({
         todo: z
           .object({
             title: z.string().describe('The title of the todo item'),
@@ -51,7 +51,7 @@ export const createMarkTodoTool = (cache: Cache) => {
     { toolName: 'mark_todo' },
     {
       description: 'Mark a todo item as processing or completed in a todo list',
-      parameters: z.object({
+      inputSchema: z.object({
         todoListId: z.string().describe('The ID of the todo list'),
         todoId: z
           .string()

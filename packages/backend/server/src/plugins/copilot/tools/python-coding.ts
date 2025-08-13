@@ -16,7 +16,7 @@ export const createPythonCodingTool = (
     { toolName: 'python_coding' },
     {
       description: 'This tool(python-coding) is used to generate python code',
-      parameters: z.object({
+      inputSchema: z.object({
         requirements: z
           .string()
           .describe('The requirements to generate python code'),

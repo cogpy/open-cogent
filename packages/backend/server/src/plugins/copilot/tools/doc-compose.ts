@@ -77,7 +77,7 @@ export const createDocComposeTool = (
     {
       description:
         'Write a new document with markdown content. This tool creates structured markdown content for documents including titles, sections, and formatting.',
-      parameters: z.object({
+      inputSchema: z.object({
         title: z.string().describe('The title of the document'),
         userPrompt: z
           .string()

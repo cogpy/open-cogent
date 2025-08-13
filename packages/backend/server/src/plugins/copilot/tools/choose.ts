@@ -8,7 +8,7 @@ export const createChooseTool = () => {
     {
       description:
         'Present multiple options to the user for selection. The user can either choose from the provided options or provide their own input. The content of the options should be provided in the language used by the user.',
-      parameters: z.object({
+      inputSchema: z.object({
         question: z.string().describe('The question or prompt to ask the user'),
         options: z
           .array(z.string())

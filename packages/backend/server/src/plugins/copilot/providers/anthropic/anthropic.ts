@@ -3,7 +3,7 @@ import {
   type AnthropicProviderOptions,
 } from '@ai-sdk/anthropic';
 import { type GoogleVertexAnthropicProvider } from '@ai-sdk/google-vertex/anthropic';
-import { AISDKError, generateText, streamText } from 'ai';
+import { AISDKError, generateText, stepCountIs, streamText } from 'ai';
 
 import {
   CopilotProviderSideError,
@@ -28,8 +28,6 @@ import {
 } from '../utils';
 
 export abstract class AnthropicProvider<T> extends CopilotProvider<T> {
-  private readonly MAX_STEPS = 20;
-
   protected abstract instance:
     | AnthropicSDKProvider
     | GoogleVertexAnthropicProvider;
@@ -94,8 +92,7 @@ export abstract class AnthropicProvider<T> extends CopilotProvider<T> {
               anthropic: this.getAnthropicOptions(model.id),
             },
             tools,
-            maxSteps: this.MAX_STEPS,
-            experimental_continueSteps: true,
+            stopWhen: stepCountIs(this.MAX_STEPS),
           });
         }
       );
@@ -201,8 +198,7 @@ export abstract class AnthropicProvider<T> extends CopilotProvider<T> {
         anthropic: this.getAnthropicOptions(model.id),
       },
       tools,
-      maxSteps: this.MAX_STEPS,
-      experimental_continueSteps: true,
+      stopWhen: stepCountIs(this.MAX_STEPS),
     });
     return { fullStream: mergeStreams(fullStream, toolOneTimeStream), usage };
   }

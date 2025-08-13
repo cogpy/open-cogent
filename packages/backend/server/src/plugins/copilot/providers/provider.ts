@@ -60,6 +60,7 @@ type GetToolResult = {
 @Injectable()
 export abstract class CopilotProvider<C = any> {
   protected readonly logger = new Logger(this.constructor.name);
+  protected readonly MAX_STEPS = 20;
   protected onlineModelList: string[] = [];
 
   abstract readonly type: CopilotProviderType;

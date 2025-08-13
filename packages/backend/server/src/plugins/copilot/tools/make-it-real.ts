@@ -19,7 +19,7 @@ export const createMakeItRealTool = (
     { toolName: 'make_it_real' },
     {
       description: `This tool(make-it-real) is used to improve the document with more beautiful layout or slide show.`,
-      parameters: z.object({
+      inputSchema: z.object({
         instructions: z
           .string()
           .optional()

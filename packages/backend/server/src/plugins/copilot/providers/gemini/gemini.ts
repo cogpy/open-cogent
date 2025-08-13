@@ -9,6 +9,7 @@ import {
   generateObject,
   generateText,
   JSONParseError,
+  stepCountIs,
   streamText,
 } from 'ai';
 
@@ -44,8 +45,6 @@ export type GeminiConfig = {
 };
 
 export abstract class GeminiProvider<T> extends CopilotProvider<T> {
-  private readonly MAX_STEPS = 20;
-
   protected abstract instance:
     | GoogleGenerativeAIProvider
     | GoogleVertexProvider;
@@ -95,8 +94,7 @@ export abstract class GeminiProvider<T> extends CopilotProvider<T> {
           google: this.getGeminiOptions(model.id),
         },
         tools,
-        maxSteps: this.MAX_STEPS,
-        experimental_continueSteps: true,
+        stopWhen: stepCountIs(this.MAX_STEPS),
       });
 
       if (!text) throw new Error('Failed to generate text');
@@ -124,9 +122,7 @@ export abstract class GeminiProvider<T> extends CopilotProvider<T> {
         throw new CopilotPromptInvalid('Schema is required');
       }
 
-      const modelInstance = this.instance(model.id, {
-        structuredOutputs: true,
-      });
+      const modelInstance = this.instance(model.id);
       const { object } = await generateObject({
         model: modelInstance,
         system,
@@ -256,14 +252,21 @@ export abstract class GeminiProvider<T> extends CopilotProvider<T> {
         .counter('generate_embedding_calls')
         .add(1, { model: model.id });
 
-      const modelInstance = this.instance.textEmbeddingModel(model.id, {
-        outputDimensionality: options.dimensions || DEFAULT_DIMENSIONS,
-        taskType: 'RETRIEVAL_DOCUMENT',
-      });
+      const modelInstance = this.instance.textEmbeddingModel(model.id);
 
       const embeddings = await Promise.allSettled(
         messages.map(m =>
-          embedMany({ model: modelInstance, values: [m], maxRetries: 3 })
+          embedMany({
+            model: modelInstance,
+            values: [m],
+            maxRetries: 3,
+            providerOptions: {
+              google: {
+                outputDimensionality: options.dimensions || DEFAULT_DIMENSIONS,
+                taskType: 'RETRIEVAL_DOCUMENT',
+              },
+            },
+          })
         )
       );
 
@@ -295,8 +298,7 @@ export abstract class GeminiProvider<T> extends CopilotProvider<T> {
         google: this.getGeminiOptions(model.id),
       },
       tools,
-      maxSteps: this.MAX_STEPS,
-      experimental_continueSteps: true,
+      stopWhen: stepCountIs(this.MAX_STEPS),
     });
     return { fullStream: mergeStreams(fullStream, toolOneTimeStream), usage };
   }

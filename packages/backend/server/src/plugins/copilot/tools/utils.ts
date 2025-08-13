@@ -1,6 +1,6 @@
+import { Tool, ToolCallOptions } from '@ai-sdk/provider-utils';
 import { Logger } from '@nestjs/common';
-import { tool, ToolExecutionOptions } from 'ai';
-import z from 'zod';
+import { JSONValue, tool } from 'ai';
 
 import {
   StreamObject,
@@ -123,23 +123,17 @@ export interface ToolWrapperOptions {
   tracker?: TokenUsageTracker;
 }
 
-export function createTool<TParameters extends z.ZodTypeAny, TResult>(
+type ToolArgs = JSONValue | unknown | never;
+
+export function createTool<I extends ToolArgs, O extends ToolArgs>(
   options: ToolWrapperOptions,
-  toolDefinition: {
-    description: string;
-    parameters: TParameters;
-    execute: (
-      args: z.infer<TParameters>,
-      context: ToolExecutionOptions
-    ) => Promise<TResult> | TResult;
-  }
+  toolDefinition: Tool<I, O>
 ) {
   const { toolName, tracker = TokenTracker.getCurrentTracker() } = options;
 
-  return tool({
-    description: toolDefinition.description,
-    parameters: toolDefinition.parameters,
-    execute: async (args, context) => {
+  return tool<I, O>({
+    ...toolDefinition,
+    execute: async (args: I, context: ToolCallOptions) => {
       const startTime = Date.now();
       if (tracker) {
         tracker.pushTool(toolName);
@@ -148,9 +142,9 @@ export function createTool<TParameters extends z.ZodTypeAny, TResult>(
       try {
         const result = tracker
           ? await TokenTracker.runWith(tracker, async () => {
-              return await toolDefinition.execute(args, context);
+              return await toolDefinition.execute?.(args, context);
             })
-          : await toolDefinition.execute(args, context);
+          : await toolDefinition.execute?.(args, context);
         if (tracker) {
           const step = tracker.getStepName();
           tracker.recordUsage(step, toolName, Date.now() - startTime);
@@ -164,5 +158,5 @@ export function createTool<TParameters extends z.ZodTypeAny, TResult>(
         }
       }
     },
-  });
+  } as Tool<I, O>);
 }

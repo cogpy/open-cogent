@@ -111,7 +111,7 @@ const workflows: Prompt[] = [
   {
     name: 'workflow:presentation:step1',
     action: 'workflow:presentation:step1',
-    model: 'gpt-4.1-mini',
+    model: 'gpt-5-mini',
     config: { temperature: 0.7 },
     messages: [
       {
@@ -175,7 +175,7 @@ const workflows: Prompt[] = [
   {
     name: 'workflow:image-sketch:step2',
     action: 'workflow:image-sketch:step2',
-    model: 'gpt-4.1-mini',
+    model: 'gpt-5-mini',
     messages: [
       {
         role: 'system',
@@ -216,7 +216,7 @@ const workflows: Prompt[] = [
   {
     name: 'workflow:image-clay:step2',
     action: 'workflow:image-clay:step2',
-    model: 'gpt-4.1-mini',
+    model: 'gpt-5-mini',
     messages: [
       {
         role: 'system',
@@ -257,7 +257,7 @@ const workflows: Prompt[] = [
   {
     name: 'workflow:image-anime:step2',
     action: 'workflow:image-anime:step2',
-    model: 'gpt-4.1-mini',
+    model: 'gpt-5-mini',
     messages: [
       {
         role: 'system',
@@ -298,7 +298,7 @@ const workflows: Prompt[] = [
   {
     name: 'workflow:image-pixel:step2',
     action: 'workflow:image-pixel:step2',
-    model: 'gpt-4.1-mini',
+    model: 'gpt-5-mini',
     messages: [
       {
         role: 'system',
@@ -386,7 +386,7 @@ Convert a multi-speaker audio recording into a structured JSON format by transcr
   {
     name: 'Generate a caption',
     action: 'Generate a caption',
-    model: 'gpt-4.1-mini',
+    model: 'gpt-5-mini',
     messages: [
       {
         role: 'user',
@@ -402,7 +402,7 @@ Convert a multi-speaker audio recording into a structured JSON format by transcr
   {
     name: 'Conversation Summary',
     action: 'Conversation Summary',
-    model: 'gpt-4.1-2025-04-14',
+    model: 'gpt-5-mini',
     messages: [
       {
         role: 'system',
@@ -427,7 +427,7 @@ Return only the summary text—no headings, labels, or commentary.`,
   {
     name: 'Task Analysis',
     action: 'Task Analysis',
-    model: 'gpt-4.1-2025-04-14',
+    model: 'gpt-5-mini',
     messages: [
       {
         role: 'system',
@@ -507,7 +507,7 @@ Provide the analysis as a JSON object following the specified format.`,
   {
     name: 'Summary',
     action: 'Summary',
-    model: 'gpt-4.1-2025-04-14',
+    model: 'gpt-5',
     messages: [
       {
         role: 'system',
@@ -538,7 +538,7 @@ You are an assistant helping summarize a document. Use this format, replacing te
   {
     name: 'Summary as title',
     action: 'Summary as title',
-    model: 'gpt-4.1-2025-04-14',
+    model: 'gpt-5-mini',
     messages: [
       {
         role: 'system',
@@ -555,7 +555,7 @@ You are an assistant helping summarize a document. Use this format, replacing te
   {
     name: 'Summary the webpage',
     action: 'Summary the webpage',
-    model: 'gpt-4.1-2025-04-14',
+    model: 'gpt-5-mini',
     messages: [
       {
         role: 'user',
@@ -567,7 +567,7 @@ You are an assistant helping summarize a document. Use this format, replacing te
   {
     name: 'Explain this',
     action: 'Explain this',
-    model: 'gpt-4.1-2025-04-14',
+    model: 'gpt-5',
     messages: [
       {
         role: 'system',
@@ -610,7 +610,7 @@ A concise paragraph that captures the article's main argument and key conclusion
   {
     name: 'Explain this image',
     action: 'Explain this image',
-    model: 'gpt-4.1-2025-04-14',
+    model: 'gpt-5',
     messages: [
       {
         role: 'system',
@@ -759,7 +759,7 @@ You are a highly accomplished professional translator, demonstrating profound pr
   {
     name: 'Summarize the token usage',
     action: 'Summarize the token usage',
-    model: 'gpt-4.1-mini',
+    model: 'gpt-5-mini',
     messages: [
       {
         role: 'system',
@@ -834,7 +834,7 @@ The process handled a total of 6,000 tokens and finished in about 3 seconds, wit
   {
     name: 'Summarize the meeting',
     action: 'Summarize the meeting',
-    model: 'gpt-4.1-2025-04-14',
+    model: 'gemini-2.5-flash',
     messages: [
       {
         role: 'system',
@@ -859,7 +859,7 @@ You are an assistant helping summarize a document. Use this format, replacing te
   {
     name: 'Find action for summary',
     action: 'Find action for summary',
-    model: 'gpt-4.1-2025-04-14',
+    model: 'gemini-2.5-flash',
     messages: [
       {
         role: 'system',
@@ -936,7 +936,7 @@ You are an assistant helping find actions of meeting summary. Use this format, r
   {
     name: 'Write a twitter about this',
     action: 'Write a twitter about this',
-    model: 'gpt-4.1-2025-04-14',
+    model: 'gemini-2.5-flash',
     messages: [
       {
         role: 'system',
@@ -1112,7 +1112,7 @@ You are an assistant helping find actions of meeting summary. Use this format, r
   {
     name: 'Change tone to',
     action: 'Change tone',
-    model: 'gpt-4.1-2025-04-14',
+    model: 'gemini-2.5-flash',
     messages: [
       {
         role: 'system',
@@ -1259,7 +1259,7 @@ The output must be perfect. Adherence to every detail of these instructions is n
   {
     name: 'Improve grammar for it',
     action: 'Improve grammar for it',
-    model: 'gpt-4.1-2025-04-14',
+    model: 'gemini-2.5-flash',
     messages: [
       {
         role: 'system',
@@ -1328,7 +1328,7 @@ The output must be perfect. Adherence to every detail of these instructions is n
   {
     name: 'Find action items from it',
     action: 'Find action items from it',
-    model: 'gpt-4.1-2025-04-14',
+    model: 'gemini-2.5-flash',
     messages: [
       {
         role: 'system',
@@ -1352,7 +1352,7 @@ If there are items in the content that can be used as to-do tasks, please refer 
   {
     name: 'Check code error',
     action: 'Check code error',
-    model: 'gpt-4.1-2025-04-14',
+    model: 'gpt-5',
     messages: [
       {
         role: 'system',
@@ -2108,6 +2108,7 @@ const chat: Prompt[] = [
     model: 'claude-sonnet-4@20250514',
     optionalModels: [
       'gpt-4.1',
+      'gpt-5',
       'o3',
       'o4-mini',
       'gemini-2.5-flash',

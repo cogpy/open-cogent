@@ -469,11 +469,11 @@ Respond ONLY with a valid JSON object in this exact format:
 **Tool Selection:**
 - Only suggest tools from the available tools list
 - Match tools to task requirements logically
-- Consider: web_search_exa, doc_semantic_search for research
+- Consider: web_search_cloudsway, web_search_exa, doc_semantic_search for research
 - Consider: code_artifact, python_coding for development
 - Consider: doc_compose for documentation
 - Consider: e2b_python_sandbox for testing/execution
-- Consider: web_search_exa and web_crawl_exa for web interaction
+- Consider: web_search_cloudsway/web_search_exa and web_crawl_cloudsway/web_crawl_exa for web interaction
 - consider: browser_use when the previous web interaction fails to obtain sufficient results
 - Consider: make_it_real for design/UI tasks
 - Consider: todo_list, mark_todo for task management

@@ -19,6 +19,8 @@ import {
   buildSaveDocGetter,
   createBrowserUseTool,
   createChooseTool,
+  createCloudswayReadTool,
+  createCloudswaySearchTool,
   createCodeArtifactTool,
   createConversationSummaryTool,
   createDocComposeTool,
@@ -242,6 +244,13 @@ export abstract class CopilotProvider<C = any> {
           case 'webSearch': {
             tools.web_search_exa = createExaSearchTool(this.OpenAgentConfig);
             tools.web_crawl_exa = createExaCrawlTool(this.OpenAgentConfig);
+            tools.web_search_cloudsway = createCloudswaySearchTool(
+              this.OpenAgentConfig
+            );
+            tools.web_crawl_cloudsway = createCloudswayReadTool(
+              this.OpenAgentConfig
+            );
+
             break;
           }
           case 'docCompose': {

@@ -1,5 +1,7 @@
 export * from './browser-use';
 export * from './choose';
+export * from './cloudsway-read';
+export * from './cloudsway-search';
 export * from './code-artifact';
 export * from './conversation-summary';
 export * from './doc-compose';

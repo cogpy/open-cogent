@@ -85,8 +85,12 @@ export function ChatContentStreamObjects({
                 />
               );
             }
-            // Specialized handling for web_search_exa placeholder
-            if (obj.toolName === 'web_search_exa') {
+            // Specialized handling for web_search placeholder
+            if (
+              ['web_search_cloudsway', 'web_search_exa'].includes(
+                obj.toolName ?? ''
+              )
+            ) {
               // Attempt to extract query from args (GraphQL returns JSON string or object)
               let query = undefined as string | undefined;
               if (typeof obj.args === 'string') {
@@ -112,7 +116,11 @@ export function ChatContentStreamObjects({
               );
             }
 
-            if (obj.toolName === 'web_crawl_exa') {
+            if (
+              ['web_crawl_cloudsway', 'web_crawl_exa'].includes(
+                obj.toolName ?? ''
+              )
+            ) {
               const url = obj.args?.url;
               return (
                 <GenericToolCalling
@@ -184,8 +192,13 @@ export function ChatContentStreamObjects({
               );
             }
 
-            // Special handling for web_search_exa tool
-            if (obj.toolName === 'web_search_exa' && obj.result) {
+            // Special handling for web_search/web_crawl tool
+            if (
+              ['web_search_cloudsway', 'web_search_exa'].includes(
+                obj.toolName ?? ''
+              ) &&
+              obj.result
+            ) {
               const results =
                 obj.result.results || obj.result.data || obj.result;
               return (
@@ -196,7 +209,12 @@ export function ChatContentStreamObjects({
                 />
               );
             }
-            if (obj.toolName === 'web_crawl_exa' && obj.result) {
+            if (
+              ['web_crawl_cloudsway', 'web_crawl_exa'].includes(
+                obj.toolName ?? ''
+              ) &&
+              obj.result
+            ) {
               const results =
                 obj.result.results || obj.result.data || obj.result;
               return (

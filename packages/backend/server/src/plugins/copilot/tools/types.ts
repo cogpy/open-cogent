@@ -2,6 +2,8 @@ import { ToolSet } from 'ai';
 
 import type { createBrowserUseTool } from './browser-use';
 import type { createChooseTool } from './choose';
+import type { createCloudswayReadTool } from './cloudsway-read';
+import type { createCloudswaySearchTool } from './cloudsway-search';
 import type { createCodeArtifactTool } from './code-artifact';
 import type { createConversationSummaryTool } from './conversation-summary';
 import type { createDocComposeTool } from './doc-compose';
@@ -24,6 +26,8 @@ export interface CustomAITools extends ToolSet {
   e2b_python_sandbox: ReturnType<typeof createE2bPythonSandboxTool>;
   web_search_exa: ReturnType<typeof createExaSearchTool>;
   web_crawl_exa: ReturnType<typeof createExaCrawlTool>;
+  web_search_cloudsway: ReturnType<typeof createCloudswaySearchTool>;
+  web_crawl_cloudsway: ReturnType<typeof createCloudswayReadTool>;
   todo_list: ReturnType<typeof createTodoTool>;
   mark_todo: ReturnType<typeof createMarkTodoTool>;
   make_it_real: ReturnType<typeof createMakeItRealTool>;
@@ -38,6 +42,8 @@ export const Tools = [
   'code_artifact',
   'doc_compose',
   'doc_semantic_search',
+  'web_search_cloudsway',
+  'web_crawl_cloudsway',
   'web_search_exa',
   'web_crawl_exa',
   'python_coding',

@@ -24,6 +24,11 @@ declare global {
       exa: ConfigItem<{
         key: string;
       }>;
+      cloudsway: ConfigItem<{
+        basePath: string;
+        endpointPath: string;
+        accessKey: string;
+      }>;
       e2b: ConfigItem<{
         key: string;
       }>;
@@ -127,6 +132,14 @@ defineModuleConfig('copilot', {
     desc: 'The config for the exa web search key.',
     default: {
       key: '',
+    },
+  },
+  cloudsway: {
+    desc: 'The config for the Cloudsway web search and reader.',
+    default: {
+      basePath: 'https://searchapi.cloudsway.net',
+      endpointPath: '',
+      accessKey: '',
     },
   },
   browserUse: {

@@ -514,10 +514,12 @@ export class TextStreamParser extends BaseStreamParser<string> {
             result += `\nSummarizing context\n`;
             break;
           }
+          case 'web_search_cloudsway':
           case 'web_search_exa': {
             result += `\nSearching the web "${chunk.input.query}"\n`;
             break;
           }
+          case 'web_crawl_cloudsway':
           case 'web_crawl_exa': {
             result += `\nCrawling the web "${chunk.input.url}"\n`;
             break;
@@ -583,6 +585,7 @@ export class TextStreamParser extends BaseStreamParser<string> {
             }
             break;
           }
+          case 'web_search_cloudsway':
           case 'web_search_exa': {
             const output = chunk.output;
             if (Array.isArray(output)) {

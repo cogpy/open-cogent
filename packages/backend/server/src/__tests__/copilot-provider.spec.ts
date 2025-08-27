@@ -700,9 +700,10 @@ for (const {
         const { factory, prompt: promptService } = t.context;
         const prompt = (await promptService.get(promptName))!;
         t.truthy(prompt, 'should have prompt');
-        const provider = (await factory.getProviderByModel(prompt.model, {
-          prefer,
-        }))!;
+        const provider = (await factory.getProviderByModel(
+          config?.model || prompt.model,
+          { prefer }
+        ))!;
         t.truthy(provider, 'should have provider');
         await retry(`action: ${promptName}`, t, async t => {
           const finalConfig = Object.assign({}, prompt.config, config);

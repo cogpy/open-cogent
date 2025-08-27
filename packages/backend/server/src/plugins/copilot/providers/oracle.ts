@@ -2,11 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import type { TextStreamPart } from 'ai';
 import {
   AuthenticationDetailsProvider,
-  composeRequest,
   ConfigFileReader,
-  DefaultRequestSigner,
-  FetchHttpClient,
-  handleErrorBody,
   Realm,
   Region,
   RegionProvider,
@@ -14,8 +10,10 @@ import {
 } from 'oci-common';
 import { checkNotNull } from 'oci-common/lib/utils';
 import { GenerativeAiInferenceClient } from 'oci-generativeaiinference';
+import { ImageContent, TextContent } from 'oci-generativeaiinference/lib/model';
+import { ChatRequest } from 'oci-generativeaiinference/lib/request';
 
-import { CopilotProviderNotSupported, metrics } from '../../../base';
+import { metrics } from '../../../base';
 import type { CustomAITools } from '../tools';
 import { CopilotProvider } from './provider';
 import type {
@@ -25,7 +23,12 @@ import type {
   PromptMessage,
 } from './types';
 import { CopilotProviderType, ModelInputType, ModelOutputType } from './types';
-import { chatToGPTMessage, TextStreamParser } from './utils';
+import {
+  chatToGPTMessage,
+  imageToUrl,
+  StreamObjectParser,
+  TextStreamParser,
+} from './utils';
 
 export type OracleConfig = {
   endpoint?: string; // e.g. https://inference.generativeai.<region>.oci.oraclecloud.com
@@ -41,32 +44,14 @@ export type OracleConfig = {
 
 type OracleChatMessage = {
   role: 'USER' | 'ASSISTANT' | 'SYSTEM';
-  content: Array<{ type: 'TEXT'; text: string }>;
-};
-
-type OracleChatRequest = {
-  chatDetails: {
-    compartmentId: string;
-    servingMode: {
-      servingType: 'ON_DEMAND';
-      modelId: string;
-    };
-    chatRequest: {
-      messages: OracleChatMessage[];
-      apiFormat: 'GENERIC';
-      maxTokens?: number;
-      temperature?: number;
-      topK?: number;
-      topP?: number;
-    };
-  };
+  content: Array<TextContent | ImageContent>;
 };
 
 // Minimal stream part that TextStreamParser understands
 type OracleStreamChunk = TextStreamPart<CustomAITools>;
 
 const MODELS_MAP: Record<string, string> = {
-  grok4:
+  'grok4-oracle':
     'ocid1.generativeaimodel.oc1.us-chicago-1.amaaaaaask7dceya3bsfz4ogiuv3yc7gcnlry7gi3zzx6tnikg6jltqszm2q',
 };
 
@@ -76,11 +61,11 @@ export class OracleProvider extends CopilotProvider<OracleConfig> {
 
   readonly models: CopilotProviderModel[] = [
     {
-      id: 'grok4',
+      id: 'grok4-oracle',
       capabilities: [
         {
           input: [ModelInputType.Text],
-          output: [ModelOutputType.Text],
+          output: [ModelOutputType.Text, ModelOutputType.Object],
           defaultForOutputType: true,
         },
       ],
@@ -108,14 +93,21 @@ export class OracleProvider extends CopilotProvider<OracleConfig> {
   }
 
   async text(
-    _cond: ModelConditions,
-    _messages: PromptMessage[],
-    _options: CopilotChatOptions = {}
+    cond: ModelConditions,
+    messages: PromptMessage[],
+    options: CopilotChatOptions = {}
   ): Promise<string> {
-    throw new CopilotProviderNotSupported({
-      provider: this.type,
-      kind: 'text',
-    });
+    await this.checkParams({ messages, cond, options });
+
+    let result = '';
+    for await (const chunk of this.streamText(cond, messages, options)) {
+      result += chunk;
+      if (options.signal?.aborted) {
+        break;
+      }
+    }
+
+    return result;
   }
 
   async *streamText(
@@ -154,6 +146,48 @@ export class OracleProvider extends CopilotProvider<OracleConfig> {
     }
   }
 
+  override async *streamObject(
+    cond: ModelConditions,
+    messages: PromptMessage[],
+    options: CopilotChatOptions = {}
+  ): AsyncIterable<import('./types').StreamObject> {
+    const fullCond = { ...cond, outputType: ModelOutputType.Object } as const;
+    await this.checkParams({ messages, cond: fullCond, options });
+    const model = this.selectModel(fullCond);
+    const parser = new StreamObjectParser(model.id, this.moduleRef);
+
+    try {
+      metrics.ai
+        .counter('chat_object_stream_calls')
+        .add(1, { model: model.id });
+      const { fullStream } = await this.getOracleStream(
+        model.id,
+        messages,
+        options
+      );
+
+      for await (const chunk of fullStream) {
+        const result = parser.parse(chunk);
+        if (result) {
+          yield result;
+        }
+        if (options.signal?.aborted) {
+          parser.handleError();
+          break;
+        }
+      }
+      // Emit a final status object for completeness
+      yield await parser.statusStreamObject();
+      await parser.handleFinish();
+    } catch (e: any) {
+      metrics.ai
+        .counter('chat_object_stream_errors')
+        .add(1, { model: model.id });
+      parser.handleError();
+      throw e;
+    }
+  }
+
   // ===== Implementation details =====
 
   private async getOracleStream(
@@ -174,16 +208,27 @@ export class OracleProvider extends CopilotProvider<OracleConfig> {
       });
     }
     for (const m of gptMsgs) {
-      // Only text is supported in this MVP
-      const contentText = typeof m.content === 'string' ? m.content : '';
       oracleMsgs.push({
         role: toRole(m.role as 'user' | 'assistant'),
-        content: [{ type: 'TEXT', text: contentText }],
+        content:
+          typeof m.content === 'string'
+            ? [{ type: 'TEXT', text: m.content }]
+            : m.content
+                .map(c => {
+                  if (c.type === 'text') {
+                    return { type: 'TEXT', text: c.text };
+                  } else if (c.type === 'image') {
+                    const imageUri = imageToUrl(c.image);
+                    if (imageUri) return { type: 'IMAGE', imageUri };
+                  }
+                  return undefined;
+                })
+                .filter(c => !!c),
       });
     }
 
     const safeOptions = options || {};
-    const req: OracleChatRequest = {
+    const req: ChatRequest = {
       chatDetails: {
         compartmentId: this.config.compartmentId!,
         servingMode: {
@@ -207,7 +252,7 @@ export class OracleProvider extends CopilotProvider<OracleConfig> {
   }
 
   protected async *fetchChatStream(
-    req: OracleChatRequest
+    req: ChatRequest
   ): AsyncIterable<OracleStreamChunk> {
     const response = await this.#instance.chat(req);
 
@@ -237,8 +282,8 @@ export class OracleProvider extends CopilotProvider<OracleConfig> {
         type: 'text-delta',
         id: `oracle-${++id}`,
         text,
-      } as any;
-      yield chunk as any;
+      };
+      yield chunk;
     }
   }
 }
@@ -296,58 +341,10 @@ export class SessionAuthDetailProvider
     }
   }
 
-  public override async getKeyId(): Promise<string> {
-    return 'ST$' + (await this.getSecurityToken());
-  }
-
   // @ts-expect-error
   public override setRegion(regionId: string): void {
     super.setRegion(
       SessionAuthDetailProvider.retrieveRegionFromRegionId(regionId)
     );
-  }
-
-  async getSecurityToken(): Promise<string> {
-    return this.sessionToken!;
-  }
-
-  public async refreshSessionToken(): Promise<string> {
-    try {
-      const signer = new DefaultRequestSigner(this);
-      const client = new FetchHttpClient(signer);
-      const regionId = this.getRegion().regionId;
-      const region = Region.fromRegionId(regionId);
-      const secondLevelDomain = region.realm.secondLevelDomain;
-
-      const request = await composeRequest({
-        baseEndpoint: `https://auth.${regionId}.${secondLevelDomain}`,
-        path: `/v1/authentication/refresh`,
-        method: 'POST',
-        defaultHeaders: { 'content-type': 'application/json' },
-        bodyContent: JSON.stringify({ currentToken: this.sessionToken }),
-      });
-
-      const response = await client.send(request);
-      if (response.status === 200) {
-        const tokenJson: any = await response.json();
-        const tokenStr = tokenJson.token as string;
-        this.sessionToken = tokenStr;
-        return this.sessionToken;
-      } else if (response.status === 401) {
-        const errBody = await handleErrorBody(response);
-        throw new Error(
-          `Authentication Error calling Identity to refresh token. Error: ${JSON.stringify(
-            errBody
-          )}`
-        );
-      } else {
-        const errBody = await handleErrorBody(response);
-        throw new Error(
-          `Token cannot be refreshed. Error: ${JSON.stringify(errBody)}`
-        );
-      }
-    } catch (e) {
-      throw new Error(`Failed to refresh the session token due to ${e}`);
-    }
   }
 }

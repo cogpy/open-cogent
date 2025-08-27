@@ -61,7 +61,6 @@ export const ChatInput = ({
     setTextareaHeight(height);
   }, []);
 
-  // const [model, setModel] = useState('claude-3-5-sonnet-v2@20241022');
   const handleInput = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       updateTextAreaHeight();

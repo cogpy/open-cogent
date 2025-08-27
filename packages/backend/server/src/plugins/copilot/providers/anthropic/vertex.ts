@@ -32,25 +32,6 @@ export class AnthropicVertexProvider extends AnthropicProvider<AnthropicVertexCo
         },
       ],
     },
-    {
-      id: 'claude-3-7-sonnet@20250219',
-      capabilities: [
-        {
-          input: [ModelInputType.Text, ModelInputType.Image],
-          output: [ModelOutputType.Text, ModelOutputType.Object],
-        },
-      ],
-    },
-    {
-      id: 'claude-3-5-sonnet-v2@20241022',
-      capabilities: [
-        {
-          input: [ModelInputType.Text, ModelInputType.Image],
-          output: [ModelOutputType.Text, ModelOutputType.Object],
-          defaultForOutputType: true,
-        },
-      ],
-    },
   ];
 
   protected instance!: GoogleVertexAnthropicProvider;

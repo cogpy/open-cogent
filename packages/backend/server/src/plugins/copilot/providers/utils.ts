@@ -5,6 +5,7 @@ import { ModuleRef } from '@nestjs/core';
 import {
   CoreAssistantMessage,
   CoreUserMessage,
+  DataContent,
   FilePart,
   ImagePart,
   LanguageModelUsage,
@@ -139,6 +140,17 @@ export async function chatToGPTMessage(
   }
 
   return [system?.content, msgs, schema];
+}
+
+export function imageToUrl(image: DataContent | URL): string | undefined {
+  if (typeof image === 'string') {
+    return image;
+  } else if (image instanceof URL) {
+    return image.toString();
+  } else if (image instanceof ArrayBuffer) {
+    return `data:image/png;base64,${Buffer.from(image).toString('base64')}`;
+  }
+  return;
 }
 
 // pattern types the callback will receive

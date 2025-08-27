@@ -23,11 +23,6 @@ export const tempModels = [
   { label: 'Gemini 2.5 Pro', value: 'gemini-2.5-pro', icon: <GeminiIcon /> },
   { label: 'GPT-5', value: 'gpt-5', icon: <ChatGPTIcon /> },
   {
-    label: 'Claude 3.7 Sonnet',
-    value: 'claude-3-7-sonnet@20250219',
-    icon: <ClaudeIcon />,
-  },
-  {
     label: 'Gemini 2.5 Flash',
     value: 'gemini-2.5-flash',
     icon: <GeminiIcon />,

@@ -12,8 +12,9 @@ import type { FalConfig } from './providers/fal';
 import { GeminiGenerativeConfig, GeminiVertexConfig } from './providers/gemini';
 import { MorphConfig } from './providers/morph';
 import { OpenAIConfig } from './providers/openai';
+import { OracleConfig } from './providers/oracle';
 import { PerplexityConfig } from './providers/perplexity';
-import { VertexSchema } from './providers/types';
+import { OracleSchema, VertexSchema } from './providers/types';
 declare global {
   interface AppConfigSchema {
     copilot: {
@@ -46,6 +47,7 @@ declare global {
         anthropic: ConfigItem<AnthropicOfficialConfig>;
         anthropicVertex: ConfigItem<AnthropicVertexConfig>;
         morph: ConfigItem<MorphConfig>;
+        oracle: ConfigItem<OracleConfig>;
       };
     };
   }
@@ -121,6 +123,11 @@ defineModuleConfig('copilot', {
   'providers.morph': {
     desc: 'The config for the morph provider.',
     default: {},
+  },
+  'providers.oracle': {
+    desc: 'The config for the oracle provider.',
+    default: {},
+    schema: OracleSchema,
   },
   unsplash: {
     desc: 'The config for the unsplash key.',

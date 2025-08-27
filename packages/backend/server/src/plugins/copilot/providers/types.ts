@@ -14,6 +14,7 @@ export enum CopilotProviderType {
   OpenAI = 'openai',
   Perplexity = 'perplexity',
   Morph = 'morph',
+  Oracle = 'oracle',
 }
 
 export const CopilotProviderSchema = z.object({
@@ -51,6 +52,47 @@ export const VertexSchema: JSONSchema = {
           },
         },
       },
+    },
+  },
+};
+
+export const OracleSchema: JSONSchema = {
+  type: 'object',
+  description: 'The config for the oracle provider.',
+  properties: {
+    endpoint: {
+      type: 'string',
+      description: 'The endpoint of the oracle provider.',
+    },
+    compartmentId: {
+      type: 'string',
+      description: 'The compartment ID of the oracle provider.',
+    },
+    config: {
+      type: 'object',
+      description: 'The config for the oracle provider.',
+      properties: {
+        user: {
+          type: 'string',
+          description: 'The user OCID for the oracle provider.',
+        },
+        fingerprint: {
+          type: 'string',
+          description: 'The fingerprint for the oracle provider.',
+        },
+        tenancy: {
+          type: 'string',
+          description: 'The tenancy OCID for the oracle provider.',
+        },
+        region: {
+          type: 'string',
+          description: 'The region for the oracle provider.',
+        },
+      },
+    },
+    privateKey: {
+      type: 'string',
+      description: 'The private key for the oracle provider.',
     },
   },
 };

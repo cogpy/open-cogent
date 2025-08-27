@@ -732,6 +732,47 @@
           "description": "The config for the morph provider.\n@default {}",
           "default": {}
         },
+        "providers.oracle": {
+          "type": "object",
+          "description": "The config for the oracle provider.\n@default {}",
+          "properties": {
+            "endpoint": {
+              "type": "string",
+              "description": "The endpoint of the oracle provider."
+            },
+            "compartmentId": {
+              "type": "string",
+              "description": "The compartment ID of the oracle provider."
+            },
+            "config": {
+              "type": "object",
+              "description": "The config for the oracle provider.",
+              "properties": {
+                "user": {
+                  "type": "string",
+                  "description": "The user OCID for the oracle provider."
+                },
+                "fingerprint": {
+                  "type": "string",
+                  "description": "The fingerprint for the oracle provider."
+                },
+                "tenancy": {
+                  "type": "string",
+                  "description": "The tenancy OCID for the oracle provider."
+                },
+                "region": {
+                  "type": "string",
+                  "description": "The region for the oracle provider."
+                }
+              }
+            },
+            "privateKey": {
+              "type": "string",
+              "description": "The private key for the oracle provider."
+            }
+          },
+          "default": {}
+        },
         "unsplash": {
           "type": "object",
           "description": "The config for the unsplash key.\n@default {\"key\":\"\"}",
@@ -744,6 +785,15 @@
           "description": "The config for the exa web search key.\n@default {\"key\":\"\"}",
           "default": {
             "key": ""
+          }
+        },
+        "cloudsway": {
+          "type": "object",
+          "description": "The config for the Cloudsway web search and reader.\n@default {\"basePath\":\"https://searchapi.cloudsway.net\",\"endpointPath\":\"\",\"accessKey\":\"\"}",
+          "default": {
+            "basePath": "https://searchapi.cloudsway.net",
+            "endpointPath": "",
+            "accessKey": ""
           }
         },
         "browserUse": {

@@ -103,6 +103,8 @@
     "nest-winston": "^1.9.7",
     "nestjs-cls": "^6.0.0",
     "nodemailer": "^7.0.0",
+    "oci-common": "^2.116.1",
+    "oci-generativeaiinference": "^2.116.1",
     "on-headers": "^1.0.2",
     "piscina": "^5.0.0-alpha.0",
     "prisma": "^6.6.0",

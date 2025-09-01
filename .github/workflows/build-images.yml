@@ -158,6 +158,9 @@ jobs:
           mv ./node_modules ./packages/backend/server
           rm -rf ./packages/backend/server/node_modules/@afk
           mv ./@afk ./packages/backend/server/node_modules
+          # clean caches to save disk space
+          yarn cache clean --all || true
+          rm -rf ./packages/backend/server/node_modules/.cache || true
           ls -alh ./packages/backend/server/node_modules/@napi-rs
 
       - name: Login to GitHub Container Registry
@@ -180,4 +183,7 @@ jobs:
           platforms: linux/amd64,linux/arm64,linux/arm/v7
           provenance: true
           file: .docker/Dockerfile
+          # Use GitHub Actions cache backend to reduce local disk usage
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           tags: ghcr.io/afk-surf/open-agent:${{inputs.build-type}}-${{ inputs.git-short-hash }},ghcr.io/afk-surf/open-agent:${{inputs.build-type}}

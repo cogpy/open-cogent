@@ -8,10 +8,12 @@ import {
   RegionProvider,
   SimpleAuthenticationDetailsProvider,
 } from 'oci-common';
-import { checkNotNull } from 'oci-common/lib/utils';
 import { GenerativeAiInferenceClient } from 'oci-generativeaiinference';
-import { ImageContent, TextContent } from 'oci-generativeaiinference/lib/model';
-import { ChatRequest } from 'oci-generativeaiinference/lib/request';
+import type {
+  ImageContent,
+  TextContent,
+} from 'oci-generativeaiinference/lib/model';
+import type { ChatRequest } from 'oci-generativeaiinference/lib/request';
 
 import { metrics } from '../../../base';
 import type { CustomAITools } from '../tools';
@@ -83,7 +85,7 @@ export class OracleProvider extends CopilotProvider<OracleConfig> {
     super.setup();
     if (this.configured()) {
       const { config, endpoint, privateKey } = this.config;
-      const provider = SessionAuthDetailProvider.init(config!, privateKey!);
+      const provider = OracleAuthProvider.init(config!, privateKey!);
       const client = new GenerativeAiInferenceClient({
         authenticationDetailsProvider: provider,
       });
@@ -288,15 +290,26 @@ export class OracleProvider extends CopilotProvider<OracleConfig> {
   }
 }
 
-export class SessionAuthDetailProvider
+export class OracleAuthProvider
   extends SimpleAuthenticationDetailsProvider
   implements AuthenticationDetailsProvider, RegionProvider
 {
+  // Lightweight local replacement for oci-common's checkNotNull to avoid deep runtime imports in ESM
+  private static checkNotNull<T>(
+    value: T | null | undefined,
+    message: string
+  ): T {
+    if (value === null || value === undefined) {
+      throw new Error(message);
+    }
+    return value as T;
+  }
+
   static init(
     config: NonNullable<OracleConfig['config']>,
     privateKeyContent: string,
     sessionToken?: string
-  ): SessionAuthDetailProvider {
+  ): OracleAuthProvider {
     const file = ConfigFileReader.parse(
       `[DEFAULT]\n${Object.entries(config)
         .map(([k, v]) => `${k}=${v}`)
@@ -304,16 +317,28 @@ export class SessionAuthDetailProvider
       ConfigFileReader.DEFAULT_PROFILE_NAME
     );
 
-    return new SessionAuthDetailProvider(
-      checkNotNull(file.get('tenancy'), 'missing tenancy in config'),
+    return new OracleAuthProvider(
+      OracleAuthProvider.checkNotNull(
+        file.get('tenancy'),
+        'missing tenancy in config'
+      ),
       sessionToken
         ? ''
-        : checkNotNull(file.get('user'), 'missing user in config'),
-      checkNotNull(file.get('fingerprint'), 'missing fingerprint in config'),
+        : OracleAuthProvider.checkNotNull(
+            file.get('user'),
+            'missing user in config'
+          ),
+      OracleAuthProvider.checkNotNull(
+        file.get('fingerprint'),
+        'missing fingerprint in config'
+      ),
       privateKeyContent,
       file.get('pass_phrase'),
-      SessionAuthDetailProvider.retrieveRegionFromRegionId(
-        checkNotNull(file.get('region'), 'missing region in config')
+      OracleAuthProvider.retrieveRegionFromRegionId(
+        OracleAuthProvider.checkNotNull(
+          file.get('region'),
+          'missing region in config'
+        )
       ),
       undefined,
       undefined,
@@ -328,7 +353,7 @@ export class SessionAuthDetailProvider
       region = Region.fromRegionId(regionId);
       if (!region) {
         // Proceed by assuming the region id in the config file belongs to OC1 realm.
-        new Logger(SessionAuthDetailProvider.name).warn(
+        new Logger(OracleAuthProvider.name).warn(
           `Falling back to using OC1 realm.`
         );
         region = Region.register(regionId, Realm.OC1);
@@ -343,8 +368,6 @@ export class SessionAuthDetailProvider
 
   // @ts-expect-error
   public override setRegion(regionId: string): void {
-    super.setRegion(
-      SessionAuthDetailProvider.retrieveRegionFromRegionId(regionId)
-    );
+    super.setRegion(OracleAuthProvider.retrieveRegionFromRegionId(regionId));
   }
 }

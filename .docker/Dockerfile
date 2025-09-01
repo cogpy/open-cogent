@@ -33,7 +33,7 @@ RUN case "${TARGETARCH}" in \
     yarn workspace @afk/server-native build; \
     fi
 
-FROM node:22-bookworm AS builder
+FROM node:22-bookworm-slim AS builder
 
 WORKDIR /app
 COPY . .

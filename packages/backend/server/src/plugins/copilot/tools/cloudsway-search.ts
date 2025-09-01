@@ -47,10 +47,10 @@ export const createCloudswaySearchTool = (config: Config) => {
         cc,
       }) => {
         try {
-          const { basePath, endpointPath, accessKey } =
+          const { basePath, searchEndpoint, accessKey } =
             config.copilot.cloudsway;
 
-          const url = new URL(`search/${endpointPath}/smart`, basePath);
+          const url = new URL(`search/${searchEndpoint}/smart`, basePath);
           url.searchParams.set('q', query);
           if (count !== undefined) url.searchParams.set('count', String(count));
           if (offset !== undefined)

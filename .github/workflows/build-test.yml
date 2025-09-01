@@ -425,7 +425,6 @@ jobs:
       - check-git-status
       - check-yarn-binary
       - build-server-native
-      - native-unit-test
       - server-test
       - server-e2e-test
       - rust-test

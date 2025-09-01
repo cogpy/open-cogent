@@ -789,10 +789,11 @@
         },
         "cloudsway": {
           "type": "object",
-          "description": "The config for the Cloudsway web search and reader.\n@default {\"basePath\":\"https://searchapi.cloudsway.net\",\"endpointPath\":\"\",\"accessKey\":\"\"}",
+          "description": "The config for the Cloudsway web search and reader.\n@default {\"basePath\":\"https://searchapi.cloudsway.net\",\"readEndpoint\":\"\",\"searchEndpoint\":\"\",\"accessKey\":\"\"}",
           "default": {
             "basePath": "https://searchapi.cloudsway.net",
-            "endpointPath": "",
+            "readEndpoint": "",
+            "searchEndpoint": "",
             "accessKey": ""
           }
         },

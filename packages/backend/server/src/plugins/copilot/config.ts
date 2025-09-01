@@ -27,7 +27,8 @@ declare global {
       }>;
       cloudsway: ConfigItem<{
         basePath: string;
-        endpointPath: string;
+        readEndpoint: string;
+        searchEndpoint: string;
         accessKey: string;
       }>;
       e2b: ConfigItem<{
@@ -145,7 +146,8 @@ defineModuleConfig('copilot', {
     desc: 'The config for the Cloudsway web search and reader.',
     default: {
       basePath: 'https://searchapi.cloudsway.net',
-      endpointPath: '',
+      readEndpoint: '',
+      searchEndpoint: '',
       accessKey: '',
     },
   },

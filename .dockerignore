@@ -64,7 +64,7 @@ pnpm-lock.yaml
 target/
 Cargo.lock
 
-# other
-.dockerignore
-Dockerfile*
-docker-compose*
+# exclude heavy directories not needed for image build
+blocksuite/
+tools/
+scripts/

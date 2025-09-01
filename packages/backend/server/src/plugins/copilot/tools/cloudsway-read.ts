@@ -29,10 +29,10 @@ export const createCloudswayReadTool = (config: Config) => {
       }),
       execute: async ({ url, formats, mode }) => {
         try {
-          const { basePath, endpointPath, accessKey } =
+          const { basePath, readEndpoint, accessKey } =
             config.copilot.cloudsway;
 
-          const endpoint = new URL(`search/${endpointPath}/read`, basePath);
+          const endpoint = new URL(`search/${readEndpoint}/read`, basePath);
           const body = {
             url,
             formats: (formats?.length ? formats : ['TEXT']) as Format[],

@@ -1,6 +1,6 @@
 import { Button, RowInput } from '@afk/component';
 import { submitWishlistMutation } from '@afk/graphql';
-import { CollaborationIcon, GithubDuotoneIcon } from '@blocksuite/icons/rc';
+import { GithubDuotoneIcon } from '@blocksuite/icons/rc';
 import { type HTMLAttributes, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 
@@ -15,7 +15,7 @@ import { TodoListPreview } from './assets/todo-list-preview';
 import { EnterAnim } from './enter-anim';
 import { LeaveAnim } from './leave-anim';
 import { OnboardingNext } from './onboarding-next';
-import { ShowCase } from './show-case';
+import { ShowCaseVideo } from './show-case-video';
 
 interface StepProps {
   onNext?: () => void;
@@ -133,7 +133,7 @@ const ShowcaseStep: React.FC<StepProps> = ({ onNext }) => {
             surface options. You stay in control of the final call. Achieve
             more, struggle less.
           </p>,
-          <ShowCase />,
+          <ShowCaseVideo />,
           <OnboardingNext className="mt-8" onClick={() => setShow(false)}>
             Continue
           </OnboardingNext>,
@@ -161,7 +161,7 @@ const SelectCard = ({
 };
 
 const SelectStep: React.FC<StepProps> = ({ onNext }) => {
-  const [show, setShow] = useState(true);
+  const [show] = useState(true);
   return (
     <LeaveAnim
       className="flex flex-col items-center"
@@ -178,7 +178,7 @@ const SelectStep: React.FC<StepProps> = ({ onNext }) => {
             more, struggle less.
           </p>,
           <div className="flex items-stretch gap-4 w-full max-w-[816px] flex-wrap justify-center">
-            <SelectCard onClick={() => setShow(false)}>
+            {/* <SelectCard onClick={() => setShow(false)}>
               <CollaborationIcon className="size-6 text-icon-primary" />
               <p className="text-text-primary font-semibold text-lg leading-[26px]">
                 Register and Join Waiting List
@@ -192,7 +192,7 @@ const SelectStep: React.FC<StepProps> = ({ onNext }) => {
                 <li>✓ &nbsp;Free real conversation replay</li>
                 <li>✓ &nbsp;Priority access to new features</li>
               </ul>
-            </SelectCard>
+            </SelectCard> */}
             <a href="https://github.com/AFK-surf/open-agent" target="_blank">
               <SelectCard className="h-full">
                 <GithubDuotoneIcon className="size-6 text-icon-primary" />

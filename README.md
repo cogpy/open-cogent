@@ -15,11 +15,8 @@ Agentic AI systems, such as Claude Agent SDK (Claude Code) or ChatGPT Agents, ca
 
 Play with it, deploy it, enhance it, or use it as the foundation for your next dedicated agent. We welcome all contributions.
 
-<div align="center">
-  <video src="packages/frontend/app/public/videos/openagent_intro.mp4" controls muted playsinline style="max-height:640px; min-height:200px; width:100%; border-radius:12px;">
-    Your browser does not support the video tag. You can download the video <a href="packages/frontend/app/public/videos/openagent_intro.mp4">here</a>.
-  </video>
-</div>
+<video src="https://github.com/user-attachments/assets/1e3b8610-ff3e-4042-b43e-0a5ac367ef93" width="100%"></video>
+
 ---
 
 ## ✨ Key Features

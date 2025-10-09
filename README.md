@@ -156,11 +156,7 @@ pre-commit run --all-files
 
 Join our community to connect with other developers, share feedback, and showcase your projects.
 
-> [Discord →](https://discord.gg/your-discord-invite)
-
-<div align="center">
-  <img src="assets/community_group.jpg" width="300" alt="Open-Agent Community Group"/>
-</div>
+> [Discord →](https://discord.gg/k36Qf2T3)
 
 ---
 

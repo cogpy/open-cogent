@@ -17,14 +17,11 @@ Agentic AI systems, such as Claude Agent SDK (Claude Code) or ChatGPT Agents, ca
 
 Play with it, deploy it, enhance it, or use it as the foundation for your next dedicated agent. We welcome all contributions.
 
-
 <div align="center">
   <video src="packages/frontend/app/public/videos/openagent_intro.mp4" controls muted playsinline style="max-height:640px; min-height:200px; width:100%; border-radius:12px;">
     Your browser does not support the video tag. You can download the video <a href="assets/demo.mp4">here</a>.
   </video>
 </div>
-
-
 ---
 
 ## ✨ Key Features
@@ -43,74 +40,107 @@ Play with it, deploy it, enhance it, or use it as the foundation for your next d
 
 ---
 
-## ⚙️ Installation & Configuration
+## ⚙️ Quick Start
 
-Open-Agent is simple to install and configure — everything runs locally or on your preferred cloud.
+This project is a monorepo using Node.js, Yarn (Berry), NestJS, Rspack, and Rust. To run locally, you can install Docker and run the dependencies via Docker Compose.
 
-### Using `uv` (Recommended)
+#### Prerequisites
 
-```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
-git clone https://github.com/AFK-surf/open-agent.git
-cd open-agent
-uv venv --python 3.12
-source .venv/bin/activate  # macOS/Linux
-# .venv\Scripts\activate  # Windows
-uv pip install -r requirements.txt
-```
+- Node.js 18–22 (engine: node < 23)
+- Yarn 4 (Berry) — the repo sets `packageManager: yarn@4.9.1`
+- Rust toolchain (for native packages)
+- Docker + Docker Compose (Orbstack recommended)
 
-### Configure your API keys
+#### 1) Install dependencies
 
 ```bash
-cp config/config.example.toml config/config.toml
+yarn
 ```
 
-Edit `config/config.toml`:
+#### 2) Start backend dependencies (Docker Compose)
 
-```toml
-[llm]
-model = "gpt-4o"
-base_url = "https://api.openai.com/v1"
-api_key = "sk-..."
-temperature = 0.0
+Copy `.docker/dev/compose.yml.example` to `docker-compose.yml` (if you don’t have one).
 
-# Add additional providers as needed:
-[llm.claude]
-model = "claude-3-5-sonnet"
-base_url = "https://api.anthropic.com"
-api_key = "sk-ant-..."
-
-[llm.gemini]
-model = "gemini-1.5-pro"
-base_url = "https://generativelanguage.googleapis.com"
-api_key = "AIza..."
-
-# Optional local / self-hosted
-[llm.local]
-provider = "ollama"     # or vLLM with OpenAI-compatible endpoint
-base_url = "http://localhost:11434/v1"
-model = "llama3.1"
-```
-
----
-
-## 🚀 Quick Start
-
-Run Open-Agent:
+Then:
 
 ```bash
-python main.py
+docker compose -f ./.docker/dev/compose.yml up
 ```
 
-That’s it — start chatting with your multi-agent system!
+#### 3) Configure environment
 
-To launch experimental flows or MCP integrations:
+Defaults are sensible for local dev. You can export or add to a `.env` file at the repo root or `packages/backend/server/`.
 
 ```bash
-python run_flow.py
-# or
-python run_mcp.py
+# Example .env values for local development.
+# Replace placeholder values with your own secrets as needed.
+
+# Database connection string
+DATABASE_URL="postgresql://open-agent:open-agent@localhost:5432/open-agent"
+
+# Auth and web URLs
+NEXTAUTH_URL="http://localhost:8080"
+
+# Mailer configuration
+MAILER_SENDER="noreply@example.com"
+MAILER_USER="your_mail_user"
+MAILER_PASSWORD="your_mail_password"
+MAILER_HOST="localhost"
+MAILER_PORT="1025"
+
+# Stripe API keys (use your own test keys)
+STRIPE_API_KEY=sk_test_your_stripe_api_key
+STRIPE_WEBHOOK_KEY=whsec_your_stripe_webhook_key
+
+# OAuth credentials (replace with your own)
+OAUTH_GOOGLE_CLIENT_ID=your_google_client_id
+OAUTH_GOOGLE_CLIENT_SECRET=your_google_client_secret
+
+# Copilot/AI API keys (replace with your own)
+COPILOT_OPENAI_API_KEY=your_openai_api_key
+COPILOT_PERPLEXITY_API_KEY=your_perplexity_api_key
+COPILOT_FAL_API_KEY=your_fal_api_key
+COPILOT_GOOGLE_API_KEY=your_google_api_key
 ```
+
+#### 4) Build Rust native bindings (once)
+
+```bash
+yarn oa @afk/server-native build
+```
+
+#### 5) Run database migrations and seed (optional)
+
+From `packages/backend/server/` you can run Prisma flows as needed:
+
+```bash
+(cd packages/backend/server && yarn prisma migrate dev)
+```
+
+#### 6) Start local development
+
+Run web and server together from the monorepo root:
+
+```bash
+yarn dev
+```
+
+- Web app: http://localhost:8080
+- Server: http://localhost:3010 (GraphQL at `/graphql`)
+
+You can also run individually:
+
+```bash
+yarn dev:web      # runs @afk/app (Rspack dev server on 8080)
+yarn dev:server   # runs backend server (NestJS, listens on 3010 by default)
+```
+
+#### Notes
+
+- If Node is outside the supported range, switch via `nvm`, `fnm`, or similar.
+- If ports are taken, change `OPEN_AGENT_SERVER_PORT` or Rspack devServer port in `packages/frontend/app/rspack.config.js`.
+- The web dev server proxies `/api` and `/graphql` to `http://localhost:3010` by default.
+- When login, you may be prompted to verify your email. The code will be sent to the local mailhog server at `http://localhost:8025`.
 
 ---
 
@@ -129,7 +159,8 @@ pre-commit run --all-files
 
 ## 🌐 Community
 
-Join our community to connect with other developers, share feedback, and showcase your projects.  
+Join our community to connect with other developers, share feedback, and showcase your projects.
+
 > [Discord →](https://discord.gg/your-discord-invite)
 
 <div align="center">
@@ -147,8 +178,8 @@ Join our community to connect with other developers, share feedback, and showcas
 ## 💙 Acknowledgements
 
 Open-Agent builds upon the ideas of projects like  
-[AFFiNE]([https://github.com/browserbase/stagehand](https://github.com/toeverything/AFFiNE)),  
-and the broader open-source agentic AI community.  
+[AFFiNE](<[https://github.com/browserbase/stagehand](https://github.com/toeverything/AFFiNE)>),  
+and the broader open-source agentic AI community.
 
 Special thanks to everyone advancing human–AI collaboration.
 

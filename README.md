@@ -1,6 +1,4 @@
-<p align="center">
-  <img src="assets/logo.jpg" width="200"/>
-</p>
+![logo](https://github.com/user-attachments/assets/e47070b1-a453-49cc-980f-eca16d3d1e7b)
 
 [![GitHub stars](https://img.shields.io/github/stars/AFK-surf/open-agent?style=social)](https://github.com/AFK-surf/open-agent/stargazers) &ensp;
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) &ensp;

@@ -35,7 +35,7 @@ Play with it, deploy it, enhance it, or use it as the foundation for your next d
 
 ---
 
-## How to deploy
+## 💻 How to deploy
 
 1. copy `.docker/config.example.json` and `.docker/docker-compose.yml` to a separate folder.
 

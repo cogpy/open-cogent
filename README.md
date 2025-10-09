@@ -19,7 +19,7 @@ Play with it, deploy it, enhance it, or use it as the foundation for your next d
 
 
 <div align="center">
-  <video src="assets/demo.mp4" controls muted playsinline style="max-height:640px; min-height:200px; width:100%; border-radius:12px;">
+  <video src="packages/frontend/app/public/videos/openagent_intro.mp4" controls muted playsinline style="max-height:640px; min-height:200px; width:100%; border-radius:12px;">
     Your browser does not support the video tag. You can download the video <a href="assets/demo.mp4">here</a>.
   </video>
 </div>

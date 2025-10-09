@@ -1,4 +1,4 @@
-![logo](https://github.com/user-attachments/assets/e47070b1-a453-49cc-980f-eca16d3d1e7b)
+![logo](tools/public/logo.jpg)
 
 [![GitHub stars](https://img.shields.io/github/stars/AFK-surf/open-agent?style=social)](https://github.com/AFK-surf/open-agent/stargazers) &ensp;
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) &ensp;
@@ -17,7 +17,7 @@ Play with it, deploy it, enhance it, or use it as the foundation for your next d
 
 <div align="center">
   <video src="packages/frontend/app/public/videos/openagent_intro.mp4" controls muted playsinline style="max-height:640px; min-height:200px; width:100%; border-radius:12px;">
-    Your browser does not support the video tag. You can download the video <a href="assets/demo.mp4">here</a>.
+    Your browser does not support the video tag. You can download the video <a href="packages/frontend/app/public/videos/openagent_intro.mp4">here</a>.
   </video>
 </div>
 ---

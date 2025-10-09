@@ -35,6 +35,25 @@ Play with it, deploy it, enhance it, or use it as the foundation for your next d
 
 ---
 
+## How to deploy
+
+1. copy `.docker/config.example.json` and `.docker/docker-compose.yml` to a separate folder.
+
+```sh
+mkdir deploy
+cd deploy
+cp ../.docker/config.example.json ./config.json
+cp ../.docker/docker-compose.yml ./docker-compose.yml
+```
+
+2. Edit `config.json` and add your API keys.
+
+3. Run with Docker Compose.
+
+```sh
+docker compose up -d
+```
+
 ## 🤝 Contributing
 
 We welcome all contributions, ideas, and improvements!  

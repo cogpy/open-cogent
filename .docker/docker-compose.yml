@@ -1,13 +1,4 @@
 services:
-  cloudflared:
-    image: cloudflare/cloudflared:latest
-    command: tunnel --no-autoupdate run --token ${CLOUDFLARED_TOKEN}
-    environment:
-      - TUNNEL_TOKEN=${CLOUDFLARED_TOKEN}
-    depends_on:
-      - app
-    restart: unless-stopped
-
   postgres:
     image: pgvector/pgvector:pg16
     environment:
@@ -41,7 +32,6 @@ services:
       - DATABASE_URL=postgres://postgres:postgres@postgres:5432/open_agent
       - REDIS_SERVER_HOST=redis
     volumes:
-      - ./.env:/app/.env
       - ./config.json:/app/config.json
     command: yarn predeploy
     depends_on:
@@ -60,7 +50,6 @@ services:
     ports:
       - '3010:3010'
     volumes:
-      - ./.env:/app/.env
       - ./config.json:/app/config.json
     depends_on:
       postgres:

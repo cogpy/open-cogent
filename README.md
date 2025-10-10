@@ -73,7 +73,7 @@ pre-commit run --all-files
 
 Join our community to connect with other developers, share feedback, and showcase your projects.
 
-> [Discord →](https://discord.gg/k36Qf2T3)
+> [Discord →](https://discord.gg/WM7PkxUaP4)
 
 ---
 

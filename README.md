@@ -85,9 +85,7 @@ Join our community to connect with other developers, share feedback, and showcas
 
 ## 💙 Acknowledgements
 
-Open-Agent builds upon the ideas of projects like  
-[AFFiNE](<[https://github.com/browserbase/stagehand](https://github.com/toeverything/AFFiNE)>),  
-and the broader open-source agentic AI community.
+Open-Agent builds upon the ideas of projects like [AFFiNE](<[https://github.com/browserbase/stagehand](https://github.com/toeverything/AFFiNE)>), and the broader open-source agentic AI community.
 
 Special thanks to everyone advancing human–AI collaboration.
 

@@ -36,6 +36,7 @@ import { QuotaModule } from './core/quota';
 import { StorageModule } from './core/storage';
 import { UserModule } from './core/user';
 import { VersionModule } from './core/version';
+import { AGIModule } from './core/agi';
 import { Env } from './env';
 import { ModelsModule } from './models';
 import { CaptchaModule } from './plugins/captcha';
@@ -152,6 +153,7 @@ export function buildAppModule(env: Env) {
       StorageModule,
       ServerConfigResolverModule,
       CopilotModule,
+      AGIModule,
       CaptchaModule,
       OAuthModule
     )

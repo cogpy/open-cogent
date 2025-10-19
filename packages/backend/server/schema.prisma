@@ -425,3 +425,262 @@ model UserSettings {
 
   @@map("user_settings")
 }
+
+// ========== Autonomous Agent System Models ==========
+
+enum AgentStatus {
+  initializing
+  idle
+  planning
+  executing
+  learning
+  communicating
+  paused
+  error
+  terminated
+}
+
+enum AgentType {
+  general
+  specialized
+  coordinator
+  researcher
+  analyst
+}
+
+enum AgentGoalStatus {
+  pending
+  active
+  completed
+  failed
+  cancelled
+}
+
+enum AgentPlanStatus {
+  draft
+  approved
+  executing
+  completed
+  failed
+}
+
+model Agent {
+  id       String      @id @default(uuid()) @db.VarChar
+  name     String      @db.VarChar
+  type     AgentType
+  status   AgentStatus @default(initializing)
+  config   Json        @db.JsonB
+  context  Json?       @db.JsonB
+  metadata Json        @default("{}") @db.JsonB
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  // Relationships
+  goals       AgentGoal[]
+  plans       AgentPlan[]
+  actions     AgentAction[]
+  experiences AgentExperience[]
+  knowledge   AgentKnowledge[]
+  teamMemberships AgentTeamMember[]
+  messages    AgentMessage[]     @relation("MessageFrom")
+  receivedMessages AgentMessage[] @relation("MessageTo")
+
+  @@index([status])
+  @@index([type])
+  @@map("agents")
+}
+
+model AgentGoal {
+  id              String          @id @default(uuid()) @db.VarChar
+  agentId         String          @map("agent_id") @db.VarChar
+  description     String          @db.Text
+  priority        Int             @default(1)
+  progress        Float           @default(0.0)
+  status          AgentGoalStatus @default(pending)
+  successCriteria Json            @map("success_criteria") @db.JsonB
+  deadline        DateTime?       @db.Timestamptz(3)
+  parentGoalId    String?         @map("parent_goal_id") @db.VarChar
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  agent      Agent       @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  parentGoal AgentGoal?  @relation("GoalHierarchy", fields: [parentGoalId], references: [id])
+  subGoals   AgentGoal[] @relation("GoalHierarchy")
+  plans      AgentPlan[]
+
+  @@index([agentId])
+  @@index([status])
+  @@index([priority])
+  @@map("agent_goals")
+}
+
+model AgentPlan {
+  id                String          @id @default(uuid()) @db.VarChar
+  agentId           String          @map("agent_id") @db.VarChar
+  goalId            String          @map("goal_id") @db.VarChar
+  description       String?         @db.Text
+  estimatedDuration Int             @default(0) @map("estimated_duration")
+  riskAssessment    Float           @default(0.0) @map("risk_assessment")
+  status            AgentPlanStatus @default(draft)
+  metadata          Json            @default("{}") @db.JsonB
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  agent   Agent         @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  goal    AgentGoal     @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  actions AgentAction[]
+
+  @@index([agentId])
+  @@index([goalId])
+  @@index([status])
+  @@map("agent_plans")
+}
+
+model AgentAction {
+  id              String    @id @default(uuid()) @db.VarChar
+  agentId         String    @map("agent_id") @db.VarChar
+  planId          String?   @map("plan_id") @db.VarChar
+  type            String    @db.VarChar
+  description     String    @db.Text
+  parameters      Json      @db.JsonB
+  expectedOutcome String?   @map("expected_outcome") @db.Text
+  preconditions   Json?     @db.JsonB
+  result          Json?     @db.JsonB
+  success         Boolean?
+  executedAt      DateTime? @map("executed_at") @db.Timestamptz(3)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  agent Agent      @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  plan  AgentPlan? @relation(fields: [planId], references: [id], onDelete: SetNull)
+
+  @@index([agentId])
+  @@index([planId])
+  @@index([type])
+  @@index([executedAt])
+  @@map("agent_actions")
+}
+
+model AgentExperience {
+  id            String   @id @default(uuid()) @db.VarChar
+  agentId       String   @map("agent_id") @db.VarChar
+  actionType    String   @map("action_type") @db.VarChar
+  context       Json     @db.JsonB
+  outcome       Json     @db.JsonB
+  success       Boolean
+  lessonsLearned Json?   @map("lessons_learned") @db.JsonB
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  agent Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@index([agentId])
+  @@index([actionType])
+  @@index([success])
+  @@index([createdAt])
+  @@map("agent_experiences")
+}
+
+model AgentKnowledge {
+  id         String  @id @default(uuid()) @db.VarChar
+  agentId    String  @map("agent_id") @db.VarChar
+  type       String  @db.VarChar // fact, rule, procedure, concept
+  content    Json    @db.JsonB
+  confidence Float   @default(0.5)
+  source     String  @db.VarChar
+  tags       Json    @db.JsonB
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  agent Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@index([agentId])
+  @@index([type])
+  @@index([confidence])
+  @@index([source])
+  @@map("agent_knowledge")
+}
+
+model AgentTeam {
+  id           String @id @default(uuid()) @db.VarChar
+  name         String @db.VarChar
+  coordinator  String @db.VarChar // Agent ID
+  description  String? @db.Text
+  metadata     Json   @default("{}") @db.JsonB
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  members AgentTeamMember[]
+
+  @@index([coordinator])
+  @@map("agent_teams")
+}
+
+model AgentTeamMember {
+  id     String @id @default(uuid()) @db.VarChar
+  teamId String @map("team_id") @db.VarChar
+  agentId String @map("agent_id") @db.VarChar
+  role   String @default("member") @db.VarChar
+
+  joinedAt DateTime @default(now()) @map("joined_at") @db.Timestamptz(3)
+
+  team  AgentTeam @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  agent Agent     @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, agentId])
+  @@index([teamId])
+  @@index([agentId])
+  @@map("agent_team_members")
+}
+
+enum MessageType {
+  request
+  response
+  notification
+  coordination
+  broadcast
+}
+
+model AgentMessage {
+  id       String      @id @default(uuid()) @db.VarChar
+  fromId   String      @map("from_id") @db.VarChar
+  toId     String?     @map("to_id") @db.VarChar // null for broadcast
+  type     MessageType
+  content  Json        @db.JsonB
+  priority Int         @default(1)
+  read     Boolean     @default(false)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  fromAgent Agent  @relation("MessageFrom", fields: [fromId], references: [id], onDelete: Cascade)
+  toAgent   Agent? @relation("MessageTo", fields: [toId], references: [id], onDelete: Cascade)
+
+  @@index([fromId])
+  @@index([toId])
+  @@index([type])
+  @@index([createdAt])
+  @@map("agent_messages")
+}
+
+model SystemGoal {
+  id             String @id @default(uuid()) @db.VarChar
+  description    String @db.Text
+  type           String @db.VarChar // user_requested, system_generated, emergent
+  priority       Int    @default(1)
+  status         String @default("pending") @db.VarChar
+  assignedAgents Json   @map("assigned_agents") @db.JsonB
+  metadata       Json   @default("{}") @db.JsonB
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@index([type])
+  @@index([status])
+  @@index([priority])
+  @@map("system_goals")
+}
